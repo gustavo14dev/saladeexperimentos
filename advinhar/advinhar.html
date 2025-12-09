@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Adivinhador 2.0 | Liquid Glass AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --accent: #a259ff;
+            --accent-glow: #a259ff88;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* Ambient Blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.6;
+            animation: float 10s infinite ease-in-out;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #ff00cc; animation-delay: 0s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #3333ff; animation-delay: 2s; }
+        .blob-3 { top: 40%; left: 40%; width: 300px; height: 300px; background: #00ffff; animation-delay: 4s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .glass-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            min-height: 450px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            box-shadow: var(--glass-shadow);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 0.5s ease;
+        }
+
+        /* Novo estilo para botão de 🠜 */
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            transition: background 0.3s;
+            line-height: 1; /* Alinha o texto/emoji */
+        }
+        .btn-back:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #bbaaff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p { color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 30px; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+        .btn-primary { background: var(--accent); border: none; box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-yes { border-color: #4CAF50; color: #81c784; }
+        .btn-yes:hover { background: rgba(76, 175, 80, 0.2); color: #fff; }
+        .btn-no { border-color: #F44336; color: #e57373; }
+        .btn-no:hover { background: rgba(244, 67, 54, 0.2); color: #fff; }
+        .btn-idk { border-color: #FFC107; color: #ffd54f; }
+        .btn-idk:hover { background: rgba(255, 193, 7, 0.2); color: #fff; }
+
+        /* HUD */
+        .hud {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .section { display: none; width: 100%; animation: fadeIn 0.5s ease; }
+        .active { display: flex; flex-direction: column; align-items: center; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            margin-bottom: 20px;
+            border: 4px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="glass-container">
+        
+        <div id="start-screen" class="section active">
+            <div class="avatar">🔮</div>
+            <h1>Pense num famoso</h1>
+            <p>Vou tentar advinhar quem você está pensando!</p>
+            <button class="btn btn-primary" onclick="game.start()">Começar</button>
+        </div>
+
+        <div id="game-screen" class="section">
+            <button class="btn-back" onclick="window.location.href = '../index.html'">🠜</button> <div class="hud">
+                <span id="q-counter">Questão 1</span>
+                <span>Certeza: <span id="confidence-val">0%</span></span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="confidence-bar"></div>
+            </div>
+            
+            <h2 id="question-text" style="font-weight: 600; margin-bottom: 40px; font-size: 1.5rem; min-height: 60px;">...</h2>
+            
+            <div class="btn-group">
+                <button class="btn btn-yes" onclick="game.answer(true)">Sim</button>
+                <button class="btn btn-no" onclick="game.answer(false)">Não</button>
+                <button class="btn btn-idk" onclick="game.answer(null)">Não sei / Talvez</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="section">
+            <button class="btn-back" onclick="window.location.href = '../index.html'">🠜</button> <div class="avatar" id="result-avatar">✨</div>
+            <h1 id="result-title">...</h1>
+            <p id="result-desc">...</p>
+            <div style="font-size: 0.9rem; opacity: 0.6; margin-top: 10px;" id="result-debug"></div>
+            <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 30px; width: 100%;">Jogar Novamente</button>
+        </div>
+
+        <div id="loading-screen" class="section">
+            <button class="btn-back" onclick="window.location.href = '../index.html'">🠜</button> <div class="spinner"></div>
+            <p>Processando respostas...</p>
+        </div>
+
+    </div>
+
+<script>
+
+/**
+ * ------------------------------------------------------------------
+ * 1. BANCO DE DADOS (Expandido para 30 personagens variados)
+ * ------------------------------------------------------------------
+ */
+const questionsMap = {
+    e_homem: "Seu personagem é do gênero masculino?",
+    e_real: "Seu personagem existe (ou existiu) na vida real?",
+    e_brasileiro: "Essa pessoa nasceu no Brasil?",
+    e_cantor: "Ficou famoso(a) principalmente pela música?",
+    e_ator: "É conhecido(a) por atuar em filmes, novelas ou séries?",
+    e_esportista: "É um atleta profissional?",
+    e_politico: "Tem envolvimento direto com política?",
+    e_youtuber: "Ficou famoso na internet/Youtube/Streamer?",
+    e_tv: "É um apresentador(a) de TV famoso?",
+    esta_vivo: "Essa pessoa ainda está viva?",
+    tem_mais_de_40: "Tem (ou teria) mais de 40 anos?",
+    e_ficticio_poderes: "Esse personagem tem superpoderes?",
+    usa_oculos: "É muito comum vê-lo(a) usando óculos?",
+    e_negro: "Essa pessoa é negra?",
+    e_rico_tech: "Ficou bilionário com tecnologia?",
+    e_historia: "É uma figura histórica de séculos passados?",
+    e_futebol: "Joga ou jogou futebol?",
+    e_personagem_desenho: "É um personagem de desenho animado/anime?",
+    e_roqueiro: "É do gênero Rock/Metal?"
+};
+
+// Database com 30 personagens
+// Obs: null = não sei / irrelevante
+const database = [
+    // --- MÚSICA ---
+    { nome: "Anitta", emoji: "🎤", c: { e_homem: false, e_real: true, e_brasileiro: true, e_cantor: true, esta_vivo: true, e_youtuber: false } },
+    { nome: "Michael Jackson", emoji: "🕺", c: { e_homem: true, e_real: true, e_brasileiro: false, e_cantor: true, esta_vivo: false, e_negro: true } },
+    { nome: "Taylor Swift", emoji: "🎸", c: { e_homem: false, e_real: true, e_brasileiro: false, e_cantor: true, esta_vivo: true, e_roqueiro: false } },
+    { nome: "Rita Lee", emoji: "🔴", c: { e_homem: false, e_real: true, e_brasileiro: true, e_cantor: true, esta_vivo: false, e_roqueiro: true, usa_oculos: true } },
+    { nome: "Mano Brown", emoji: "🧢", c: { e_homem: true, e_real: true, e_brasileiro: true, e_cantor: true, e_negro: true, e_roqueiro: false } },
+
+    // --- TV & INTERNET ---
+    { nome: "Silvio Santos", emoji: "📺", c: { e_homem: true, e_real: true, e_brasileiro: true, e_tv: true, esta_vivo: false, tem_mais_de_40: true } },
+    { nome: "Faustão", emoji: "🕰️", c: { e_homem: true, e_real: true, e_brasileiro: true, e_tv: true, esta_vivo: true, tem_mais_de_40: true } },
+    { nome: "Casimiro (Cazé)", emoji: "⚽", c: { e_homem: true, e_real: true, e_brasileiro: true, e_youtuber: true, esta_vivo: true, tem_mais_de_40: false } },
+    { nome: "Felipe Neto", emoji: "🦉", c: { e_homem: true, e_real: true, e_brasileiro: true, e_youtuber: true, esta_vivo: true, tem_mais_de_40: false } },
+    { nome: "Ana Maria Braga", emoji: "🦜", c: { e_homem: false, e_real: true, e_brasileiro: true, e_tv: true, esta_vivo: true, tem_mais_de_40: true } },
+
+    // --- ESPORTES ---
+    { nome: "Pelé", emoji: "👑", c: { e_homem: true, e_real: true, e_brasileiro: true, e_esportista: true, e_futebol: true, esta_vivo: false, e_negro: true } },
+    { nome: "Neymar", emoji: "🤙", c: { e_homem: true, e_real: true, e_brasileiro: true, e_esportista: true, e_futebol: true, esta_vivo: true, tem_mais_de_40: false } },
+    { nome: "Cristiano Ronaldo", emoji: "🇵🇹", c: { e_homem: true, e_real: true, e_brasileiro: false, e_esportista: true, e_futebol: true, esta_vivo: true } },
+    { nome: "Ayrton Senna", emoji: "🏎️", c: { e_homem: true, e_real: true, e_brasileiro: true, e_esportista: true, e_futebol: false, esta_vivo: false } },
+
+    // --- FICÇÃO ---
+    { nome: "Homem de Ferro", emoji: "🤖", c: { e_homem: true, e_real: false, e_ficticio_poderes: false, e_rico_tech: true, e_ator: false } },
+    { nome: "Homem-Aranha", emoji: "🕸️", c: { e_homem: true, e_real: false, e_ficticio_poderes: true, tem_mais_de_40: false } },
+    { nome: "Mônica (Turma)", emoji: "🐰", c: { e_homem: false, e_real: false, e_personagem_desenho: true, e_brasileiro: true } },
+    { nome: "Naruto", emoji: "🍥", c: { e_homem: true, e_real: false, e_personagem_desenho: true, e_brasileiro: false } },
+    { nome: "Darth Vader", emoji: "🌑", c: { e_homem: true, e_real: false, e_ficticio_poderes: true, e_ator: false } },
+    { nome: "Barbie", emoji: "💅", c: { e_homem: false, e_real: false, e_personagem_desenho: false } },
+
+    // --- POLÍTICA & HISTÓRIA & TECH ---
+    { nome: "Lula", emoji: "⭐", c: { e_homem: true, e_real: true, e_brasileiro: true, e_politico: true, esta_vivo: true } },
+    { nome: "Bolsonaro", emoji: "👉", c: { e_homem: true, e_real: true, e_brasileiro: true, e_politico: true, esta_vivo: true } },
+    { nome: "Elon Musk", emoji: "🚀", c: { e_homem: true, e_real: true, e_brasileiro: false, e_rico_tech: true, esta_vivo: true } },
+    { nome: "Albert Einstein", emoji: "🧠", c: { e_homem: true, e_real: true, e_historia: true, usa_oculos: false, esta_vivo: false } },
+    { nome: "Rainha Elizabeth II", emoji: "👑", c: { e_homem: false, e_real: true, e_brasileiro: false, e_politico: true, esta_vivo: false, tem_mais_de_40: true } },
+    { nome: "Jesus Cristo", emoji: "✝️", c: { e_homem: true, e_real: true, e_historia: true, tem_mais_de_40: false, esta_vivo: false } },
+
+    // --- CINEMA ---
+    { nome: "Wagner Moura", emoji: "🎬", c: { e_homem: true, e_real: true, e_brasileiro: true, e_ator: true, esta_vivo: true } },
+    { nome: "Will Smith", emoji: "😎", c: { e_homem: true, e_real: true, e_brasileiro: false, e_ator: true, e_negro: true } },
+    { nome: "Marilyn Monroe", emoji: "💃", c: { e_homem: false, e_real: true, e_brasileiro: false, e_ator: true, esta_vivo: false } },
+];
+
+/**
+ * ------------------------------------------------------------------
+ * 2. LÓGICA DO JOGO (ENGINE)
+ * ------------------------------------------------------------------
+ */
+class Game {
+    constructor(data) {
+        this.allCandidates = data.map(c => ({ ...c, score: 0, active: true })); 
+        this.askedQuestions = new Set();
+        this.turnCount = 0;
+        this.minQuestions = 10; 
+        this.maxQuestions = 20;
+    }
+
+    start() {
+        this.switchScreen('game-screen');
+        this.nextTurn();
+    }
+
+    getBestQuestion() {
+        const activeCandidates = this.allCandidates.filter(c => c.active);
+        const availableKeys = Object.keys(questionsMap).filter(k => !this.askedQuestions.has(k));
+
+        if (availableKeys.length === 0) return null;
+
+        // Se sobrou só 1, mas precisamos enrolar até a pergunta 10:
+        if (activeCandidates.length === 1 && this.turnCount < this.minQuestions) {
+            const leader = activeCandidates[0];
+            const confirmQuestion = availableKeys.find(k => leader.c[k] === true);
+            if (confirmQuestion) return confirmQuestion;
+            return availableKeys[0];
+        }
+
+        // Lógica Padrão: Achar a pergunta que divide o grupo ao meio
+        let bestKey = null;
+        let bestDiff = Infinity;
+
+        availableKeys.forEach(key => {
+            let trueCount = 0;
+            
+            activeCandidates.forEach(c => {
+                if (c.c[key] === true) trueCount++;
+            });
+
+            const diff = Math.abs(trueCount - (activeCandidates.length / 2));
+            
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                bestKey = key;
+            }
+        });
+
+        return bestKey;
+    }
+
+    nextTurn() {
+        // 1. Verifica Vitória ou Derrota
+        const activeCandidates = this.allCandidates.filter(c => c.active);
+        
+        const timeToGuess = (this.turnCount >= this.minQuestions && activeCandidates.length === 1) || 
+                            (this.turnCount >= this.maxQuestions);
+
+        if (timeToGuess) {
+            this.finishGame();
+            return;
+        }
+
+        // 2. Prepara nova pergunta
+        const qKey = this.getBestQuestion();
+        
+        if (!qKey) {
+            this.finishGame(); 
+            return;
+        }
+
+        this.currentKey = qKey;
+        this.askedQuestions.add(qKey);
+        this.turnCount++;
+
+        // 3. Atualiza UI
+        document.getElementById('question-text').innerText = questionsMap[qKey];
+        document.getElementById('q-counter').innerText = `Questão ${this.turnCount}/${this.maxQuestions}`;
+        
+        let confidence = Math.round(((this.allCandidates.length - activeCandidates.length) / this.allCandidates.length) * 100);
+        if (this.turnCount < this.minQuestions && confidence > 80) confidence = 80; 
+        
+        document.getElementById('confidence-val').innerText = `${confidence}%`;
+        document.getElementById('confidence-bar').style.width = `${confidence}%`;
+    }
+
+    answer(response) {
+        this.switchScreen('loading-screen');
+
+        setTimeout(() => {
+            this.allCandidates.forEach(char => {
+                if (!char.active) return; 
+
+                const trait = char.c[this.currentKey];
+
+                if (response === null) return;
+
+                if (trait !== undefined && trait !== response) {
+                    char.active = false;
+                } else {
+                    char.score++; 
+                }
+            });
+
+            const survivors = this.allCandidates.filter(c => c.active);
+            if (survivors.length === 0) {
+                const maxScore = Math.max(...this.allCandidates.map(c => c.score));
+                this.allCandidates.forEach(c => {
+                    if (c.score === maxScore) c.active = true;
+                });
+            }
+
+            this.switchScreen('game-screen');
+            this.nextTurn();
+        }, 500);
+    }
+
+    finishGame() {
+        let candidates = this.allCandidates.filter(c => c.active);
+        
+        candidates.sort((a, b) => b.score - a.score);
+
+        const winner = candidates[0];
+
+        this.switchScreen('result-screen');
+        
+        const title = document.getElementById('result-title');
+        const desc = document.getElementById('result-desc');
+        const avatar = document.getElementById('result-avatar');
+        const debug = document.getElementById('result-debug');
+
+        if (winner) {
+            title.innerText = `É ${winner.nome}!`;
+            desc.innerText = "Eu li sua mente. Como sempre.";
+            avatar.innerText = winner.emoji;
+            debug.innerText = `Certeza absoluta após ${this.turnCount} perguntas.`;
+        } else {
+            title.innerText = "Não consegui...";
+            desc.innerText = "Você venceu! Essa pessoa não está no meu banco de dados.";
+            avatar.innerText = "🏳️";
+            debug.innerText = `0 candidatos ativos.`;
+        }
+    }
+
+    switchScreen(id) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+}
+
+// Inicia o jogo
+const game = new Game(database);
+
+</script>
+</body>
+</html>

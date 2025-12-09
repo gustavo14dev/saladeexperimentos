@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Digital Pro | Calendar & Planner</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-main: 'Inter', sans-serif;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            --text-color: #ffffff;
+            --accent-color: #a2d2ff;
+            --slot-height: 60px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(135deg, #1f1c2c, #928dab, #4a00e0);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- VIEWS CONTROL --- */
+        .view-section {
+            display: none; /* Esconde tudo por padrão */
+            width: 95vw;
+            height: 90vh;
+            animation: fadeIn 0.4s ease;
+        }
+        .view-section.active {
+            display: flex;
+            gap: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ================= CALENDAR VIEW STYLES ================= */
+        .calendar-container {
+            width: 100%;
+            height: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: var(--glass-shadow);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .calendar-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Botão Voltar (inline, ao lado do botão "Anterior") */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            font-weight: 700;
+            text-decoration: none;
+            font-family: var(--font-main);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        /* Em telas pequenas, o botão fica menor e ocupa menos espaço */
+        @media (max-width: 480px) {
+            .back-btn { padding: 6px 10px; border-radius: 10px; font-size: 0.95rem; }
+            .calendar-controls { gap: 8px; }
+        }
+
+        .cal-btn, select {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            outline: none;
+        }
+        .cal-btn:hover { background: rgba(255,255,255,0.2); }
+        option { background: #333; color: white; }
+
+        .calendar-grid-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .day-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .day-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: scale(1.02);
+            border-color: var(--accent-color);
+        }
+
+        .day-number { font-size: 1.2rem; font-weight: 700; }
+        .day-today { background: rgba(162, 210, 255, 0.15); border: 1px solid var(--accent-color); }
+
+        .event-badge {
+            font-size: 0.75rem;
+            background: var(--accent-color);
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 10px;
+            align-self: flex-end;
+            font-weight: 600;
+        }
+
+        /* ================= PLANNER VIEW STYLES ================= */
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .brand { font-size: 1.5rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .nav-btn {
+            color: white; background: rgba(0,0,0,0.2); padding: 10px;
+            border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s;
+            border: 1px solid transparent;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+        #taskInput {
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);
+            color: white; outline: none; font-family: var(--font-main);
+        }
+        #addBtn {
+            padding: 0 15px; border-radius: 8px; background: var(--accent-color);
+            border: none; cursor: pointer; font-weight: bold; font-size: 1.2rem;
+        }
+
+        #taskPool {
+            flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 8px; padding-right: 5px; margin-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;
+        }
+
+        /* --- TAREFAS --- */
+        .task-card {
+            background: rgba(255,255,255,0.25); border-radius: 6px;
+            font-size: 0.85rem; font-weight: 500; cursor: grab;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative; display: flex; align-items: center; justify-content: space-between;
+            overflow: hidden;
+        }
+        
+        /* Tarefa na Sidebar (Compacta) */
+        #taskPool .task-card { padding: 8px 12px; height: auto !important; min-height: auto; flex-shrink: 0; }
+
+        /* Tarefa na Agenda (Expandida) */
+        .drop-zone .task-card {
+            width: 100%; height: 100%; padding: 5px 10px; margin: 0;
+            background: rgba(162, 210, 255, 0.9); border: 1px solid rgba(255,255,255,0.5);
+            color: #1a1a1a; position: relative; z-index: 5; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
+        }
+
+        .task-card .task-desc {
+            font-size: 0.75rem; opacity: 0.8; margin-top: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 90%;
+            display: none; /* Escondido na sidebar */
+        }
+        .drop-zone .task-card .task-desc { display: block; }
+        .drop-zone .task-card .task-title { font-weight: 700; font-size: 0.9rem; }
+
+        .delete-x {
+            color: #ffcccb; font-weight: bold; cursor: pointer; padding: 5px;
+            position: absolute; top: 2px; right: 5px; z-index: 10;
+        }
+
+        /* Resizer */
+        .resizer {
+            display: none; width: 100%; height: 10px; position: absolute; bottom: 0; left: 0;
+            cursor: ns-resize; justify-content: center; align-items: flex-end; padding-bottom: 2px;
+        }
+        .drop-zone .task-card .resizer { display: flex; }
+        .resizer::after { content: ''; width: 40px; height: 4px; background: rgba(0,0,0,0.2); border-radius: 2px; }
+
+        /* --- TIMELINE --- */
+        .main-content {
+            flex-grow: 1; background: var(--glass-bg); backdrop-filter: blur(12px);
+            border-radius: 20px; border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow); display: flex; flex-direction: column; overflow: hidden;
+        }
+        .header-title {
+            padding: 20px; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); flex-shrink: 0; display: flex; justify-content: space-between;
+        }
+        .timeline-scroll { flex-grow: 1; overflow-y: auto; scroll-behavior: smooth; }
+        .time-row { display: flex; height: var(--slot-height); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .time-label {
+            width: 80px; font-size: 0.8rem; color: rgba(255,255,255,0.7);
+            border-right: 1px solid rgba(255,255,255,0.05); display: flex; align-items: flex-start;
+            justify-content: center; padding-top: 5px;
+        }
+        .drop-zone { flex-grow: 1; position: relative; border-left: 1px dashed rgba(255,255,255,0.05); }
+        .drop-zone.drag-over { background: rgba(255, 255, 255, 0.1); }
+
+        /* ================= MODAL DE DESCRIÇÃO ================= */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: #2b2b3b; border: 1px solid rgba(255,255,255,0.2);
+            padding: 25px; border-radius: 15px; width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 600; }
+        .modal-input {
+            width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; resize: none;
+        }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        .btn-save { background: var(--accent-color); border: none; color: #333; font-weight: bold; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+    </style>
+</head>
+<body>
+
+    <div id="calendarView" class="view-section active">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="brand">Agenda Digital</div>
+                    <div class="calendar-controls">
+                        <a href="../index.html" class="back-btn" title="Voltar">← Voltar</a>
+                        <button class="cal-btn" onclick="changeMonth(-1)">‹ Anterior</button>
+                        <span id="currentMonthYear" style="font-weight: 600; font-size: 1.1rem; min-width: 150px; text-align: center;">Outubro 2025</span>
+                        <button class="cal-btn" onclick="changeMonth(1)">Próximo ›</button>
+                    
+                        <select id="yearSelect" onchange="jumpToYear()">
+                        </select>
+                    </div>
+            </div>
+
+            <div class="calendar-grid-header">
+                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+            </div>
+            <div id="calendarGrid" class="calendar-grid">
+                </div>
+        </div>
+    </div>
+
+    <div id="plannerView" class="view-section">
+        <aside class="sidebar">
+            <div>
+                <div class="brand">Planejador</div>
+                <div id="plannerDateDisplay" style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 10px;">Data Selecionada</div>
+                <div class="nav-btn" onclick="showCalendar()">← Voltar ao Calendário</div>
+            </div>
+
+            <div style="display: flex; gap:10px;">
+                <input type="text" id="taskInput" placeholder="Adicionar à lista..." onkeypress="handleEnter(event)">
+                <button id="addBtn" onclick="addTaskToPool()">+</button>
+            </div>
+
+            <small style="opacity: 0.5; margin-top: -5px;">Caixa de Entrada (Global)</small>
+
+            <div id="taskPool" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="header-title">
+                <span id="plannerTitle">Cronograma</span>
+                <span style="font-size: 0.8rem; opacity: 0.6; align-self: center;">Arraste para agendar</span>
+            </div>
+            
+            <div class="timeline-scroll" id="timelineContainer">
+                <div id="timelineContent">
+                    </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="descModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Detalhes do Evento</div>
+            <p style="opacity: 0.7; font-size: 0.9rem;">Adicione uma descrição para este horário.</p>
+            <textarea id="modalDescInput" rows="3" class="modal-input" placeholder="Ex: Sala de reunião 3, Levar notebook..."></textarea>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal(false)">Cancelar Drop</button>
+                <button class="btn-save" onclick="closeModal(true)">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ESTADO GLOBAL ---
+        let currentCalendarDate = new Date();
+        let selectedDateKey = null; // Formato 'YYYY-MM-DD'
+        const SLOT_HEIGHT = 60;
+        
+        // Variáveis p/ Drag & Drop e Resize
+        let isResizing = false;
+        let currentResizer = null;
+        let startY, startHeight;
+        
+        // Variáveis p/ Modal
+        let pendingDrop = null; // Armazena dados do drop enquanto o modal está aberto
+
+        // --- INICIALIZAÇÃO ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initYearSelect();
+            renderCalendar();
+            generateTimeline();
+            loadGlobalPool(); // Carrega tasks do sidebar (globais)
+        });
+
+        // ======================= LÓGICA DO CALENDÁRIO =======================
+        
+        function initYearSelect() {
+            const select = document.getElementById('yearSelect');
+            for(let y = 2025; y <= 2031; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.innerText = y;
+                if(y === currentCalendarDate.getFullYear()) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        function jumpToYear() {
+            const y = parseInt(document.getElementById('yearSelect').value);
+            currentCalendarDate.setFullYear(y);
+            renderCalendar();
+        }
+
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            // Atualiza o select de ano caso tenha mudado
+            document.getElementById('yearSelect').value = currentCalendarDate.getFullYear();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('currentMonthYear');
+            
+            grid.innerHTML = '';
+            
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // Nomes dos meses
+            const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            monthLabel.innerText = `${months[month]} ${year}`;
+
+            // Lógica de Dias
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Células vazias antes do dia 1
+            for (let i = 0; i < firstDayIndex; i++) {
+                const empty = document.createElement('div');
+                grid.appendChild(empty);
+            }
+
+            // Dias do mês
+            const today = new Date();
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayDate = new Date(year, month, d);
+                const dateKey = formatDateKey(dayDate);
+                
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                
+                // Marca hoje
+                if (dayDate.toDateString() === today.toDateString()) {
+                    card.classList.add('day-today');
+                }
+
+                // Verifica Eventos salvos
+                const events = getEventsForDate(dateKey);
+                const count = events.length;
+
+                let badgeHtml = count > 0 ? `<div class="event-badge">${count} evento${count > 1 ? 's' : ''}</div>` : '';
+
+                card.innerHTML = `
+                    <div class="day-number">${d}</div>
+                    ${badgeHtml}
+                `;
+                
+                card.onclick = () => openPlanner(dayDate);
+                grid.appendChild(card);
+            }
+        }
+
+        function formatDateKey(date) {
+            return date.toISOString().split('T')[0]; // YYYY-MM-DD
+        }
+
+        function getEventsForDate(dateKey) {
+            const raw = localStorage.getItem('agenda_events_' + dateKey);
+            return raw ? JSON.parse(raw) : [];
+        }
+
+        // ======================= LÓGICA DO PLANNER (AGENDA) =======================
+
+        function openPlanner(date) {
+            selectedDateKey = formatDateKey(date);
+            
+            // UI Switch
+            document.getElementById('calendarView').classList.remove('active');
+            document.getElementById('plannerView').classList.add('active');
+
+            // Header info
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('plannerDateDisplay').innerText = date.toLocaleDateString('pt-BR', options);
+            document.getElementById('plannerTitle').innerText = `Agenda: ${date.getDate()}/${date.getMonth()+1}`;
+
+            // Limpar Timeline Visual
+            clearTimelineVisuals();
+            
+            // Carregar Eventos deste dia
+            loadEventsToTimeline(selectedDateKey);
+
+            // Scroll automático para 08:00
+            setTimeout(() => {
+                document.getElementById('slot-08-00').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function showCalendar() {
+            document.getElementById('plannerView').classList.remove('active');
+            document.getElementById('calendarView').classList.add('active');
+            // Re-renderizar calendário para atualizar contadores de eventos
+            renderCalendar();
+        }
+
+        function generateTimeline() {
+            const container = document.getElementById('timelineContent');
+            for (let i = 0; i < 24; i++) {
+                const hour = i.toString().padStart(2, '0');
+                createSlot(container, `${hour}:00`, `slot-${hour}-00`);
+                createSlot(container, `${hour}:30`, `slot-${hour}-30`);
+            }
+        }
+
+        function createSlot(container, labelText, id) {
+            const row = document.createElement('div');
+            row.className = 'time-row';
+            const label = document.createElement('div');
+            label.className = 'time-label';
+            label.innerText = labelText;
+            const zone = document.createElement('div');
+            zone.className = 'drop-zone';
+            zone.id = id;
+            
+            // Event Listeners
+            zone.setAttribute('ondrop', 'drop(event)');
+            zone.setAttribute('ondragover', 'allowDrop(event)');
+            zone.setAttribute('ondragenter', 'highlight(event)');
+            zone.setAttribute('ondragleave', 'unhighlight(event)');
+
+            row.appendChild(label);
+            row.appendChild(zone);
+            container.appendChild(row);
+        }
+
+        function clearTimelineVisuals() {
+            const slots = document.querySelectorAll('.main-content .drop-zone');
+            slots.forEach(slot => slot.innerHTML = '');
+        }
+
+        // ======================= CRUD DE TAREFAS =======================
+
+        // Cria elemento visual do card
+        function createTaskElement(id, title, desc = '', height = null) {
+            const div = document.createElement('div');
+            div.className = 'task-card';
+            div.id = id;
+            div.draggable = true;
+            if(height) div.style.height = height;
+
+            // Dados guardados no dataset para recuperação fácil
+            div.dataset.title = title;
+            div.dataset.desc = desc;
+
+            div.innerHTML = `
+                <div style="width:100%">
+                    <div class="task-title">${title}</div>
+                    <div class="task-desc">${desc}</div>
+                </div>
+                <span class="delete-x" onclick="deleteTask('${id}', event)">×</span>
+                <div class="resizer"></div>
+            `;
+
+            div.addEventListener('dragstart', drag);
+            const resizer = div.querySelector('.resizer');
+            resizer.addEventListener('mousedown', initResize);
+
+            return div;
+        }
+
+        // Adiciona ao Pool Global (Sidebar)
+        function addTaskToPool() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const id = 'task-' + Date.now();
+            const el = createTaskElement(id, text, '');
+            document.getElementById('taskPool').prepend(el);
+            input.value = '';
+            
+            saveGlobalPool();
+        }
+
+        function handleEnter(e) { if(e.key === 'Enter') addTaskToPool(); }
+
+        function deleteTask(id, e) {
+            e.stopPropagation(); // Evita clique no card
+            const el = document.getElementById(id);
+            if (el) {
+                // Se está na timeline, remove e salva dia. Se no pool, remove e salva pool.
+                const isTimeline = el.closest('.main-content');
+                el.remove();
+                
+                if (isTimeline) saveDayEvents();
+                else saveGlobalPool();
+            }
+        }
+
+        // ======================= DRAG AND DROP & MODAL =======================
+
+        function allowDrop(ev) { ev.preventDefault(); }
+
+        function drag(ev) {
+            if (isResizing) { ev.preventDefault(); return; }
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.style.opacity = "0.5";
+        }
+
+        function highlight(ev) {
+            if(ev.target.classList.contains('drop-zone')) ev.target.classList.add('drag-over');
+        }
+        function unhighlight(ev) {
+            if(ev.target.classList.contains('drop-zone')) ev.target.classList.remove('drag-over');
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedEl = document.getElementById(data);
+            if(!draggedEl) return;
+            
+            draggedEl.style.opacity = "1";
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            let target = ev.target;
+            if (!target.classList.contains('drop-zone')) target = target.closest('.drop-zone');
+            if (!target || !target.classList.contains('drop-zone')) return;
+
+            // CASO 1: Soltou de volta na Sidebar (Pool)
+            if (target.id === 'taskPool') {
+                draggedEl.style.height = ''; // Reset altura
+                draggedEl.dataset.desc = ''; // Limpa descrição se voltar pro pool (opcional)
+                draggedEl.querySelector('.task-desc').innerText = '';
+                target.appendChild(draggedEl);
+                saveGlobalPool();
+                saveDayEvents(); // Salva dia também pois pode ter saído de lá
+                return;
+            }
+
+            // CASO 2: Soltou na Timeline -> ABRE MODAL
+            // Se já estava na timeline e só moveu de hora, não precisa pedir descrição de novo,
+            // mas o usuário pediu "qdo arrastar o card para a agenda". Vamos assumir que é só novo drop ou sempre?
+            // Para não ficar chato, vamos pedir descrição só se o campo descrição estiver vazio (primeira vez).
+            // OU, como pediu explicitamente, vamos abrir para editar.
+            
+            pendingDrop = {
+                element: draggedEl,
+                target: target
+            };
+
+            // Preenche o modal com o valor atual (se houver)
+            document.getElementById('modalDescInput').value = draggedEl.dataset.desc || '';
+            document.getElementById('descModal').style.display = 'flex';
+        }
+
+        // Chamado pelos botões do Modal
+        function closeModal(save) {
+            const modal = document.getElementById('descModal');
+            const input = document.getElementById('modalDescInput');
+            
+            if (save && pendingDrop) {
+                const el = pendingDrop.element;
+                const target = pendingDrop.target;
+                const descText = input.value.trim();
+
+                // Atualiza dados
+                el.dataset.desc = descText;
+                el.querySelector('.task-desc').innerText = descText;
+
+                // Define altura padrão se não tiver
+                if (!el.style.height || el.style.height === '') {
+                    el.style.height = SLOT_HEIGHT + 'px';
+                }
+
+                target.appendChild(el);
+                
+                // Salva tudo
+                saveGlobalPool(); // Removeu do pool
+                saveDayEvents();  // Adicionou no dia
+            } else {
+                // Se cancelou, o elemento volta pro lugar de origem (o DOM cuida se não dermos append, mas ele ficou com opacidade 1 lá em cima)
+                // Na verdade, como não demos appendChild no novo lugar, ele continua no lugar antigo. Só precisamos garantir.
+            }
+
+            pendingDrop = null;
+            modal.style.display = 'none';
+        }
+
+
+        // ======================= RESIZING =======================
+        function initResize(e) {
+            e.stopPropagation(); e.preventDefault();
+            isResizing = true;
+            currentResizer = e.target.parentElement;
+            startY = e.clientY;
+            startHeight = parseInt(window.getComputedStyle(currentResizer).height, 10);
+            window.addEventListener('mousemove', resizeMove);
+            window.addEventListener('mouseup', stopResize);
+        }
+
+        function resizeMove(e) {
+            if (!isResizing) return;
+            const diff = e.clientY - startY;
+            let newHeight = startHeight + diff;
+            if (newHeight < SLOT_HEIGHT) newHeight = SLOT_HEIGHT;
+            currentResizer.style.height = `${newHeight}px`;
+        }
+
+        function stopResize(e) {
+            if (!isResizing) return;
+            let rawHeight = parseInt(currentResizer.style.height, 10);
+            let slots = Math.round(rawHeight / SLOT_HEIGHT);
+            if (slots < 1) slots = 1;
+            let finalHeight = slots * SLOT_HEIGHT;
+            
+            currentResizer.style.transition = "height 0.2s";
+            currentResizer.style.height = `${finalHeight}px`;
+            setTimeout(() => { currentResizer.style.transition = ""; }, 200);
+
+            isResizing = false;
+            currentResizer = null;
+            window.removeEventListener('mousemove', resizeMove);
+            window.removeEventListener('mouseup', stopResize);
+            
+            saveDayEvents();
+        }
+
+        // ======================= PERSISTÊNCIA (STORAGE) =======================
+
+        // Salva Sidebar (Global)
+        function saveGlobalPool() {
+            const poolContainer = document.getElementById('taskPool');
+            const tasks = [];
+            Array.from(poolContainer.children).forEach(card => {
+                tasks.push({
+                    id: card.id,
+                    title: card.dataset.title,
+                    desc: card.dataset.desc
+                });
+            });
+            localStorage.setItem('agenda_pool', JSON.stringify(tasks));
+        }
+
+        function loadGlobalPool() {
+            const raw = localStorage.getItem('agenda_pool');
+            if(!raw) return;
+            const tasks = JSON.parse(raw);
+            const pool = document.getElementById('taskPool');
+            pool.innerHTML = '';
+            tasks.forEach(t => {
+                const el = createTaskElement(t.id, t.title, t.desc);
+                pool.appendChild(el);
+            });
+        }
+
+        // Salva Dia Específico
+        function saveDayEvents() {
+            if (!selectedDateKey) return;
+            const events = [];
+            const slots = document.querySelectorAll('.main-content .drop-zone');
+            
+            slots.forEach(slot => {
+                if (slot.children.length > 0) {
+                    Array.from(slot.children).forEach(card => {
+                        events.push({
+                            id: card.id,
+                            title: card.dataset.title,
+                            desc: card.dataset.desc,
+                            height: card.style.height,
+                            slotId: slot.id
+                        });
+                    });
+                }
+            });
+            localStorage.setItem('agenda_events_' + selectedDateKey, JSON.stringify(events));
+        }
+
+        function loadEventsToTimeline(dateKey) {
+            const events = getEventsForDate(dateKey);
+            events.forEach(ev => {
+                const slot = document.getElementById(ev.slotId);
+                if (slot) {
+                    const el = createTaskElement(ev.id, ev.title, ev.desc, ev.height);
+                    slot.appendChild(el);
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>

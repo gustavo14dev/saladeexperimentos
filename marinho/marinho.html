@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Qual Animal Marinho Você É?</title>
+    <link rel="stylesheet" href="marinho.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="glass-container">
+        <a href="../index.html" class="btn-back">← </a>
+        
+        <section id="start-screen" class="screen active">
+            <div class="content-wrapper">
+                <h1>Descubra seu <br><span class="highlight">Espírito Marinho</span></h1>
+                <p>Responda a perguntas profundas e descubra qual criatura dos oceanos melhor representa sua personalidade.</p>
+                <button onclick="startQuiz()" class="btn-primary">Começar Quiz</button>
+            </div>
+        </section>
+
+        <section id="quiz-screen" class="screen hidden">
+            <div class="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+            <div class="question-container">
+                <h2 id="question-text">Pergunta vai aqui...</h2>
+                <div id="answer-buttons" class="btn-grid">
+                    </div>
+            </div>
+        </section>
+
+        <section id="result-screen" class="screen hidden">
+            <div class="result-content">
+                <p class="subtitle">Você é um(a)...</p>
+                <h2 id="result-name">Nome do Animal</h2>
+                
+                <div class="image-frame">
+                    <img id="result-img" src="" alt="Resultado Animal">
+                </div>
+                
+                <p id="result-desc">Descrição do comportamento do animal.</p>
+                
+                <button onclick="restartQuiz()" class="btn-primary">Refazer Teste</button>
+                <button onclick="window.location.href='../index.html'" class="btn-secondary">← Voltar para Home</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="marinho.js"></script>
+</body>
+</html>

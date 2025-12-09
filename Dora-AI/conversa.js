@@ -69,17 +69,17 @@ function mostrarAnuncio() {
     overlay.innerHTML = `
         <div class="anuncio-container">
             <div class="titulo-com-badge">
-                <h2 class="titulo-animado">Dora AI 1.3 Flash Pro 
+                <h2 class="titulo-animado">Dora AI 1.4 Beta</h2>
             </div>
 
             <div class="anuncio-texto">
             <ul>
                     <li>Mais inteligente</li>
-                    <li>300 novos treinamentos</li>
+                    <li>1.600 novos treinamentos</li>
                     <li>Design premium, e mais suave</li>
+                    <li>Modo de transcrição de áudio para texto, e texto para áudio</li>
                     <li>Interface aprimorada estilo moderno</li>
                     <li>Correção de erros de resposta</li>
-                    <li>Modo Resumo, redação e correção de textos</li>
                     <li>Ficando cada vez mais profissional</li>
 
                 </ul>
@@ -234,6 +234,9 @@ function enviarMensagem() {
     // Reset altura do textarea ao enviar
     input.style.height = '';
     input.classList.remove('scrolling');
+    
+    // Atualizar botão de áudio/enviar (volta para mic já que a caixa está vazia)
+    atualizarBotaoAudioEnviar();
 
     mostrarDigitando(true);
 
@@ -570,6 +573,14 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
         btnCopy.onclick = () => copiarTexto(textoSemHTML);
         actionsContainer.appendChild(btnCopy);
 
+        // Botão Áudio (Ícone) - Text-to-Speech
+        const btnAudio = document.createElement('button');
+        btnAudio.className = 'action-icon-btn audio-btn';
+        btnAudio.title = "Ouvir resposta";
+        btnAudio.innerHTML = '<span class="material-symbols-rounded">volume_up</span>';
+        btnAudio.onclick = () => lerTextoEmVoz(textoSemHTML);
+        actionsContainer.appendChild(btnAudio);
+
         // Botão Baixar (Ícone) - Só se tiver imagem
         if (imagemNome) {
             const btnDownload = document.createElement('button');
@@ -693,10 +704,54 @@ fetch('correcoes.json')
     .then(data => correcoesData = data)
     .catch(error => console.error('Erro ao carregar correções:', error));
 
+// ====== CONTROLE DE VISIBILIDADE DOS BOTÕES (Áudio vs Enviar) ======
+function atualizarBotaoAudioEnviar() {
+    const textarea = document.getElementById('input-mensagem');
+    const btnAction = document.getElementById('btn-action');
+    const iconAction = btnAction ? btnAction.querySelector('.icon-action') : null;
+    
+    if (!textarea || !btnAction || !iconAction) return;
+    
+    const temTexto = textarea.value.trim().length > 0;
+    
+    if (temTexto) {
+        // Mostrar ícone de enviar
+        iconAction.textContent = 'arrow_upward';
+    } else {
+        // Mostrar ícone de microfone
+        iconAction.textContent = 'mic';
+    }
+}
+
+function clicouBotaoAcao() {
+    const textarea = document.getElementById('input-mensagem');
+    const temTexto = textarea.value.trim().length > 0;
+    
+    if (temTexto) {
+        // Se tem texto, enviar mensagem
+        enviarMensagem();
+    } else {
+        // Se não tem texto, iniciar transcrição
+        iniciarTranscricao();
+    }
+}
+
 // --- INICIALIZAÇÃO QUANDO O DOCUMENTO ESTIVER PRONTO ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Mostra o anúncio de novidades
-    mostrarAnuncio();
+    // Mostra o anúncio de novidades apenas uma vez (persistente via localStorage).
+    // Se localStorage não estiver disponível, usa sessionStorage como fallback.
+    try {
+        const already = localStorage.getItem('dora_announced');
+        if (!already || already !== '1') {
+            mostrarAnuncio();
+            localStorage.setItem('dora_announced', '1');
+        }
+    } catch (e) {
+        if (sessionStorage.getItem('dora_announced') !== '1') {
+            mostrarAnuncio();
+            sessionStorage.setItem('dora_announced', '1');
+        }
+    }
 
     // Adiciona o listener para o botão de nova conversa
     const newChatButton = document.getElementById('new-chat-btn');
@@ -712,6 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         textarea.addEventListener('input', (e) => {
             ajustarAlturaTextarea(e.target);
+            atualizarBotaoAudioEnviar(); // Atualizar visibilidade dos botões ao digitar
         });
 
         textarea.addEventListener('keydown', (e) => {
@@ -723,3 +779,90 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ====== WEB SPEECH API - TRANSCRIÇÃO DE ÁUDIO (SPEECH-TO-TEXT) ======
+let isListening = false;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+
+// Configurar o reconhecimento de fala
+recognition.continuous = false;
+recognition.interimResults = true;
+recognition.lang = 'pt-BR';
+
+recognition.onstart = () => {
+    isListening = true;
+    const btnMic = document.getElementById('btn-microphone');
+    if (btnMic) {
+        btnMic.classList.add('listening');
+    }
+};
+
+recognition.onend = () => {
+    isListening = false;
+    const btnMic = document.getElementById('btn-microphone');
+    if (btnMic) {
+        btnMic.classList.remove('listening');
+    }
+};
+
+recognition.onerror = (event) => {
+    console.error('Erro no reconhecimento de fala:', event.error);
+    isListening = false;
+    const btnMic = document.getElementById('btn-microphone');
+    if (btnMic) {
+        btnMic.classList.remove('listening');
+    }
+};
+
+recognition.onresult = (event) => {
+    let isFinal = false;
+    let transcript = '';
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcriptSegment = event.results[i][0].transcript;
+        transcript += transcriptSegment;
+        if (event.results[i].isFinal) {
+            isFinal = true;
+        }
+    }
+
+    const textarea = document.getElementById('input-mensagem');
+    if (textarea && isFinal) {
+        // Adiciona o texto transcrito ao input
+        textarea.value += (textarea.value ? ' ' : '') + transcript;
+        ajustarAlturaTextarea(textarea);
+        textarea.focus();
+    }
+};
+
+function iniciarTranscricao() {
+    if (!isListening) {
+        recognition.start();
+    } else {
+        recognition.stop();
+    }
+}
+
+// ====== WEB SPEECH API - SÍNTESE DE ÁUDIO (TEXT-TO-SPEECH) ======
+const synthesis = window.speechSynthesis;
+
+function lerTextoEmVoz(texto, messageElement = null) {
+    // Se houver áudio sendo tocado, para
+    if (synthesis.speaking) {
+        synthesis.cancel();
+    }
+
+    // Remove HTML tags do texto
+    const textoLimpo = texto.replace(/<[^>]*>/g, '').trim();
+
+    if (!textoLimpo) return;
+
+    const utterance = new SpeechSynthesisUtterance(textoLimpo);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    synthesis.speak(utterance);
+}

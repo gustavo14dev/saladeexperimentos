@@ -25,7 +25,7 @@
 
     <div class="main-wrapper">
         <header>
-            <div class="badge">v2.4</div>
+            <div class="badge">v2.5</div>
             <h1>Sala de <span class="text-gradient">Experimentos</span></h1>
             <h2>Onde a criatividade encontra a <span class="text-highlight">tecnologia</span>.</h2>
         </header>
@@ -65,21 +65,39 @@
                 </div>
             </div>
 
-            <div class="glass-card" data-projeto="bilionario" data-categoria="diversao">
+            <div class="glass-card" data-projeto="agenda" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
-                    <img src="imagens/elon-musk.png" alt="Bilionário" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Bilionario'">
+                    <img src="imagens/agenda.png" alt="Agenda Interativa" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Agenda'">
                     <span class="status-tag dev">NOVO</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Compre como Elon Musk</h3>
-                        <span class="category-icon"><i class="fa-solid fa-rocket"></i></span>
+                        <h3>Agenda Interativa</h3>
+                        <span class="category-icon"><i class="fa-solid fa-calendar"></i></span>
                     </div>
-                    <p>O que você faria com quase 500 bilhões de Dólares?</p>
+                    <p>Organize seus compromissos e tarefas com uma agenda elegante e funcional.</p>
                     <div class="card-meta">
-                        <span><i class="fa-regular fa-eye"></i> <span id="bilionario-count">0</span> vezes você usou</span>
+                        <span><i class="fa-regular fa-eye"></i> <span id="agenda-count">0</span> vezes você usou</span>
                     </div>
-                    <a href="bilionário/bilionario.html" onclick="atualizarEstatistica('bilionario')" class="action-btn">Simular Vida Luxuosa</a>
+                    <a href="agenda/agenda.html" onclick="atualizarEstatistica('agenda')" class="action-btn">Acessar Agenda</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="senha" data-categoria="ferramentas">
+                <div class="card-image-wrapper">
+                    <img src="imagens/senha.png" alt="Gerador de Senha" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Gerador+de+Senha'">
+                    <span class="status-tag dev">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Gerador de Senhas</h3>
+                        <span class="category-icon"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                    <p>Crie senhas fortes e seguras com customização completa de caracteres.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="senha-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="senha/senha.html" onclick="atualizarEstatistica('senha')" class="action-btn">Gerar Senha</a>
                 </div>
             </div>
 
@@ -98,6 +116,23 @@
                         <span><i class="fa-regular fa-eye"></i> <span id="conversa-count">0</span> vezes você usou</span>
                     </div>
                     <a href="Dora-AI/conversa.html" onclick="atualizarEstatistica('conversa')" class="action-btn">Conversar</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="bilionario" data-categoria="diversao">
+                <div class="card-image-wrapper">
+                    <img src="imagens/elon-musk.png" alt="Bilionário" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Bilionario'">
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Compre como Elon Musk</h3>
+                        <span class="category-icon"><i class="fa-solid fa-rocket"></i></span>
+                    </div>
+                    <p>O que você faria com quase 500 bilhões de Dólares?</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="bilionario-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="bilionário/bilionario.html" onclick="atualizarEstatistica('bilionario')" class="action-btn">Simular Vida Luxuosa</a>
                 </div>
             </div>
 
@@ -152,6 +187,42 @@
                     <a href="relógio/relogio.html" onclick="atualizarEstatistica('relogio')" class="action-btn">Acessar Projeto</a>
                 </div>
             </div>
+
+            <div class="glass-card" data-projeto="advinhar" data-categoria="jogos">
+                <div class="card-image-wrapper">
+                    <img src="imagens/advinhar.png" alt="Adivinhar Quem" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Adivinhar'">
+                    <span class="status-tag dev">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Vou tentar advinhar qual famoso você está pensando</h3>
+                        <span class="category-icon"><i class="fa-solid fa-brain"></i></span>
+                    </div>
+                    <p>Você irá pensar em um famoso qualquer, e responder as minhas perguntas. Ai eu vou tentar advinhar o famoso que você pensou!</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="advinhar-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="advinhar/advinhar.html" onclick="atualizarEstatistica('advinhar')" class="action-btn">Jogar Agora</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="marinho" data-categoria="diversao">
+                <div class="card-image-wrapper">
+                    <img src="imagens/marinho.png" alt="Animal Marinho" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Animal+Marinho'">
+                    <span class="status-tag dev">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Descubra qual Animal Marinho Você é!</h3>
+                        <span class="category-icon"><i class="fa-solid fa-fish"></i></span>
+                    </div>
+                    <p>Quiz divertido que descobre qual criatura do mar melhor representa sua personalidade.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="marinho-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="marinho/marinho.html" onclick="atualizarEstatistica('marinho')" class="action-btn">Descobrir Animal</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -175,7 +246,7 @@
 
         // Init
         window.addEventListener('load', () => {
-            ['gerador-cores', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio'].forEach(proj => {
+            ['gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho'].forEach(proj => {
                 let count = localStorage.getItem(proj) || 0;
                 atualizarDisplay(proj, count);
             });
