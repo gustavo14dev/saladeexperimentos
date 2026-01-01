@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL HACKER - PRECISÃO TOTAL</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+    <style>
+        :root { --green: #00ff41; --dark: #050505; }
+        body { margin: 0; background: #000; color: var(--green); font-family: 'Courier New', monospace; display: flex; height: 100vh; overflow: hidden; }
+
+        /* Área da Câmera */
+        #viewport { position: relative; flex-grow: 1; background: #000; display: flex; justify-content: center; align-items: center; }
+        
+        /* O segredo do alinhamento: Video e Canvas devem ter o mesmo tamanho e posição */
+        video, canvas { position: absolute; width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
+        
+        canvas { z-index: 5; pointer-events: none; }
+
+        /* Terminal Lateral */
+        #terminal { width: 380px; background: var(--dark); border-left: 2px solid var(--green); padding: 20px; display: flex; flex-direction: column; z-index: 10; box-shadow: -10px 0 30px rgba(0,255,65,0.1); }
+        .header { border-bottom: 1px solid var(--green); padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; letter-spacing: 2px; }
+        #logs { flex-grow: 1; font-size: 11px; overflow-y: hidden; display: flex; flex-direction: column-reverse; opacity: 0.9; }
+        .log { margin-bottom: 4px; border-left: 2px solid #222; padding-left: 5px; }
+
+        /* Botão Voltar Estilizado */
+        #back-btn { position: absolute; top: 20px; left: 20px; border: 1px solid var(--green); color: var(--green); padding: 10px 20px; text-decoration: none; z-index: 100; background: rgba(0,0,0,0.8); font-size: 12px; transition: 0.3s; }
+        #back-btn:hover { background: var(--green); color: #000; box-shadow: 0 0 20px var(--green); }
+
+        .scanline { position: absolute; width: 100%; height: 2px; background: rgba(0,255,65,0.1); z-index: 15; animation: scan 4s linear infinite; pointer-events: none; }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+    </style>
+</head>
+<body>
+
+    <div id="viewport">
+        <video id="input_video"></video>
+        <canvas id="output_canvas"></canvas>
+        <div class="scanline"></div>
+        <a href="../index.html" id="back-btn">[ ESC ] VOLTAR_AO_NÚCLEO</a>
+    </div>
+
+    <div id="terminal">
+        <div class="header">>_BIOMETRIC_SCAN_V8</div>
+        <div style="font-size: 10px; color: #666; margin-bottom: 10px;">PRECISION_MODE: HIGH_SENSITIVITY</div>
+        
+        <div id="logs">
+            <div class="log">> INICIALIZANDO ALGORITMOS DE ALINHAMENTO...</div>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 11px;">
+            SINAL: <span id="sig-val">0%</span><br>
+            <div style="width: 100%; height: 4px; background: #222; margin-top: 5px;">
+                <div id="sig-bar" style="width: 0%; height: 100%; background: var(--green);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const logBox = document.getElementById('logs');
+        const sigBar = document.getElementById('sig-bar');
+        const sigVal = document.getElementById('sig-val');
+
+        function addLog(txt) {
+            const d = document.createElement('div');
+            d.className = 'log';
+            d.innerHTML = `> ${txt}`;
+            logBox.prepend(d);
+            if(logBox.children.length > 20) logBox.removeChild(logBox.lastChild);
+        }
+
+        function onResults(results) {
+            // AJUSTE DINÂMICO DE RESOLUÇÃO (Corrige o desalinhamento)
+            if (canvasElement.width !== videoElement.videoWidth) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                addLog("RESOLUÇÃO SINCRONIZADA: " + canvasElement.width + "px");
+            }
+
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                sigBar.style.width = "100%";
+                sigVal.innerText = "99.2%";
+                
+                for (const landmarks of results.multiHandLandmarks) {
+                    // Desenha as conexões (Linha levemente mais grossa para autoridade visual)
+                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00ff41', lineWidth: 3});
+                    
+                    // Desenha os pontos (Estilo Hacker: Branco com contorno verde)
+                    drawLandmarks(canvasCtx, landmarks, {
+                        color: '#00ff41', 
+                        fillColor: '#ffffff', 
+                        lineWidth: 1.5, 
+                        radius: 4 
+                    });
+                }
+            } else {
+                sigBar.style.width = "5%";
+                sigVal.innerText = "BUSCANDO...";
+            }
+            canvasCtx.restore();
+        }
+
+        const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        }});
+
+        // CONFIGURAÇÕES DE ALTA PRECISÃO
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1, // 1 é o melhor equilíbrio para mãos fechadas/em movimento
+            minDetectionConfidence: 0.8, // Só detecta se tiver 80% de certeza
+            minTrackingConfidence: 0.8   // Só mantém o ponto se tiver 80% de certeza
+        });
+
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 1280,
+            height: 720
+        });
+
+        addLog("CALIBRANDO LENTES...");
+        camera.start().then(() => {
+            addLog("SISTEMA DE PRECISÃO ONLINE");
+            addLog("AGUARDANDO INPUT BIOMÉTRICO...");
+        });
+    </script>
+</body>
+</html>

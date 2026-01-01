@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lhama AI 1 Preview</title>
+    <meta name="description" content="Sala de Experimentos é um hub criativo com ferramentas, jogos e projetos de inteligência artificial. Acesse projetos divertidos e educativos.">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400,0..1,0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="conversa.css">
+</head>
+<body>
+    <div id="conteudo-principal">
+        <div class="header">
+            <div class="centralized-container header-inner">
+                <div class="header-content">
+                    <h1>Lhama AI 1 Preview</h1>
+                    <p>Sua IA pronta para tudo.</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="header-btn admin-btn" onclick="window.location.href = 'admin.html'">Admin</button>
+                    <button id="new-chat-btn" class="header-btn" title="Iniciar uma nova conversa">
+                        <span class="material-symbols-rounded">add</span> Nova Conversa
+                    </button>
+                    <button class="header-btn voltar-btn" onclick="window.location.href = '../index.html'">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_back</span> Voltar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-box-container">
+             <div id="chat-box" class="centralized-container">
+                <div class="mensagem bot boas-vindas-inicial">
+                    <div class="message-content">
+                        Olá! Sou a Lhama AI 1 Preview, o modelo em teste mais inteligente em teste público da Lhama. Posso fazer várias coisas, como: <br> <br><li>Acabar com seu tédio, sobre quase qualquer assunto;</li><li>Gerar tópicos do quê toda uma boa redação deve ter;</li><li>Gero imagens e envio junto com a resposta em alguns tópicos como som, livro, carro, etc;</li><li>Corrijo várias palavras erradas de seu texto, para não passar mico na apresentação de português  😎;</li><li>Resumo os textos que você me manda, e te entrego vários tópicos sobre seu texto.</li><br>Então, como posso te ajudar hoje? Escolha o que quiser, vou tentar te ajudar, dentro das minhas capacidades! ✨
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area-container">
+            <div class="input-area centralized-container">
+                <div class="chat-input-wrapper">
+                    
+                    <div class="input-row-top">
+                        <textarea id="input-mensagem" rows="1" placeholder="Como posso te ajudar?" autocomplete="off"></textarea>
+                    </div>
+
+                    <div class="input-row-bottom">
+                        <!-- Menu Desktop (visível em telas maiores) -->
+                        <div class="tools-left">
+                            <button id="btn-redacao" class="function-pill-btn" onclick="alternarModoRedacao()">
+                                <span class="material-symbols-rounded icon-close">close</span>
+                                <span class="material-symbols-rounded icon-filled">menu_book</span>
+                                 Redação
+                                <span class="beta-label">Beta</span>
+                            </button>
+                            <button id="btn-resumo" class="function-pill-btn resumo" onclick="alternarModoResumo()">
+                                <span class="material-symbols-rounded icon-close">close</span>
+                                <span class="material-symbols-rounded">summarize</span>
+                                 Resumo
+                            </button>
+                            <button id="btn-correcao" class="function-pill-btn correcao" onclick="alternarModoCorrecao()">
+                                <span class="material-symbols-rounded icon-close">close</span>
+                                <span class="material-symbols-rounded">edit</span>
+                                 Correção
+                            </button>
+                            <button id="btn-image2" class="function-pill-btn image2" onclick="toggleModoImage2()">
+                                <span class="material-symbols-rounded icon-close">close</span>
+                                <span class="material-symbols-rounded icon-filled">image</span>
+                                 Image 2
+                                <span class="beta-label">Beta</span>
+                            </button>
+                        </div>
+
+                        <!-- Menu Mobile (3 pontinhos) -->
+                        <div class="tools-mobile-menu">
+                            <button class="menu-trigger-btn" id="menu-trigger" onclick="toggleToolsMenu()" title="Mais opções">
+                                <span class="material-symbols-rounded">more_vert</span>
+                            </button>
+                            <div class="tools-dropdown" id="tools-dropdown">
+                                <button id="btn-redacao-mobile" class="function-pill-btn mobile" onclick="alternarModoRedacao()">
+                                    <span class="material-symbols-rounded icon-close">close</span>
+                                    <span class="material-symbols-rounded icon-filled">menu_book</span>
+                                    Redação
+                                    <span class="beta-label">Beta</span>
+                                </button>
+                                <button id="btn-resumo-mobile" class="function-pill-btn resumo mobile" onclick="alternarModoResumo()">
+                                    <span class="material-symbols-rounded icon-close">close</span>
+                                    <span class="material-symbols-rounded">summarize</span>
+                                    Resumo
+                                </button>
+                                <button id="btn-correcao-mobile" class="function-pill-btn correcao mobile" onclick="alternarModoCorrecao()">
+                                    <span class="material-symbols-rounded icon-close">close</span>
+                                    <span class="material-symbols-rounded">edit</span>
+                                    Correção
+                                </button>
+                                <button id="btn-image2-mobile" class="function-pill-btn image2 mobile" onclick="toggleModoImage2()">
+                                    <span class="material-symbols-rounded icon-close">close</span>
+                                    <span class="material-symbols-rounded icon-filled">image</span>
+                                    Image 2
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="tool-icon-btn action-button" onclick="clicouBotaoAcao()" id="btn-action" title="Clique para falar ou enviar">
+                            <span class="material-symbols-rounded icon-action">mic</span>
+                        </button>
+                    </div>
+                </div>
+                
+                 <div class="disclaimer-text">Lhama AI [BETA] pode cometer erros. Por isso, é bom checar as respostas. Esse modelo está em teste, por isso, há alguns erros.</div>
+            </div>
+        </div>
+
+        <!-- Modal Image 2 -->
+        <div id="modal-image2" class="modal-image2">
+            <div class="modal-image2-content">
+                <div class="modal-image2-header">
+                    <h2>Gerar Imagem</h2>
+                    <button class="modal-close-btn" onclick="fecharModalImage2()">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                </div>
+                <div class="modal-image2-body">
+                    <button class="opcao-image2" onclick="ativarModoImage2Simples()">
+                        <span class="material-symbols-rounded">image</span>
+                        <span class="opcao-titulo">Gerar Imagem</span>
+                        <span class="opcao-desc">Gera uma imagem baseada na sua descrição</span>
+                    </button>
+                    <button class="opcao-image2" onclick="ativarModoImage2Pessoa()">
+                        <span class="material-symbols-rounded">person</span>
+                        <span class="opcao-titulo">Gerar Imagem com Pessoas</span>
+                        <span class="opcao-desc">Em desenvolvimento</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Autocomplete para Image 2 -->
+        <div id="card-image2-autocomplete" class="card-image2-autocomplete">
+            <div id="card-image2-content" class="card-image2-content"></div>
+        </div>
+    </div>
+
+    <script src="conversa.js"></script>
+</body>
+</html>

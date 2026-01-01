@@ -1,0 +1,1287 @@
+/* === Design System & Reset === */
+:root {
+    --primary-color: #000000; /* Preto premium */
+    --accent-blue: #0284c7; /* Azul vibrante para destaques */
+    --accent-blue-soft: #e0f2fe; /* Azul suave para fundos */
+    --accent-green: #15803d; /* Verde para o modo Resumo */
+    --accent-green-soft: #dcfce7; /* Verde suave para o modo Resumo */
+    --bg-page: #ffffff; /* Fundo da página branco puro */
+    --bg-chat-bubble-user: #f4f4f4;
+    --bg-chat-bubble-bot: #ffffff;
+    --text-primary: #202123;
+    --text-secondary: #6e6e80;
+    --border-light: #e5e5e5;
+    --shadow-soft: 0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.1);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+    --max-content-width: 800px; /* Largura centralizada do chat */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Container Principal que ocupa tudo */
+#conteudo-principal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-page);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Classe utilitária para centralizar o conteúdo (o segredo do design compacto) */
+.centralized-container {
+    width: 100%;
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+
+/* === Cabeçalho === */
+.header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-light);
+    padding: 15px 0;
+    flex-shrink: 0; /* Não encolhe */
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    padding: 8px 0;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.image2-composicao-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 12px;
+}
+
+.image2-composicao-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.image2-composicao-main {
+    position: relative;
+    overflow: hidden;
+}
+
+.image2-composicao-fundo {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.image2-composicao-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0.8;
+}
+
+.image2-composicao-pessoa {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image2-composicao-emoji {
+    font-size: 64px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.image2-composicao-desc {
+    font-size: 12px;
+    color: #4b5563;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.image2-composicao-nota {
+    font-size: 11px;
+    color: #6b7280;
+    text-align: center;
+    font-style: italic;
+}
+.header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.header-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.header-btn:hover {
+    background: #f9fafb;
+    color: var(--text-primary);
+    border-color: #d1d5db;
+}
+
+
+/* === Área do Chat === */
+#chat-box-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 0;
+    background: var(--bg-page); /* Garante fundo branco */
+}
+
+#chat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Espaço maior entre blocos de mensagem */
+}
+
+/* --- Estilo das Mensagens (Redesign Profissional) --- */
+.mensagem {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%; /* O container .centralized cuida da largura total */
+    animation: slideInUp 0.3s ease-out;
+}
+
+.mensagem.usuario {
+    align-items: flex-end;
+}
+
+/* Bolha do Usuário */
+.mensagem.usuario .message-content {
+    background: var(--bg-chat-bubble-user);
+    color: var(--text-primary);
+    border-radius: 20px 20px 4px 20px;
+    padding: 12px 18px;
+    max-width: 85%;
+    font-size: 15px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
+}
+
+/* Bolha do Bot (IA) - Design de Estúdio */
+.mensagem.bot {
+    align-items: flex-start;
+}
+
+.mensagem.bot .message-content {
+    background: var(--bg-chat-bubble-bot);
+    color: var(--text-primary);
+    /* Sombra suave em vez de borda para um look premium */
+    box-shadow: var(--shadow-soft);
+    border-radius: 20px 20px 20px 4px;
+    padding: 16px 20px;
+    max-width: 90%;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.mensagem.bot.boas-vindas-inicial .message-content {
+    background: #f8fafc; /* Um tom ligeiramente diferente para boas vindas */
+    border: 1px solid #f1f5f9;
+    box-shadow: none;
+}
+
+
+/* Ações da Mensagem (Ícones abaixo da bolha) */
+.message-actions-container {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    margin-left: 4px;
+    opacity: 0; /* Escondido por padrão */
+    transition: opacity 0.2s ease-in-out;
+}
+/* Mostra os ícones quando passa o mouse na mensagem inteira */
+.mensagem.bot:hover .message-actions-container {
+    opacity: 1;
+}
+
+.action-icon-btn {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-icon-btn:hover {
+    background: #f3f4f6;
+    color: var(--text-primary);
+}
+.action-icon-btn .material-symbols-rounded {
+    font-size: 18px;
+}
+
+
+/* --- Nova Animação de "Gerando Imagem" (Skeleton Loader Premium) --- */
+.imagem-container-premium {
+    margin-top: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    min-height: 150px; /* Altura mínima enquanto carrega */
+}
+
+/* O efeito de esqueleto pulsante */
+.skeleton-loader {
+    width: 100%;
+    height: 250px; /* Altura estimada da imagem */
+    background: #f0f2f5;
+    background-image: linear-gradient(
+        90deg,
+        #f0f2f5 0px,
+        #f8fafc 80px,
+        #f0f2f5 160px
+    );
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.5s infinite linear;
+    border-radius: 12px;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Apresentação da Imagem Final */
+.imagem-resposta-premium {
+    max-width: 100%;
+    border-radius: 12px;
+    display: block;
+    box-shadow: var(--shadow-soft);
+    animation: imageFadeIn 0.5s ease-out;
+}
+
+@keyframes imageFadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* === Nova Área de Input === */
+.input-area-container {
+    background: var(--bg-page);
+    padding-bottom: 20px;
+    padding-top: 10px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* O wrapper agora ocupa 100% do container centralizado */
+.chat-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    background: #f4f4f4;
+    border-radius: 24px;
+    padding: 12px 16px;
+    transition: background 0.3s, box-shadow 0.3s;
+    border: 1px solid transparent;
+}
+
+.chat-input-wrapper:focus-within {
+    background: #ffffff;
+    border-color: var(--border-light);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Linha de cima: Input de texto */
+.input-row-top {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Campo de input principal (agora textarea responsiva) */
+#input-mensagem {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: var(--text-primary);
+    outline: none;
+    font-family: inherit;
+    padding: 6px 0;
+    line-height: 1.4;
+    resize: none; /* usuário não redimensiona manualmente */
+    overflow-y: hidden; /* será toggled via JS */
+    min-height: 40px;
+    max-height: 45vh; /* nunca ultrapassar ~45% da altura da viewport */
+    box-sizing: border-box;
+}
+
+#input-mensagem::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+/* Se o conteúdo exceder max-height, o textarea terá scroll interno */
+#input-mensagem.scrolling {
+    overflow-y: auto;
+    padding-right: 6px; /* espaço para a barra de rolagem */
+}
+
+/* --- Mobile specific adjustments: mantém a caixa de escrita acessível --- */
+@media (max-width: 480px) {
+    /* fixa a área de input na base para evitar que o teclado esconda o campo */
+    .input-area-container {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: env(safe-area-inset-bottom, 0);
+        padding: 12px 12px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,250,250,0.98));
+        border-top-left-radius: 14px;
+        border-top-right-radius: 14px;
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.08);
+        z-index: 60;
+    }
+
+    .chat-input-wrapper {
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    #input-mensagem {
+        font-size: 15px;
+        min-height: 44px;
+        max-height: 30vh; /* menos espaço para o teclado */
+        padding: 8px 0;
+    }
+
+    .input-row-bottom {
+        gap: 8px;
+    }
+
+    .tool-icon-btn.send-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* garante espaço para a área fixa do input, evitando sobreposição do conteúdo */
+    #chat-box-container {
+        padding-bottom: calc(140px + env(safe-area-inset-bottom, 0));
+    }
+}
+
+@media (max-width: 360px) {
+    #input-mensagem { font-size: 14px; }
+    .login-container { padding: 28px; }
+}
+
+/* Linha de baixo: Ferramentas e Enviar */
+.input-row-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tools-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Botão de ação unificado (mic/enviar) */
+.action-button {
+    background: var(--primary-color);
+    color: white;
+}
+
+.action-button .icon-action {
+    transition: all 0.3s ease;
+}
+
+/* --- BOTÃO PÍLULA (Redação) - Estados Ativo/Inativo --- */
+.function-pill-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Alinha o conteúdo ao centro */
+    gap: 6px;
+    /* Estado Inativo (Cinza Padrão) */
+    background: #e5e7eb;
+    color: #4b5563;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.function-pill-btn:hover {
+    background: #d1d5db;
+    color: #374151;
+}
+
+/* Estado Ativo (Azul quando clicado) */
+.function-pill-btn.active {
+    background: var(--accent-blue-soft);
+    color: var(--accent-blue);
+}
+.function-pill-btn.active:hover {
+    background: #bae6fd;
+}
+/* Estilo para o botão Resumo ativo */
+.function-pill-btn.resumo.active {
+    background: var(--accent-green-soft);
+    color: var(--accent-green);
+}
+.function-pill-btn.resumo.active:hover {
+    background: #bbf7d0;
+}
+
+/* Estilo para o botão Correção ativo */
+.function-pill-btn.correcao.active {
+    background: #ffedd5; /* Laranja suave */
+    color: #9a3412; /* Laranja escuro */
+}
+.function-pill-btn.correcao.active:hover {
+    background: #fed7aa;
+}
+
+/* Estilo para o botão Image 2 ativo */
+.function-pill-btn.image2.active {
+    background: #dbeafe; /* Azul claro (diferente do azul padrão) */
+    color: #1e40af; /* Azul escuro */
+}
+.function-pill-btn.image2.active:hover {
+    background: #bfdbfe;
+}
+
+/* --- ETIQUETA BETA --- */
+.beta-label {
+    font-size: 9px;
+    font-weight: 700;
+    background: #fb923c; /* Laranja */
+    color: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+/* Etiqueta beta no modo ativo */
+.function-pill-btn.correcao.active .beta-label {
+    background: #c2410c;
+}
+
+.function-pill-btn .material-symbols-rounded {
+    font-size: 18px;
+}
+/* Ícone preenchido para o estado ativo, se desejar */
+.function-pill-btn.active .material-symbols-rounded.icon-filled {
+    font-variation-settings: 'FILL' 1;
+}
+
+/* --- LÓGICA DO ÍCONE X (FECHAR) --- */
+/* Por padrão (inativo), o X fica invisível */
+.function-pill-btn .icon-close {
+    display: none;
+    font-size: 18px; 
+}
+/* Quando ativo, o X aparece */
+.function-pill-btn.active .icon-close {
+    display: block;
+}
+
+/* ===== MENU MOBILE (3 PONTINHOS) ===== */
+.tools-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tools-mobile-menu {
+    display: none; /* Desabilitado por padrão (desktop) */
+    position: relative;
+}
+
+/* Menu trigger button (3 pontinhos) */
+.menu-trigger-btn {
+    background: var(--primary-color);
+    color: white;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.menu-trigger-btn:hover {
+    background: #333333;
+}
+
+.menu-trigger-btn:active {
+    transform: scale(0.95);
+}
+
+.menu-trigger-btn .material-symbols-rounded {
+    font-size: 20px;
+}
+
+/* Dropdown menu container */
+.tools-dropdown {
+    position: fixed;
+    bottom: auto;
+    left: 50%;
+    top: auto;
+    transform: translate(-50%, -110%);
+    transform: translate(-50%, -50%) translateY(10px);
+    background: white;
+    border-radius: 12px;
+    padding: 8px 0;
+    min-width: 200px;
+    max-width: calc(100vw - 24px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.tools-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) translateY(0);
+}
+
+/* Botões dentro do dropdown */
+.function-pill-btn.mobile {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    border-radius: 0;
+    gap: 10px;
+    margin: 0;
+    background: transparent;
+    color: #4b5563;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.function-pill-btn.mobile:first-child {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.function-pill-btn.mobile:last-child {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.function-pill-btn.mobile:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.function-pill-btn.mobile.active {
+    background: var(--accent-blue-soft);
+    color: var(--accent-blue);
+}
+
+.function-pill-btn.mobile.resumo.active {
+    background: var(--accent-green-soft);
+    color: var(--accent-green);
+}
+
+.function-pill-btn.mobile.correcao.active {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.function-pill-btn.mobile .material-symbols-rounded {
+    font-size: 18px;
+}
+
+/* Overlay para fechar o menu ao clicar fora */
+.tools-dropdown.active::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+/* Responsivo: ativar menu mobile em telas pequenas */
+@media (max-width: 480px) {
+    .tools-left {
+        display: none;
+    }
+
+    .tools-mobile-menu {
+        display: flex;
+        align-items: center;
+    }
+}
+
+/* Estilo base para os botões de ícone (Enviar, Microfone) */
+.tool-icon-btn {
+    background: var(--primary-color);
+    color: white;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.tool-icon-btn:hover {
+    background: #333333;
+}
+
+.tool-icon-btn:active {
+    transform: scale(0.95);
+}
+
+.tool-icon-btn .material-symbols-rounded {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* Botão Enviar */
+.tool-icon-btn.send-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.send-btn:disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Botão Microfone - mesmo estilo do send */
+.tool-icon-btn.mic-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.tool-icon-btn.mic-btn.listening {
+    background: var(--accent-blue);
+    animation: micListeningPulse 1s ease-in-out infinite;
+}
+
+@keyframes micListeningPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
+    50% { box-shadow: 0 0 0 6px rgba(2, 132, 199, 0); }
+}
+
+
+.disclaimer-text {
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 12px;
+}
+
+
+/* Scroll personalizado sutil */
+#chat-box-container::-webkit-scrollbar { width: 6px; }
+#chat-box-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+#chat-box-container::-webkit-scrollbar-track { background: transparent; }
+
+/* Estilo para 'digitando...' */
+.mensagem.bot.digitando .message-content {
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding-left: 0;
+}
+
+/* ===== MODAL IMAGE 2 ===== */
+.modal-image2 {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-image2.active {
+    display: flex;
+}
+
+.modal-image2-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-image2-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-image2-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    transition: color 0.2s ease;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    color: #1f2937;
+}
+
+.modal-image2-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.opcao-image2 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.opcao-image2:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+}
+
+.opcao-image2 .material-symbols-rounded {
+    font-size: 28px;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.opcao-titulo {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+    display: block;
+}
+
+.opcao-desc {
+    font-size: 12px;
+    color: #6b7280;
+    display: block;
+}
+
+/* ===== CARD AUTOCOMPLETE IMAGE 2 ===== */
+.card-image2-autocomplete {
+    display: none;
+    position: fixed;
+    bottom: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    max-width: 350px;
+    width: 90vw;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 8000;
+    margin-bottom: 8px;
+}
+
+.card-image2-autocomplete.active {
+    display: block;
+}
+
+.card-image2-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.image2-item {
+    padding: 10px 12px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.image2-item:hover {
+    background: #e5e7eb;
+    border-left-color: var(--primary-color);
+    padding-left: 14px;
+}
+
+.image2-no-result {
+    padding: 12px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    font-style: italic;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === Anúncio (Mantido, apenas pequenos ajustes de cor) === */
+.anuncio-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.5); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 10000; 
+    backdrop-filter: blur(5px); 
+}
+
+.anuncio-container { 
+    background: white; 
+    padding: 30px; 
+    border-radius: 24px; 
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+    max-width: 550px; 
+    width: 90%; 
+    text-align: center; 
+    animation: fadeInUp 0.4s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Logo principal do anúncio */
+ .anuncio-logo-principal {
+    max-width: 220px; /* aumentado um pouco mais para maior legibilidade */
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    /* sem animação — imagem estática */
+ }
+
+/* Ajustes responsivos para o logo do anúncio */
+@media (max-width: 480px) {
+    .anuncio-logo-principal { max-width: 140px; }
+}
+
+@media (min-width: 481px) and (max-width: 1024px) {
+    .anuncio-logo-principal { max-width: 180px; }
+}
+/* Novo: Título com Badge */
+.titulo-com-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.titulo-com-badge h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* --- Título Animado com Gradiente Abrangente (inclui tons pastéis) --- */
+.titulo-animado {
+    background: linear-gradient(90deg,
+        #ff5f6d 0%, /* vermelho-alaranjado */
+        #ffc371 10%, /* amarelo quente */
+        #f6d365 18%, /* amarelo pastel */
+        #fda085 26%, /* pêssego */
+        #f8cdda 34%, /* rosa suave */
+        #ffd1dc 40%, /* rosa pastel */
+        #e0c3fc 48%, /* lilás pastel */
+        #a1c4fd 56%, /* azul claro */
+        #8fd3f4 64%, /* aqua */
+        #84fab0 72%, /* verde menta */
+        #c2e9fb 80%, /* gelo */
+        #fbc2eb 88%, /* rosa claro */
+        #ff9a9e 96%  /* coral suave */
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    padding: 0;
+    animation: gradientShift 6s linear infinite;
+    font-weight: 800;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.08);
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .titulo-animado {
+        animation: none;
+        background-size: cover;
+        -webkit-text-fill-color: initial;
+        color: var(--text-primary);
+        background: none;
+    }
+}
+
+.badge-beta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    animation: badgePulse 2s ease-in-out infinite;
+    white-space: nowrap;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 6px 16px rgba(249, 115, 22, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+.anuncio-container h2 { font-size: 26px; margin-bottom: 20px; font-weight: 700; color: var(--text-primary); }
+.anuncio-video { width: 100%; border-radius: 16px; margin: 20px 0; pointer-events: none; box-shadow: var(--shadow-soft); }
+.anuncio-texto { margin: 25px 0; text-align: left; font-size: 15px; color: var(--text-secondary); line-height: 1.6; }
+.anuncio-texto ul { list-style-type: none; padding: 0; margin: 15px 0; display: inline-block; }
+.anuncio-texto li { margin: 10px 0; padding-left: 25px; position: relative; }
+.anuncio-texto li:before { content: "✨"; position: absolute; left: 0; font-size: 14px; }
+.anuncio-botoes { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
+.anuncio-botoes button { padding: 12px 32px; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.3s; background: var(--primary-color); color: white; }
+.anuncio-botoes button:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* Estilo específico para a mensagem de redação */
+.mensagem.redacao h2 {
+    font-size: 1.5em;
+    margin: 10px 0 5px 0;
+    color: #4b0082; /* Roxo escuro */
+}
+
+.mensagem.redacao h3 {
+    font-size: 1.2em;
+    margin: 15px 0 5px 0;
+    color: #6a5acd; /* Roxo mais claro */
+}
+
+.mensagem.redacao ul {
+    margin: 5px 0;
+    padding-left: 20px;
+}
+
+.mensagem.redacao li {
+    margin-bottom: 5px;
+}
+
+.mensagem.redacao .aviso-redacao {
+    font-style: italic;
+    color: #888;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+/* === NOVO CARD DE RESUMO === */
+.resumo-card {
+    background: var(--accent-green-soft);
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.resumo-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin: 0 0 12px 0;
+}
+
+.resumo-card h3 .material-symbols-rounded {
+    font-size: 22px;
+}
+
+.resumo-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.resumo-card li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #065f46;
+    padding-left: 22px;
+    position: relative;
+}
+
+.resumo-card li::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    color: var(--accent-green);
+    font-weight: 700;
+}
+
+/* ====== Estilos para Botões de Áudio ====== */
+
+/* Estilo base para os botões de ícone (Enviar, Microfone) */
+.tool-icon-btn {
+    background: var(--primary-color);
+    color: white;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.tool-icon-btn:hover {
+    background: #333333;
+}
+
+.tool-icon-btn:active {
+    transform: scale(0.95);
+}
+
+.tool-icon-btn .material-symbols-rounded {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* Botão Microfone - mesmo estilo do send */
+.tool-icon-btn.mic-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.tool-icon-btn.mic-btn.listening {
+    background: var(--accent-blue);
+    animation: micListeningPulse 1s ease-in-out infinite;
+}
+
+.tool-icon-btn.mic-btn.listening {
+    background: var(--accent-blue);
+    animation: micListeningPulse 1s ease-in-out infinite;
+}
+
+@keyframes micListeningPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
+    50% { box-shadow: 0 0 0 6px rgba(2, 132, 199, 0); }
+}
+
+/* Botão de Áudio (Text-to-Speech) - Simples */
+.action-icon-btn.audio-btn {
+    transition: all 0.2s ease;
+}
+
+.action-icon-btn.audio-btn:hover {
+    background: #f3f4f6 !important;
+    color: var(--accent-blue);
+}
+
+/* ============================================================
+   CORREÇÕES DE USABILIDADE E BUGS (Adicione ao final do arquivo)
+   ============================================================ */
+
+/* 1. CORREÇÃO DO CARD DE AUTOCOMPLETE (IMAGE 2) */
+/* O problema: Estava centralizado na tela (top: 50%).
+   A solução: Resetamos o 'top' e usamos 'bottom' para fixar acima do input */
+.card-image2-autocomplete {
+    top: auto !important; /* Anula a centralização vertical antiga */
+    bottom: 110px;        /* Fixa o card logo acima da área de input */
+    transform: translateX(-50%) !important; /* Mantém apenas centralização horizontal */
+    z-index: 9999;        /* Garante que fique acima de tudo */
+    border-bottom: none;  /* Remove borda inferior para conectar visualmente */
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+/* Ajuste fino para Mobile */
+@media (max-width: 480px) {
+    .card-image2-autocomplete {
+        bottom: 80px; /* Mais próximo do teclado no celular */
+        width: 95%;   /* Ocupa quase toda a largura */
+    }
+}
+
+/* 2. CORREÇÃO DO SKELETON LOADER (IMAGEM CARREGANDO) */
+/* O problema: A imagem ficava "fina" (sem largura definida) enquanto carregava.
+   A solução: Forçar largura de 100% no container e no loader. */
+
+.imagem-container-premium {
+    width: 100%;      /* Ocupa toda a largura disponível no balão */
+    min-width: 250px; /* Garante uma largura mínima visual */
+    display: block;   /* Garante comportamento de bloco */
+    margin-top: 12px;
+    box-sizing: border-box;
+}
+
+.skeleton-loader {
+    width: 100%;      /* A animação agora estica para ocupar o espaço todo */
+    height: 250px;    /* Altura fixa para evitar pulos na tela */
+    border-radius: 12px;
+}
+
+/* 3. AJUSTE DO BALÃO DA MENSAGEM QUANDO TEM IMAGEM */
+/* Garante que o balão não encolha o texto ou a imagem */
+.mensagem.bot .message-content {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ajuste da imagem final para respeitar as bordas */
+.imagem-resposta-premium {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}

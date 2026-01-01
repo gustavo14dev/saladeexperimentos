@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -16,16 +16,42 @@
 
     <link rel="stylesheet" href="style.css">
 
+    <link rel="icon" type="image/png" href="imagens/logo.png">
+
 </head>
 
 <body>
 
+    <div class="snow-container">
+        <div class="snow-layer-1"></div>
+        <div class="snow-layer-2"></div>
+        <div class="snow-layer-3"></div>
+    </div>
+
     <div class="background-orb orb-1"></div>
     <div class="background-orb orb-2"></div>
 
+    <div class="theme-switcher glass-liquid">
+        <button class="theme-btn" onclick="mudarTema('light')" data-tooltip="Claro">
+            <i class="fa-regular fa-sun"></i>
+        </button>
+        <button class="theme-btn" onclick="mudarTema('dark')" data-tooltip="Escuro">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="theme-btn" onclick="mudarTema('marine')" data-tooltip="Marinha">
+            <i class="fa-solid fa-water"></i>
+        </button>
+        <button class="theme-btn" onclick="mudarTema('pastel')" data-tooltip="Pastel">
+            <i class="fa-solid fa-ice-cream"></i>
+        </button>
+        <button class="theme-btn" onclick="mudarTema('newyear')" data-tooltip="Ano Novo">
+            <i class="fa-regular fa-snowflake"></i>
+        </button>
+    </div>
+
     <div class="main-wrapper">
         <header>
-            <div class="badge">v2.5</div>
+            <div class="badge">v2.8</div>
             <h1>Sala de <span class="text-gradient">Experimentos</span></h1>
             <h2>Onde a criatividade encontra a <span class="text-highlight">tecnologia</span>.</h2>
         </header>
@@ -47,10 +73,81 @@
         </div>
 
         <div id="container-cards">
+            <div class="glass-card" data-projeto="drive-mad" data-categoria="jogos">
+                <div class="card-image-wrapper">
+                    <img src="imagens/drive-mad.png" alt="Drive Mad" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Drive+Mad'">
+                    <span class="status-tag dev">POPULAR</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Drive Mad</h3>
+                        <span class="category-icon"><i class="fa-solid fa-car"></i></span>
+                    </div>
+                    <p>Desafie a física em pistas insanas! Você consegue chegar à linha de chegada sem capotar?</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="drive-mad-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="drive-mad/index.html" onclick="atualizarEstatistica('drive-mad')" class="action-btn">Jogar Agora</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="escape-road" data-categoria="jogos">
+                <div class="card-image-wrapper">
+                    <img src="imagens/escape-road.png" alt="Escape Road" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Escape+Road'">
+                    <span class="status-tag dev">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Escape Road</h3>
+                        <span class="category-icon"><i class="fa-solid fa-road"></i></span>
+                    </div>
+                    <p>Fuja da perseguição em alta velocidade! Sobreviva o máximo que puder nas estradas perigosas.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="escape-road-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="escape-road/escape-road.html" onclick="atualizarEstatistica('escape-road')" class="action-btn">Fugir Agora</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="canvas" data-categoria="ferramentas">
+                <div class="card-image-wrapper">
+                <img src="imagens/canvas.png" alt="Canvas" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Canvas'">
+                <span class="status-tag dev">NOVO</span>
+            </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Canvas</h3>
+                        <span class="category-icon"><i class="fa-solid fa-pencil"></i></span>
+                    </div>
+                    <p>Uma plataforma para soltar sua imaginação e criar artes digitais incríveis.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="canvas-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="canvas/canvas.html" onclick="atualizarEstatistica('canvas')" class="action-btn">Criar Agora</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="converter" data-categoria="ferramentas">
+                <div class="card-image-wrapper">
+                    <img src="imagens/converter.png" alt="Conversor de Moedas" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Converter'">
+                    <span class="status-tag dev">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Conversor de Moedas</h3>
+                        <span class="category-icon"><i class="fa-solid fa-coins"></i></span>
+                    </div>
+                    <p>Converta valores entre diferentes moedas globais com taxas atualizadas.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="converter-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="converter/converter.html" onclick="atualizarEstatistica('converter')" class="action-btn">Converter</a>
+                </div>
+            </div>
+
             <div class="glass-card" data-projeto="gerador-cores" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/cor.png" alt="Gerador de Cores" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Gerador+de+Cores'">
-                    <span class="status-tag dev">NOVO</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
@@ -68,7 +165,6 @@
             <div class="glass-card" data-projeto="agenda" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/agenda.png" alt="Agenda Interativa" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Agenda'">
-                    <span class="status-tag dev">NOVO</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
@@ -86,7 +182,6 @@
             <div class="glass-card" data-projeto="senha" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/senha.png" alt="Gerador de Senha" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Gerador+de+Senha'">
-                    <span class="status-tag dev">NOVO</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
@@ -101,21 +196,38 @@
                 </div>
             </div>
 
-            <div class="glass-card" data-projeto="conversa" data-categoria="ia">
+            <div class="glass-card" data-projeto="hacker" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
-                    <img src="Dora-AI/img-IA/logo.png" alt="Dora AI" onerror="this.src='https://placehold.co/600x400/4b0082/FFF?text=Dora+AI'">
-                    <span class="status-tag dev">POPULAR<br>NOVA ATUALIZAÇÃO</span>
+                    <img src="imagens/neural.png" alt="Terminal Neural" onerror="this.src='https://placehold.co/600x400/000/0F0?text=Terminal+Neural'">
                 </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Dora AI 1.3 Flash Pro</h3>
+                        <h3>Terminal Neural</h3>
+                        <span class="category-icon"><i class="fa-solid fa-terminal"></i></span>
+                    </div>
+                    <p>Interface avançada para simulação e exploração de dados criptografados.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="hacker-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="hacker/hacker.html" onclick="atualizarEstatistica('hacker')" class="action-btn">Acessar Terminal</a>
+                </div>
+            </div>
+
+            <div class="glass-card" data-projeto="conversa" data-categoria="ia">
+                <div class="card-image-wrapper">
+                    <img src="Lhama-AI/logo.png" alt="Lhama AI" onerror="this.src='https://placehold.co/600x400/4b0082/FFF?text=Dora+AI'">
+                    <span class="status-tag dev">POPULAR</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Lhama AI 1</h3>
                         <span class="category-icon"><i class="fa-solid fa-brain"></i></span>
                     </div>
-                    <p>Inteligência artificial empática para conversas acolhedoras e suporte emocional.</p>
+                    <p>Nova inteligência artificial, cada dia mais inteligente.</p>
                     <div class="card-meta">
                         <span><i class="fa-regular fa-eye"></i> <span id="conversa-count">0</span> vezes você usou</span>
                     </div>
-                    <a href="Dora-AI/conversa.html" onclick="atualizarEstatistica('conversa')" class="action-btn">Conversar</a>
+                    <a href="Lhama-AI/conversa.html" onclick="atualizarEstatistica('conversa')" class="action-btn">Conversar</a>
                 </div>
             </div>
 
@@ -162,7 +274,7 @@
                         <h3>Contador de Mosquitos</h3>
                         <span class="category-icon"><i class="fa-solid fa-crosshairs"></i></span>
                     </div>
-                    <p>Ferramenta essencial (e cômica) para rastrear suas vitórias contra insetos locais.</p>
+                    <p>Ferramenta essencial para rastrear vitórias contra insetos locais.</p>
                     <div class="card-meta">
                         <span><i class="fa-regular fa-eye"></i> <span id="mosquito-count">0</span> vezes você usou</span>
                     </div>
@@ -173,14 +285,13 @@
             <div class="glass-card" data-projeto="relogio" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/relogio.png" alt="Relógio Digital" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Relogio'">
-                    <span class="status-tag dev">Em Desenvolvimento</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
                         <h3>Relógio Universal</h3>
                         <span class="category-icon"><i class="fa-solid fa-globe"></i></span>
                     </div>
-                    <p>Monitoramento global de fusos horários em tempo real com interface de alto contraste.</p>
+                    <p>Monitoramento global de fusos horários em tempo real.</p>
                     <div class="card-meta">
                         <span><i class="fa-regular fa-eye"></i> <span id="relogio-count">0</span> vezes você usou</span>
                     </div>
@@ -191,14 +302,13 @@
             <div class="glass-card" data-projeto="advinhar" data-categoria="jogos">
                 <div class="card-image-wrapper">
                     <img src="imagens/advinhar.png" alt="Adivinhar Quem" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Adivinhar'">
-                    <span class="status-tag dev">NOVO</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Vou tentar advinhar qual famoso você está pensando</h3>
+                        <h3>Adivinho de Famosos</h3>
                         <span class="category-icon"><i class="fa-solid fa-brain"></i></span>
                     </div>
-                    <p>Você irá pensar em um famoso qualquer, e responder as minhas perguntas. Ai eu vou tentar advinhar o famoso que você pensou!</p>
+                    <p>Pense em um famoso e eu tentarei adivinhar quem é através de perguntas!</p>
                     <div class="card-meta">
                         <span><i class="fa-regular fa-eye"></i> <span id="advinhar-count">0</span> vezes você usou</span>
                     </div>
@@ -209,30 +319,43 @@
             <div class="glass-card" data-projeto="marinho" data-categoria="diversao">
                 <div class="card-image-wrapper">
                     <img src="imagens/marinho.png" alt="Animal Marinho" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Animal+Marinho'">
-                    <span class="status-tag dev">NOVO</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Descubra qual Animal Marinho Você é!</h3>
+                        <h3>Quiz Animal Marinho</h3>
                         <span class="category-icon"><i class="fa-solid fa-fish"></i></span>
                     </div>
-                    <p>Quiz divertido que descobre qual criatura do mar melhor representa sua personalidade.</p>
+                    <p>Descubra qual criatura do mar melhor representa sua personalidade.</p>
                     <div class="card-meta">
                         <span><i class="fa-regular fa-eye"></i> <span id="marinho-count">0</span> vezes você usou</span>
                     </div>
-                    <a href="marinho/marinho.html" onclick="atualizarEstatistica('marinho')" class="action-btn">Descobrir Animal</a>
+                    <a href="marinho/marinho.html" onclick="atualizarEstatistica('marinho')" class="action-btn">Descobrir</a>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Formatação de Números
+        function mudarTema(tema) {
+            document.documentElement.setAttribute('data-theme', tema);
+            localStorage.setItem('site-theme', tema);
+            atualizarBotoesTema(tema);
+        }
+
+        function atualizarBotoesTema(temaAtivo) {
+            const botoes = document.querySelectorAll('.theme-btn');
+            botoes.forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.onclick.toString().includes(temaAtivo)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
         function formatarNumero(num) {
             return new Intl.NumberFormat('pt-BR', { notation: "compact", compactDisplay: "short" }).format(num);
         }
 
-        // Atualizar Estatísticas
         function atualizarEstatistica(projeto) {
             let count = parseInt(localStorage.getItem(projeto) || 0) + 1;
             localStorage.setItem(projeto, count);
@@ -244,43 +367,37 @@
             if (el) el.textContent = formatarNumero(valor);
         }
 
-        // Init
         window.addEventListener('load', () => {
-            ['gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho'].forEach(proj => {
+            // LISTA ATUALIZADA DE PROJETOS
+            const projetos = ['drive-mad', 'escape-road', 'canvas', 'converter', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
+            
+            projetos.forEach(proj => {
                 let count = localStorage.getItem(proj) || 0;
                 atualizarDisplay(proj, count);
             });
 
-            // Notificação Suave
-            if ('Notification' in window && Notification.permission !== 'denied') {
-                Notification.requestPermission();
-            }
+            const temaSalvo = localStorage.getItem('site-theme') || 'dark';
+            mudarTema(temaSalvo);
         });
 
-        // Busca Inteligente
         document.getElementById('busca-input').addEventListener('input', function (e) {
             const termo = e.target.value.toLowerCase();
             const cards = document.querySelectorAll('.glass-card');
-
             cards.forEach(card => {
                 const texto = card.innerText.toLowerCase();
                 card.style.display = texto.includes(termo) ? 'flex' : 'none';
             });
         });
 
-        // Filtros Ativos
         function filtrarPorCategoria(categoria) {
-            // Atualiza classe ativa no botão
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
 
             const cards = document.querySelectorAll('.glass-card');
             cards.forEach(card => {
                 const cardCat = card.getAttribute('data-categoria');
                 if (categoria === 'todos' || cardCat === categoria) {
                     card.style.display = 'flex';
-                    // Pequena animação de entrada
-                    card.animate([{ opacity: 0, transform: 'scale(0.9)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 300 });
                 } else {
                     card.style.display = 'none';
                 }
