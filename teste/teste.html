@@ -2,156 +2,246 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dora AI | Espaço Criativo</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400,0..1,0" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="teste.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alunas da Simone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: white;
+        }
+
+        .header-container {
+            margin-top: 100px;
+            text-align: center;
+            transition: margin-top 0.3s ease;
+        }
+
+        .alunas-da {
+            font-size: 16px;
+            color: #70757a;
+            margin-bottom: -10px;
+        }
+
+        .logo-simone {
+            font-size: 90px;
+            font-weight: bold;
+            letter-spacing: -2px;
+            cursor: pointer;
+        }
+
+        .blue { color: #4285F4; }
+        .red { color: #EA4335; }
+        .yellow { color: #FBBC05; }
+        .green { color: #34A853; }
+
+        .search-container {
+            width: 100%;
+            max-width: 584px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            padding-left: 45px;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .search-box:hover, .search-box:focus {
+            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+            border-color: rgba(223,225,229,0);
+        }
+
+        #suggestions {
+            position: absolute;
+            top: 46px;
+            width: 100%;
+            background: white;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 4px 6px rgba(32,33,36,0.28);
+            border: 1px solid #dfe1e5;
+            border-top: none;
+            display: none;
+            z-index: 10;
+            padding-bottom: 10px;
+        }
+
+        .suggestion-item {
+            padding: 10px 45px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover { background-color: #f1f1f1; }
+        
+        .no-result {
+            padding: 10px 45px;
+            color: #70757a;
+            font-style: italic;
+        }
+
+        #results-area {
+            width: 100%;
+            max-width: 650px;
+            margin-top: 30px;
+            display: none;
+            padding: 0 20px;
+        }
+
+        .fichario-card {
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .fichario-card h2 {
+            color: #1a0dab;
+            margin-top: 0;
+            font-size: 20px;
+            text-decoration: none;
+        }
+
+        .fichario-card .url {
+            color: #202124;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-label { font-weight: bold; color: #3c4043; }
+        .info-value { color: #4d5156; }
+    </style>
 </head>
 <body>
-    
-    <div class="app-layout">
-        
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-area">
-                    <div class="logo-icon">✨</div>
-                    <div class="logo-text">
-                        <h1>Dora AI</h1>
-                        <span class="version-badge">1.4 Beta</span>
-                    </div>
-                </div>
-            </div>
 
-            <nav class="sidebar-nav">
-                <button id="new-chat-btn" class="nav-item primary" onclick="iniciarNovaConversa()">
-                    <span class="material-symbols-rounded">add_circle</span>
-                    <span>Nova Conversa</span>
-                </button>
-                
-                <div class="nav-divider"></div>
+    <div class="header-container" id="header">
+        <div class="alunas-da">Alunas da</div>
+        <div class="logo-simone" onclick="location.reload()">
+            <span class="blue">S</span><span class="red">i</span><span class="yellow">m</span><span class="blue">o</span><span class="green">n</span><span class="red">e</span>
+        </div>
 
-                <button class="nav-item" onclick="window.location.href = '../index.html'">
-                    <span class="material-symbols-rounded">home</span>
-                    <span>Início</span>
-                </button>
-                <button class="nav-item" onclick="window.location.href = 'admin.html'">
-                    <span class="material-symbols-rounded">settings</span>
-                    <span>Admin</span>
-                </button>
-            </nav>
-
-            <div class="sidebar-footer">
-                <p>Desenvolvido com IA</p>
-            </div>
-        </aside>
-
-        <main id="conteudo-principal">
-            
-            <div id="chat-box-container">
-                <div id="chat-box" class="chat-wrapper">
-                    <div class="mensagem bot boas-vindas-inicial">
-                        <div class="avatar-bot">
-                            <span class="material-symbols-rounded">smart_toy</span>
-                        </div>
-                        <div class="message-content">
-                            <h2>Olá! Sou a Dora AI.</h2>
-                            <p>Sou seu assistente pessoal inteligente. Estou pronta para ajudar você a criar, corrigir e imaginar.</p>
-                            <div class="feature-grid">
-                                <div class="feature-item"><span class="material-symbols-rounded">edit_note</span> Redações</div>
-                                <div class="feature-item"><span class="material-symbols-rounded">image</span> Imagens</div>
-                                <div class="feature-item"><span class="material-symbols-rounded">spellcheck</span> Correção</div>
-                                <div class="feature-item"><span class="material-symbols-rounded">summarize</span> Resumos</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-area-container">
-                <div class="chat-input-wrapper">
-                    
-                    <div class="tools-bar">
-                        <button id="btn-redacao" class="function-pill-btn" onclick="alternarModoRedacao()">
-                            <span class="material-symbols-rounded icon-filled">menu_book</span>
-                            <span>Redação</span>
-                            <span class="material-symbols-rounded icon-close">close</span>
-                        </button>
-                        <button id="btn-resumo" class="function-pill-btn resumo" onclick="alternarModoResumo()">
-                            <span class="material-symbols-rounded">summarize</span>
-                            <span>Resumo</span>
-                            <span class="material-symbols-rounded icon-close">close</span>
-                        </button>
-                        <button id="btn-correcao" class="function-pill-btn correcao" onclick="alternarModoCorrecao()">
-                            <span class="material-symbols-rounded">edit</span>
-                            <span>Correção</span>
-                            <span class="material-symbols-rounded icon-close">close</span>
-                        </button>
-                        <button id="btn-image2" class="function-pill-btn image2" onclick="toggleModoImage2()">
-                            <span class="material-symbols-rounded icon-filled">image</span>
-                            <span>Image 2</span>
-                            <span class="badge-new">Beta</span>
-                            <span class="material-symbols-rounded icon-close">close</span>
-                        </button>
-                        
-                        <div class="tools-mobile-trigger" style="display:none;">
-                            <button id="menu-trigger" onclick="toggleToolsMenu()">...</button>
-                            <div id="tools-dropdown">
-                                <button id="btn-redacao-mobile" onclick="alternarModoRedacao()"></button>
-                                <button id="btn-resumo-mobile" onclick="alternarModoResumo()"></button>
-                                <button id="btn-correcao-mobile" onclick="alternarModoCorrecao()"></button>
-                                <button id="btn-image2-mobile" onclick="toggleModoImage2()"></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-row-main">
-                        <textarea id="input-mensagem" rows="1" placeholder="Pergunte qualquer coisa..." autocomplete="off"></textarea>
-                        
-                        <button class="action-button-main" onclick="clicouBotaoAcao()" id="btn-action">
-                            <span class="material-symbols-rounded icon-action">mic</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="disclaimer-text">Dora AI pode cometer erros. Verifique informações importantes.</div>
-            </div>
-
-        </main>
-    </div>
-
-    <div id="modal-image2" class="modal-backdrop">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Criar Imagem</h3>
-                <button class="modal-close" onclick="fecharModalImage2()">
-                    <span class="material-symbols-rounded">close</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <button class="option-card" onclick="ativarModoImage2Simples()">
-                    <div class="icon-box purple"><span class="material-symbols-rounded">landscape</span></div>
-                    <div class="text-box">
-                        <strong>Modo Paisagem/Objeto</strong>
-                        <span>Gera cenários e objetos simples</span>
-                    </div>
-                    <span class="material-symbols-rounded arrow">chevron_right</span>
-                </button>
-                <button class="option-card" onclick="ativarModoImage2Pessoa()">
-                    <div class="icon-box blue"><span class="material-symbols-rounded">person</span></div>
-                    <div class="text-box">
-                        <strong>Modo Pessoa</strong>
-                        <span>Inserir pessoas em cenários</span>
-                    </div>
-                    <span class="material-symbols-rounded arrow">chevron_right</span>
-                </button>
-            </div>
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="Pesquisar aluna..." autocomplete="off">
+            <div id="suggestions"></div>
         </div>
     </div>
 
-    <div id="card-image2-autocomplete" class="autocomplete-card">
-        <div id="card-image2-content"></div>
-    </div>
+    <div id="results-area"></div>
 
-    <script src="teste.js"></script>
+    <script>
+        const alunas = [
+            { 
+                nome: "Alícia Beraldo Cardozo", 
+                idade: "14 anos", 
+                inicio: "(não informado)", 
+                batizado: "Não", 
+                telefone: "(não informado)", 
+                pais: "Verônica e Eduardo Cardozo", 
+                comum: "Central - Sumaré",
+                teste: "Não tem informação"
+            },
+            { 
+                nome: "Laura Beraldo Cardozo", 
+                idade: "17 anos", 
+                inicio: "(não informado)", 
+                batizado: "Sim", 
+                telefone: "(não informado)", 
+                pais: "Verônica e Eduardo Cardozo", 
+                comum: "Central - Sumaré",
+                teste: "Não informado"
+            },
+            { 
+                nome: "Anny", 
+                idade: "12 anos", 
+                inicio: "(não informado)", 
+                batizado: "Não", 
+                telefone: "(não informado)", 
+                pais: "Gleiciani e Augusto", 
+                comum: "Novo Cambuí - Hortolândia",
+                teste: "Não fez o teste ainda"
+            }
+        ];
+
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsBox = document.getElementById('suggestions');
+        const resultsArea = document.getElementById('results-area');
+        const header = document.getElementById('header');
+
+        searchInput.addEventListener('input', () => {
+            const val = searchInput.value.toLowerCase();
+            suggestionsBox.innerHTML = '';
+            
+            if (val.length > 0) {
+                const filtered = alunas.filter(a => a.nome.toLowerCase().includes(val));
+                
+                if (filtered.length > 0) {
+                    filtered.forEach(aluna => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = aluna.nome;
+                        div.onclick = () => {
+                            searchInput.value = aluna.nome;
+                            showFichario(aluna);
+                        };
+                        suggestionsBox.appendChild(div);
+                    });
+                } else {
+                    const div = document.createElement('div');
+                    div.className = 'no-result';
+                    div.textContent = 'Nenhum resultado correspondente';
+                    suggestionsBox.appendChild(div);
+                }
+                suggestionsBox.style.display = 'block';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const found = alunas.find(a => a.nome.toLowerCase().includes(searchInput.value.toLowerCase()));
+                if (found) showFichario(found);
+            }
+        });
+
+        function showFichario(aluna) {
+            suggestionsBox.style.display = 'none';
+            header.style.marginTop = '20px';
+            resultsArea.style.display = 'block';
+            resultsArea.innerHTML = `
+                <div class="fichario-card">
+                    <div class="url">alunasdasimone.com.br > fichario > ${aluna.nome.toLowerCase().split(' ')[0]}</div>
+                    <h2>Fichário: ${aluna.nome}</h2>
+                    <div class="info-grid">
+                        <div class="info-label">Nome:</div><div class="info-value">${aluna.nome}</div>
+                        <div class="info-label">Idade:</div><div class="info-value">${aluna.idade}</div>
+                        <div class="info-label">Início das aulas:</div><div class="info-value">${aluna.inicio}</div>
+                        <div class="info-label">Batizado/ou não:</div><div class="info-value">${aluna.batizado}</div>
+                        <div class="info-label">Telefone:</div><div class="info-value">${aluna.telefone}</div>
+                        <div class="info-label">Nome dos pais:</div><div class="info-value">${aluna.pais}</div>
+                        <div class="info-label">Comum congregação:</div><div class="info-value">${aluna.comum}</div>
+                        <div class="info-label">Data teste culto de jovens:</div><div class="info-value">${aluna.teste}</div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>

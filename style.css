@@ -675,3 +675,519 @@ h2 {
 /* ---------------------------------------------------- */
 /* MODAL DE CONTROLE VIRTUAL NEURAL */
 /* ---------------------------------------------------- */
+
+/* ---------------------------------------------------- */
+/* RETROSPECTIVA UI */
+/* ---------------------------------------------------- */
+#retro-trigger {
+    display: none; /* Começa invisível (só aparece após 1h) */
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9990;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 18px;
+    border-radius: 50px;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+#retro-trigger:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Botão Mobile (Dentro do Theme Switcher) */
+.theme-btn.retro-mobile {
+    display: none; /* Invisível em Desktop */
+    color: #a855f7; /* Roxo destaque */
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.retro-hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+#retro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    font-family: 'Inter', sans-serif;
+}
+
+.retro-backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.retro-card {
+    position: relative;
+    width: 90%;
+    max-width: 420px;
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(10, 10, 10, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 32px;
+    padding-bottom: 20px;
+    color: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#retro-overlay:not(.retro-hidden) .retro-card {
+    transform: scale(1);
+}
+
+/* Animações de Entrada dos Elementos */
+@keyframes retroSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.retro-anim-enter {
+    animation: retroSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.retro-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+#retro-icon-wrapper svg {
+    width: 56px;
+    height: 56px;
+    color: #a855f7;
+    filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.3));
+    margin-bottom: 16px;
+}
+
+#retro-card-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    font-weight: 600;
+}
+
+.retro-content {
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.retro-highlight {
+    font-size: 3.5rem; /* Bem grande estilo Wrapped */
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.retro-text {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Estilo para Lista (Top 5) */
+.retro-list {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    text-align: left;
+}
+
+.retro-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.retro-list-item:last-child {
+    border-bottom: none;
+}
+
+.retro-rank {
+    color: rgba(255,255,255,0.6);
+    margin-right: 10px;
+    font-weight: 400;
+}
+
+.retro-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.retro-footer button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.retro-footer button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.retro-footer button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+#retro-btn-next, #retro-btn-close {
+    background: #fff;
+    color: #000;
+    border: none;
+}
+
+#retro-btn-next:hover, #retro-btn-close:hover {
+    background: #e0e0e0;
+}
+
+.retro-dots-container {
+    display: flex;
+    gap: 6px;
+}
+
+.retro-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.retro-dot.active {
+    background: #a855f7;
+    transform: scale(1.3);
+}
+
+/* MEDIA QUERIES PARA O BOTÃO RETRO */
+@media (max-width: 480px) {
+    /* No celular, esconde o flutuante e mostra o do menu (se tiver tempo suficiente) */
+    #retro-trigger {
+        display: none !important;
+    }
+    .theme-btn.retro-mobile.unlocked {
+        display: flex;
+    }
+}
+
+/* ================================================= */
+/* MODAL DE APRESENTAÇÃO - RETROSPECTIVA */
+/* ================================================= */
+
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+    animation: fadeInWelcome 0.5s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.welcome-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    animation: fadeOutWelcome 0.4s ease;
+}
+
+@keyframes fadeInWelcome {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOutWelcome {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.welcome-backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+}
+
+.welcome-card {
+    position: relative;
+    width: 90%;
+    max-width: 480px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 32px;
+    padding: 48px 32px 40px;
+    color: var(--text-main);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25),
+                0 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+    animation: slideUpWelcome 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10001;
+}
+
+@keyframes slideUpWelcome {
+    from {
+        opacity: 0;
+        transform: translateY(60px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.welcome-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.welcome-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.welcome-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 12px rgba(255, 81, 47, 0.3));
+    animation: bounceIcon 2s ease-in-out infinite;
+}
+
+@keyframes bounceIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.welcome-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 8px 0;
+    background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.welcome-subtitle {
+    font-size: 0.95rem;
+    text-align: center;
+    color: var(--text-muted);
+    margin: 0 0 28px 0;
+    font-weight: 500;
+}
+
+.welcome-content {
+    margin-bottom: 32px;
+}
+
+.welcome-content > p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    margin: 0 0 24px 0;
+    font-weight: 400;
+}
+
+.welcome-feature {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.95rem;
+    color: var(--text-main);
+    transition: all 0.3s ease;
+}
+
+.welcome-feature:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.welcome-feature i {
+    font-size: 1.2rem;
+    color: var(--accent-color);
+    flex-shrink: 0;
+}
+
+.welcome-feature strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.welcome-btn {
+    width: 100%;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(255, 81, 47, 0.3);
+    font-family: 'Inter', sans-serif;
+}
+
+.welcome-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 81, 47, 0.4);
+}
+
+.welcome-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsivo para temas */
+[data-theme="light"] .welcome-card {
+    background: rgba(240, 242, 245, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1),
+                0 0 1px 0 rgba(0, 0, 0, 0.02) inset;
+}
+
+[data-theme="light"] .welcome-close {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .welcome-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .welcome-feature {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .welcome-feature:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="marine"] .welcome-card {
+    background: rgba(0, 30, 43, 0.5);
+    border-color: rgba(100, 255, 218, 0.1);
+}
+
+[data-theme="pastel"] .welcome-card {
+    background: rgba(253, 251, 247, 0.6);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="pastel"] .welcome-feature {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Responsivo para mobile */
+@media (max-width: 600px) {
+    .welcome-card {
+        width: 95%;
+        max-width: none;
+        padding: 40px 24px 32px;
+        border-radius: 24px;
+    }
+
+    .welcome-title {
+        font-size: 1.6rem;
+    }
+
+    .welcome-icon {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+    }
+
+    .welcome-content > p {
+        font-size: 0.95rem;
+    }
+
+    .welcome-feature {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+    }
+}

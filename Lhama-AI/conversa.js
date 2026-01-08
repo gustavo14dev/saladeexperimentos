@@ -22,14 +22,13 @@ function mostrarAnuncio() {
     overlay.innerHTML = `
         <div class="anuncio-container">
             <div class="titulo-com-badge">
-                <h2 class="titulo-animado">Dora AI 1.4 Beta</h2>
+                <h2 class="titulo-animado">Lhama AI 1</h2>
             </div>
             <div class="anuncio-texto">
                 <ul>
                     <li>Mais inteligente</li>
-                    <li>1.600 novos treinamentos</li>
+                    <li>30.000 novos treinamentos</li>
                     <li>Design premium e mais suave</li>
-                    <li>Modo de transcrição de áudio e texto para fala</li>
                     <li>Interface aprimorada estilo moderno</li>
                     <li>Correção de erros de resposta</li>
                     <li>Image 2, o novo recurso de geração de imagens aprimorado</li>

@@ -18,9 +18,63 @@
 
     <link rel="icon" type="image/png" href="imagens/logo.png">
 
+    <style>
+        #tubes-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: none;
+        }
+        [data-theme="tubes"] .snow-container,
+        [data-theme="tubes"] .background-orb {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
+
+    <canvas id="tubes-canvas"></canvas>
+
+    <!-- MODAL DE APRESENTAÇÃO - RETROSPECTIVA -->
+    <div id="welcome-modal" class="welcome-overlay">
+        <div class="welcome-backdrop" onclick="closeWelcomeModal()"></div>
+        <div class="welcome-card glass-liquid">
+            <button class="welcome-close" onclick="closeWelcomeModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="welcome-icon">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            
+            <h2 class="welcome-title">Retrospectiva</h2>
+            <p class="welcome-subtitle">Sua jornada em números</p>
+            
+            <div class="welcome-content">
+                <p>Acompanhe seu tempo explorando a Sala de Experimentos e descubra insights interessantes sobre sua atividade.</p>
+                <div class="welcome-feature">
+                    <i class="fa-solid fa-hourglass-start"></i>
+                    <span>Disponível após <strong>1 hora</strong> de uso</span>
+                </div>
+                <div class="welcome-feature">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    <span>Veja estatísticas e dados personalizados</span>
+                </div>
+                <div class="welcome-feature">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span>Descubra qual é seu projeto favorito</span>
+                </div>
+            </div>
+            
+            <button class="welcome-btn" onclick="closeWelcomeModal()">
+                Explorar Agora
+            </button>
+        </div>
+    </div>
 
     <div class="snow-container">
         <div class="snow-layer-1"></div>
@@ -46,6 +100,13 @@
         </button>
         <button class="theme-btn" onclick="mudarTema('newyear')" data-tooltip="Ano Novo">
             <i class="fa-regular fa-snowflake"></i>
+        </button>
+        <button class="theme-btn" onclick="mudarTema('tubes')" data-tooltip="Tubes">
+            <i class="fa-solid fa-bezier-curve"></i>
+        </button>
+        <!-- Botão Retrospectiva Mobile (Só aparece no celular e após 1h) -->
+        <button class="theme-btn retro-mobile" onclick="toggleRetrospective(true)" data-tooltip="Retrospectiva" style="display: none;">
+            <i class="fa-solid fa-clock-rotate-left"></i>
         </button>
     </div>
 
@@ -145,6 +206,23 @@
                 </div>
             </div>
 
+            <div class="glass-card" data-projeto="dino" data-categoria="jogos">
+                <div class="card-image-wrapper">
+                    <img src="dino/dino.png" alt="Dino Game" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Dino'">
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Dino Game</h3>
+                        <span class="category-icon"><i class="fa-solid fa-gamepad"></i></span>
+                    </div>
+                    <p>O clássico jogo do dinossauro do Chrome para jogar a qualquer momento.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="dino-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="dino/dino.html" onclick="atualizarEstatistica('dino')" class="action-btn">Jogar Agora</a>
+                </div>
+            </div>
+
             <div class="glass-card" data-projeto="gerador-cores" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/cor.png" alt="Gerador de Cores" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Gerador+de+Cores'">
@@ -213,10 +291,26 @@
                 </div>
             </div>
 
+            <div class="glass-card" data-projeto="2027" data-categoria="diversao">
+                <div class="card-image-wrapper">
+                    <img src="2027/2027.png" alt="Tempo para 2027" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=2027'">
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Tempo para 2027</h3>
+                        <span class="category-icon"><i class="fa-solid fa-clock"></i></span>
+                    </div>
+                    <p>Conta regressiva emocionante para o ano de 2027. Veja quanto tempo falta!</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="2027-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="2027/2027.html" onclick="atualizarEstatistica('2027')" class="action-btn">Ver Contagem</a>
+                </div>
+            </div>
+
             <div class="glass-card" data-projeto="conversa" data-categoria="ia">
                 <div class="card-image-wrapper">
                     <img src="Lhama-AI/logo.png" alt="Lhama AI" onerror="this.src='https://placehold.co/600x400/4b0082/FFF?text=Dora+AI'">
-                    <span class="status-tag dev">POPULAR</span>
                 </div>
                 <div class="card-info">
                     <div class="card-header">
@@ -335,11 +429,60 @@
         </div>
     </div>
 
+    <!-- RETROSPECTIVA UI -->
+    <button id="retro-trigger" onclick="toggleRetrospective(true)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Acesse sua retrospectiva!</span>
+    </button>
+
+    <div id="retro-overlay" class="retro-hidden">
+        <div class="retro-backdrop" onclick="toggleRetrospective(false)"></div>
+        
+        <div class="retro-card">
+            <div class="retro-header">
+                <div id="retro-icon-wrapper"></div>
+                <h3 id="retro-card-title"></h3>
+            </div>
+
+            <div class="retro-content">
+                <div class="retro-highlight" id="retro-stat"></div>
+                <p class="retro-text" id="retro-desc"></p>
+            </div>
+
+            <div class="retro-footer">
+                <button id="retro-btn-prev" onclick="navigateCard(-1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    Voltar
+                </button>
+                <div id="retro-dots" class="retro-dots-container"></div>
+                <button id="retro-btn-next" onclick="navigateCard(1)">
+                    Próximo
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+                <button id="retro-btn-close" onclick="toggleRetrospective(false)" style="display: none;">
+                    Fechar
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function mudarTema(tema) {
             document.documentElement.setAttribute('data-theme', tema);
             localStorage.setItem('site-theme', tema);
             atualizarBotoesTema(tema);
+            
+            const tubesCanvas = document.getElementById('tubes-canvas');
+            if (tema === 'tubes') {
+                if (tubesCanvas) tubesCanvas.style.display = 'block';
+                initTubes();
+            } else {
+                if (tubesCanvas) tubesCanvas.style.display = 'none';
+            }
         }
 
         function atualizarBotoesTema(temaAtivo) {
@@ -369,7 +512,7 @@
 
         window.addEventListener('load', () => {
             // LISTA ATUALIZADA DE PROJETOS
-            const projetos = ['drive-mad', 'escape-road', 'canvas', 'converter', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
+            const projetos = ['drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
             
             projetos.forEach(proj => {
                 let count = localStorage.getItem(proj) || 0;
@@ -403,7 +546,288 @@
                 }
             });
         }
+
+        let tubesInitialized = false;
+        let tubesApp = null;
+
+        async function initTubes() {
+            if (tubesInitialized) return;
+            
+            try {
+                const module = await import("https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js");
+                const TubesCursor = module.default;
+                
+                tubesApp = TubesCursor(document.getElementById('tubes-canvas'), {
+                    tubes: {
+                        colors: ["#f967fb", "#53bc28", "#6958d5"],
+                        lights: {
+                            intensity: 200,
+                            colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+                        }
+                    }
+                });
+                
+                tubesInitialized = true;
+
+                document.body.addEventListener('click', () => {
+                    if (document.documentElement.getAttribute('data-theme') === 'tubes' && tubesApp) {
+                        const colors = randomColors(3);
+                        const lightsColors = randomColors(4);
+                        tubesApp.tubes.setColors(colors);
+                        tubesApp.tubes.setLightsColors(lightsColors);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Failed to load Tubes theme:", error);
+            }
+        }
+
+        function randomColors(count) {
+            return new Array(count)
+                .fill(0)
+                .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
+        }
+
+        // --- LÓGICA REAL DA RETROSPECTIVA ---
+        
+        // 1. Monitoramento de Tempo e Horário
+        let totalSeconds = parseInt(localStorage.getItem('site-time-spent') || 0);
+        
+        // Roda a cada segundo
+        setInterval(() => {
+            totalSeconds++;
+            localStorage.setItem('site-time-spent', totalSeconds);
+            
+            // Monitora horário de pico (salva a hora atual a cada minuto)
+            if (totalSeconds % 60 === 0) {
+                const currentHour = new Date().getHours();
+                let hourStats = JSON.parse(localStorage.getItem('site-hour-stats') || '{}');
+                hourStats[currentHour] = (hourStats[currentHour] || 0) + 1;
+                localStorage.setItem('site-hour-stats', JSON.stringify(hourStats));
+            }
+
+            checkRetroAvailability();
+        }, 1000);
+
+        // 2. Verifica se pode mostrar o botão (Regra de 1 Hora)
+        function checkRetroAvailability() {
+            const btnDesktop = document.getElementById('retro-trigger');
+            const btnMobile = document.querySelector('.theme-btn.retro-mobile');
+            
+            // 3600 segundos = 1 hora
+            if (totalSeconds >= 3600) {
+                // Lógica de exibição baseada no CSS (Media Query controla quem aparece)
+                // Mas precisamos remover o display:none inline ou adicionar classes
+                if(window.innerWidth > 480) {
+                    btnDesktop.style.display = 'flex';
+                } else {
+                    btnDesktop.style.display = 'none';
+                }
+                
+                // Adiciona classe para o CSS controlar o mobile
+                btnMobile.classList.add('unlocked');
+            }
+        }
+
+        // Chama ao carregar e ao redimensionar
+        window.addEventListener('resize', checkRetroAvailability);
+        window.addEventListener('load', checkRetroAvailability);
+
+        // 3. Geração de Dados Dinâmicos
+        let retroData = [];
+
+        function generateRetroData() {
+            // Card 1: Tempo Total
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            
+            // Card 2: Top 5 Projetos
+            const projetos = ['drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
+            let usageData = projetos.map(p => ({
+                name: p.replace('-', ' ').toUpperCase(),
+                count: parseInt(localStorage.getItem(p) || 0)
+            })).sort((a, b) => b.count - a.count);
+
+            let top5HTML = '<div class="retro-list">';
+            usageData.slice(0, 5).forEach((item, index) => {
+                if(item.count > 0) {
+                    top5HTML += `<div class="retro-list-item"><span><span class="retro-rank">${index + 1}</span> ${item.name}</span> <span>${item.count}x</span></div>`;
+                }
+            });
+            top5HTML += '</div>';
+            if (usageData[0].count === 0) top5HTML = "<p>Você ainda não explorou o suficiente!</p>";
+
+            // Card 3: Horário de Pico
+            let hourStats = JSON.parse(localStorage.getItem('site-hour-stats') || '{}');
+            let peakHour = Object.keys(hourStats).reduce((a, b) => hourStats[a] > hourStats[b] ? a : b, 12); // Default 12h
+            let peakHourStr = `${peakHour}:00 - ${parseInt(peakHour)+1}:00`;
+
+            // Card 4: Veredito (Baseado no mais usado)
+            let topProject = usageData[0].name;
+            let veredito = "O Explorador";
+            let vereditoDesc = "Você gosta de navegar por tudo um pouco.";
+            
+            if (topProject.includes("LHAMA") || topProject.includes("CONVERSA")) {
+                veredito = "O Filósofo Digital";
+                vereditoDesc = "Você prefere conversar com IAs do que com humanos. Nós entendemos.";
+            } else if (topProject.includes("DRIVE") || topProject.includes("DINO") || topProject.includes("ESCAPE")) {
+                veredito = "O Adrenalina Pura";
+                vereditoDesc = "Você veio aqui para jogar e quebrar recordes. Produtividade? O que é isso?";
+            } else if (topProject.includes("HACKER") || topProject.includes("CANVAS")) {
+                veredito = "O Criativo Tech";
+                vereditoDesc = "Você usa as ferramentas para criar e explorar o sistema.";
+            }
+
+            return [
+                {
+                    title: "TEMPO DE JORNADA",
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+                    stat: `${hours}h ${minutes}m`,
+                    desc: `Você investiu ${hours} horas e ${minutes} minutos neste universo digital.`,
+                    gradient: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)"
+                },
+                {
+                    title: "SEUS FAVORITOS",
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+                    stat: "Top 5",
+                    desc: "",
+                    customHTML: top5HTML,
+                    gradient: "linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)"
+                },
+                {
+                    title: "HORÁRIO DE PICO",
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+                    stat: peakHourStr,
+                    desc: "Este é o horário que você costuma estar mais ativo por aqui.",
+                    gradient: "linear-gradient(135deg, #000428 0%, #004e92 100%)"
+                },
+                {
+                    title: "VEREDITO FINAL",
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`,
+                    stat: veredito,
+                    desc: vereditoDesc,
+                    gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
+                }
+            ];
+        }
+
+        let currentRetroIndex = 0;
+
+        function toggleRetrospective(show) {
+            const modal = document.getElementById('retro-overlay');
+            if (show) {
+                retroData = generateRetroData(); // Gera dados frescos ao abrir
+                currentRetroIndex = 0;
+                updateRetroCard();
+                modal.classList.remove('retro-hidden');
+            } else {
+                modal.classList.add('retro-hidden');
+            }
+        }
+
+        function navigateCard(direction) {
+            const newIndex = currentRetroIndex + direction;
+            if (newIndex >= 0 && newIndex < retroData.length) {
+                currentRetroIndex = newIndex;
+                updateRetroCard();
+            }
+        }
+
+        function updateRetroCard() {
+            const data = retroData[currentRetroIndex];
+            const total = retroData.length;
+
+            // Aplica o gradiente dinâmico no card
+            const card = document.querySelector('.retro-card');
+            card.style.background = data.gradient;
+
+            // Reseta animações (remove e adiciona a classe para reiniciar)
+            const header = document.querySelector('.retro-header');
+            const content = document.querySelector('.retro-content');
+            
+            header.classList.remove('retro-anim-enter');
+            content.classList.remove('retro-anim-enter');
+            
+            // Força o reflow para reiniciar a animação CSS
+            void header.offsetWidth; 
+            
+            header.classList.add('retro-anim-enter');
+            content.classList.add('retro-anim-enter');
+
+            document.getElementById('retro-card-title').innerText = data.title;
+            document.getElementById('retro-icon-wrapper').innerHTML = data.icon;
+            document.getElementById('retro-stat').innerText = data.stat;
+            
+            // Verifica se tem HTML customizado (para listas) ou texto normal
+            const descEl = document.getElementById('retro-desc');
+            if (data.customHTML) {
+                descEl.innerHTML = data.customHTML;
+            } else {
+                descEl.innerText = data.desc;
+            }
+
+            const btnPrev = document.getElementById('retro-btn-prev');
+            const btnNext = document.getElementById('retro-btn-next');
+            const btnClose = document.getElementById('retro-btn-close');
+
+            btnPrev.disabled = currentRetroIndex === 0;
+
+            if (currentRetroIndex === total - 1) {
+                btnNext.style.display = 'none';
+                btnClose.style.display = 'flex';
+            } else {
+                btnNext.style.display = 'flex';
+                btnClose.style.display = 'none';
+            }
+
+            const dotsContainer = document.getElementById('retro-dots');
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = `retro-dot ${i === currentRetroIndex ? 'active' : ''}`;
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        // ========================================
+        // MODAL DE APRESENTAÇÃO - RETROSPECTIVA
+        // ========================================
+
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            modal.classList.add('hidden');
+            localStorage.setItem('welcome-modal-closed', 'true');
+        }
+
+        function checkWelcomeModal() {
+            // Verifica se o modal já foi fechado neste dispositivo
+            const wasClosed = localStorage.getItem('welcome-modal-closed');
+            
+            if (!wasClosed) {
+                // Mostra o modal pela primeira vez
+                const modal = document.getElementById('welcome-modal');
+                modal.classList.remove('hidden');
+            } else {
+                // Esconde o modal se já foi visto
+                const modal = document.getElementById('welcome-modal');
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Checa o modal quando a página carrega
+        window.addEventListener('load', () => {
+            checkWelcomeModal();
+        });
+
+        // Também verifica ao carregar se o usuário já viu (para garantir)
+        document.addEventListener('DOMContentLoaded', () => {
+            checkWelcomeModal();
+        });
     </script>
+</body>
+
+</html>
 </body>
 
 </html>

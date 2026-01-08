@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Damas</title>
+
+<style>
+:root{
+  --mesa:#caa472;
+  --madeira:#8b5a2b;
+  --claro:#f5deb3;
+  --escuro:#4b2e1f;
+  --p1:#e53935;
+  --p2:#212121;
+}
+
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto}
+
+body{
+  margin:0;
+  background:linear-gradient(#eee,#ccc);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+#mesa{
+  background:var(--mesa);
+  padding:20px;
+  border-radius:24px;
+  box-shadow:0 25px 60px rgba(0,0,0,.4);
+  width:min(96vw,980px);
+}
+
+#top-card, #bottom-card{
+  background:white;
+  border-radius:18px;
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+
+#top-card{
+  transform:rotate(180deg);
+  margin-bottom:10px;
+}
+
+#bottom-card{
+  margin-top:10px;
+}
+
+.player-info{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.player-piece{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+}
+
+.action-btn{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:10px;
+  background:#f2f2f2;
+  cursor:pointer;
+  font-size:13px;
+  user-select:none;
+}
+
+#tabuleiro-wrapper{
+  position:relative;
+}
+
+#tabuleiro{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  aspect-ratio:1;
+  border-radius:14px;
+  overflow:hidden;
+  border:10px solid var(--madeira);
+  background:var(--madeira);
+}
+
+.casa{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.clara{background:var(--claro)}
+.escura{background:var(--escuro)}
+
+.peca{
+  width:70%;
+  height:70%;
+  border-radius:50%;
+  transition:transform .25s ease;
+  cursor:pointer;
+  position:relative;
+}
+
+.peca.p1{background:radial-gradient(circle at top,#ff7961,var(--p1))}
+.peca.p2{background:radial-gradient(circle at top,#555,var(--p2))}
+.dama::after{
+  content:"👑";
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:22px;
+}
+
+.selecionada{outline:4px solid gold}
+
+.movimento{
+  animation:mover .25s ease;
+}
+@keyframes mover{
+  from{transform:scale(.8)}
+  to{transform:scale(1)}
+}
+
+.timer{
+  position:absolute;
+  background:#000;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:13px;
+}
+
+#timer-top{top:-42px;left:0}
+#timer-bottom{bottom:-42px;right:0}
+
+#microbot{
+  position:absolute;
+  right:-140px;
+  top:50%;
+  transform:translateY(-50%);
+  text-align:center;
+}
+
+#microbot img{
+  width:120px;
+}
+
+.balao{
+  background:white;
+  border-radius:14px;
+  padding:8px 12px;
+  margin-top:6px;
+  font-size:13px;
+  box-shadow:0 5px 15px rgba(0,0,0,.2);
+  animation:fade 4s forwards;
+}
+
+@keyframes fade{
+  0%{opacity:0;transform:translateY(10px)}
+  10%{opacity:1;transform:none}
+  90%{opacity:1}
+  100%{opacity:0}
+}
+
+@media(max-width:720px){
+  #top-card{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="mesa">
+
+  <div id="top-card">
+    <div class="player-info">
+      <div class="player-piece" style="background:var(--p2)"></div>
+      <strong>Jogador 2</strong>
+      <span>🍽️ <b id="cap2">0</b></span>
+    </div>
+    <div class="actions">
+      <div class="action-btn">📜 Regras</div>
+      <div class="action-btn">🔄 Reiniciar</div>
+      <div class="action-btn">🏳️ Desistir</div>
+    </div>
+  </div>
+
+  <div id="tabuleiro-wrapper">
+    <div id="timer-top" class="timer">02:00</div>
+
+    <div id="tabuleiro"></div>
+
+    <div id="timer-bottom" class="timer">02:00</div>
+
+    <div id="microbot" hidden>
+      <img src="microbot.png">
+      <div id="fala"></div>
+    </div>
+  </div>
+
+  <div id="bottom-card">
+    <div class="player-info">
+      <div class="player-piece" style="background:var(--p1)"></div>
+      <strong>Jogador 1</strong>
+      <span>🍽️ <b id="cap1">0</b></span>
+    </div>
+    <div class="actions">
+      <div class="action-btn">📜 Regras</div>
+      <div class="action-btn">🔄 Reiniciar</div>
+      <div class="action-btn">🚪 Sair</div>
+      <div class="action-btn">🏳️ Desistir</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ======================
+   ENGINE DE DAMAS
+====================== */
+
+const tabuleiro = document.getElementById("tabuleiro");
+let turno = 1;
+let selecionada = null;
+let capturas = {1:0,2:0};
+
+const mensagensIA = [
+  "Hmm... interessante 🤖",
+  "Você pensou bem nessa?",
+  "Boa jogada!",
+  "Agora é comigo 😎",
+  "Erro detectado 👀"
+];
+
+let board = [];
+
+function criarTabuleiro(){
+  tabuleiro.innerHTML="";
+  board=[];
+  for(let r=0;r<8;r++){
+    board[r]=[];
+    for(let c=0;c<8;c++){
+      const casa=document.createElement("div");
+      const escura=(r+c)%2===1;
+      casa.className="casa "+(escura?"escura":"clara");
+      casa.dataset.r=r;
+      casa.dataset.c=c;
+      tabuleiro.appendChild(casa);
+      board[r][c]=null;
+
+      if(escura && r<3){
+        criarPeca(casa,2);
+      }
+      if(escura && r>4){
+        criarPeca(casa,1);
+      }
+    }
+  }
+}
+
+function criarPeca(casa,jog){
+  const p=document.createElement("div");
+  p.className="peca p"+jog;
+  p.dataset.j=jog;
+  casa.appendChild(p);
+  board[casa.dataset.r][casa.dataset.c]=p;
+  p.onclick=()=>selecionar(p);
+}
+
+function selecionar(p){
+  if(Number(p.dataset.j)!==turno) return;
+  document.querySelectorAll(".selecionada").forEach(e=>e.classList.remove("selecionada"));
+  selecionada=p;
+  p.classList.add("selecionada");
+}
+
+function mover(dest){
+  if(!selecionada) return;
+  const sr=Number(selecionada.parentNode.dataset.r);
+  const sc=Number(selecionada.parentNode.dataset.c);
+  const dr=Number(dest.dataset.r);
+  const dc=Number(dest.dataset.c);
+
+  const midr=(sr+dr)/2;
+  const midc=(sc+dc)/2;
+
+  if(Math.abs(dr-sr)===2){
+    const meio=board[midr][midc];
+    if(meio){
+      meio.remove();
+      board[midr][midc]=null;
+      capturas[turno]++;
+      atualizarCaps();
+    }
+  }
+
+  board[sr][sc]=null;
+  dest.appendChild(selecionada);
+  board[dr][dc]=selecionada;
+  selecionada.classList.add("movimento");
+  setTimeout(()=>selecionada.classList.remove("movimento"),250);
+
+  if(turno===1 && dr===0) selecionada.classList.add("dama");
+  if(turno===2 && dr===7) selecionada.classList.add("dama");
+
+  selecionada.classList.remove("selecionada");
+  selecionada=null;
+
+  turno=turno===1?2:1;
+}
+
+function atualizarCaps(){
+  cap1.textContent=capturas[1];
+  cap2.textContent=capturas[2];
+}
+
+tabuleiro.onclick=e=>{
+  const casa=e.target.classList.contains("casa")?e.target:e.target.closest(".casa");
+  if(!casa||casa.children.length) return;
+  mover(casa);
+};
+
+criarTabuleiro();
+
+/* IA SIMPLES (base sólida, sem bugs de turno) */
+function falarIA(){
+  const b=document.createElement("div");
+  b.className="balao";
+  b.textContent=mensagensIA[Math.floor(Math.random()*mensagensIA.length)];
+  fala.appendChild(b);
+  setTimeout(()=>b.remove(),4000);
+}
+</script>
+
+</body>
+</html>
