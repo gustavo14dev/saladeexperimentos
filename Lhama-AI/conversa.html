@@ -104,13 +104,16 @@
                             </div>
                         </div>
 
-                        <button class="tool-icon-btn action-button" onclick="clicouBotaoAcao()" id="btn-action" title="Clique para falar ou enviar">
-                            <span class="material-symbols-rounded icon-action">mic</span>
-                        </button>
+                        <div class="tools-send-audio">
+                            <button class="tool-icon-btn mic-btn" onclick="gravarAudio()" id="btn-mic" title="Gravar áudio">
+                                <span class="material-symbols-rounded">mic</span>
+                            </button>
+                            <button class="tool-icon-btn send-btn" id="btn-send" title="Enviar mensagem">
+                                <span class="material-symbols-rounded">arrow_upward</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                
-                 <div class="disclaimer-text">Lhama AI [BETA] pode cometer erros. Por isso, é bom checar as respostas. Esse modelo está em teste, por isso, há alguns erros.</div>
             </div>
         </div>
 
@@ -142,6 +145,21 @@
         <div id="card-image2-autocomplete" class="card-image2-autocomplete">
             <div id="card-image2-content" class="card-image2-content"></div>
         </div>
+
+        <!-- Lhama AI Live Modal -->
+        <div id="live-modal" class="live-modal" aria-hidden="true">
+            <div class="live-modal-content">
+                <button class="live-close-btn" id="live-close" title="Fechar">×</button>
+                <h2 class="live-title">Lhama Live</h2>
+                <div class="live-ball" id="live-ball" aria-hidden="true"></div>
+                <div class="live-hint">Respondendo somente por áudio...</div>
+            </div>
+        </div>
+        <!-- Toast informativo para voz -->
+        <div id="voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
+
+        <!-- botão antigo de ativação por voz removido (agora ativação via botão enviar quando vazio) -->
+        <!-- botão de teste removido em produção -->
     </div>
 
     <script src="conversa.js"></script>

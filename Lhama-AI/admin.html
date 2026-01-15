@@ -519,14 +519,15 @@
         let currentFilter = 'all';
 
         // Verifica se já está autenticado ao carregar
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Carrega os dados primeiro, para garantir números corretos
+            await loadAllData();
             const isAuthenticated = localStorage.getItem(SESSION_KEY);
             if (isAuthenticated === 'true') {
                 showDashboard();
             } else {
                 focusPasswordInput();
             }
-            loadAllData();
         });
 
         // Foco automático no input de senha
@@ -627,11 +628,11 @@
                     subtitle: 'Erros tratados'
                 },
                 {
-                    title: 'Inteligência',
-                    value: '1.3',
+                    title: 'Inteligência (índice)',
+                    value: totalTrainamentos,
                     icon: '🧠',
                     class: 'orange',
-                    subtitle: 'Versão Flash Pro'
+                    subtitle: 'Base de treinamentos (itens)'
                 }
             ];
 

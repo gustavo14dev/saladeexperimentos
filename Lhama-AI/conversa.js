@@ -401,10 +401,11 @@ function alternarModoCorrecao() {
 
 function enviarMensagem() {
     const input = document.getElementById('input-mensagem');
-    const btnEnviar = document.getElementById('btn-enviar');
+    const btnEnviar = document.getElementById('btn-send');
     const btnRedacao = document.getElementById('btn-redacao');
     const btnResumo = document.getElementById('btn-resumo');
     const btnCorrecao = document.getElementById('btn-correcao');
+    const inputAreaContainer = document.querySelector('.input-area-container');
 
     let mensagem = input.value.trim();
     const isModoResumoAtivo = modoResumoAtivo;
@@ -414,12 +415,22 @@ function enviarMensagem() {
     const tipoImage2Atual = modoImage2Tipo; // Captura tipo
 
     if (!mensagem) return;
+
+    // Inicia animação de onda colorida
+    if (inputAreaContainer) {
+        // efeito sutil de destaque ao enviar (pode ser removido)
+        inputAreaContainer.classList.add('wave-animation');
+        setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
+    }
     if (isModoResumoAtivo && !mensagem.toLowerCase().startsWith("resumir: ")) {
         mensagem = "resumir: " + mensagem;
     }
 
     input.disabled = true;
-    if (btnEnviar) btnEnviar.disabled = true;
+    if (btnEnviar) {
+        btnEnviar.disabled = true;
+        btnEnviar.classList.add('sending');
+    }
     // Desativa modos de "um uso só" (Redação, Resumo, Correção)
     // O Image 2 NÃO é desativado aqui para permitir uso contínuo
     if (modoRedacaoAtivo) {
@@ -494,7 +505,10 @@ function enviarMensagem() {
 
         input.disabled = false;
         input.focus();
-        if (btnEnviar) btnEnviar.disabled = false;
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.classList.remove('sending');
+        }
     }, 1500);
 }
 
@@ -823,62 +837,71 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
     divContent.className = 'message-content';
     if (tipo === 'bot') {
         const textoSemHTML = texto.replace(/<[^>]*>/g, '');
-        divContent.innerHTML = texto;
-        if (imagemNome) {
-            const imgContainer = document.createElement('div');
-            imgContainer.className = 'imagem-container-premium';
-            imgContainer.innerHTML = '<div class="skeleton-loader"></div>';
-            divContent.appendChild(imgContainer);
-
-            const img = new Image();
-            img.src = `img-IA/${imagemNome}`;
-            img.className = 'imagem-resposta-premium';
-            img.alt = "Imagem gerada por IA";
-            img.crossOrigin = 'Anonymous';
-            
-            img.onload = () => {
-                setTimeout(() => {
-                    adicionarMarcaDagua(img);
-                    imgContainer.innerHTML = '';
-                    imgContainer.appendChild(img);
-       
-                    scrollParaBaixo();
-                }, 1000);
-            };
-            img.onerror = () => {
-                imgContainer.innerHTML = '<span style="font-size:12px; color:#999;">Erro ao gerar imagem.</span>';
-            };
+        // Animação de digitação letra por letra
+        let i = 0;
+        divContent.innerHTML = '';
+        divMensagem.appendChild(divContent); // Corrige bug: adiciona conteúdo antes da animação
+        chatBox.appendChild(divMensagem);
+        function escreverLetra() {
+            if (i <= texto.length) {
+                divContent.innerHTML = texto.slice(0, i);
+                scrollParaBaixo();
+                i++;
+                setTimeout(escreverLetra, 8 + Math.random() * 18);
+            } else {
+                divContent.innerHTML = texto;
+                // ...ações e imagem...
+                if (imagemNome) {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'imagem-container-premium';
+                    imgContainer.innerHTML = '<div class="skeleton-loader"></div>';
+                    divContent.appendChild(imgContainer);
+                    const img = new Image();
+                    img.src = `img-IA/${imagemNome}`;
+                    img.className = 'imagem-resposta-premium';
+                    img.alt = "Imagem gerada por IA";
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => {
+                        setTimeout(() => {
+                            adicionarMarcaDagua(img);
+                            imgContainer.innerHTML = '';
+                            imgContainer.appendChild(img);
+                            scrollParaBaixo();
+                        }, 1000);
+                    };
+                    img.onerror = () => {
+                        imgContainer.innerHTML = '<span style="font-size:12px; color:#999;">Erro ao gerar imagem.</span>';
+                    };
+                }
+                // Ações da Mensagem
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'message-actions-container';
+                const btnCopy = document.createElement('button');
+                btnCopy.className = 'action-icon-btn';
+                btnCopy.innerHTML = '<span class="material-symbols-rounded">content_copy</span>';
+                btnCopy.onclick = () => copiarTexto(textoSemHTML);
+                actionsContainer.appendChild(btnCopy);
+                const btnAudio = document.createElement('button');
+                btnAudio.className = 'action-icon-btn audio-btn';
+                btnAudio.innerHTML = '<span class="material-symbols-rounded">volume_up</span>';
+                btnAudio.onclick = () => lerTextoEmVoz(textoSemHTML);
+                actionsContainer.appendChild(btnAudio);
+                if (imagemNome && !texto.includes('image2-composicao-container')) {
+                    const btnDownload = document.createElement('button');
+                    btnDownload.className = 'action-icon-btn';
+                    btnDownload.innerHTML = '<span class="material-symbols-rounded">download</span>';
+                    btnDownload.onclick = () => baixarImagem(`img-IA/${imagemNome}`);
+                    actionsContainer.appendChild(btnDownload);
+                }
+                divMensagem.appendChild(actionsContainer);
+            }
         }
-
-        divMensagem.appendChild(divContent);
-        // Ações da Mensagem
-        const actionsContainer = document.createElement('div');
-        actionsContainer.className = 'message-actions-container';
-        const btnCopy = document.createElement('button');
-        btnCopy.className = 'action-icon-btn';
-        btnCopy.innerHTML = '<span class="material-symbols-rounded">content_copy</span>';
-        btnCopy.onclick = () => copiarTexto(textoSemHTML);
-        actionsContainer.appendChild(btnCopy);
-        const btnAudio = document.createElement('button');
-        btnAudio.className = 'action-icon-btn audio-btn';
-        btnAudio.innerHTML = '<span class="material-symbols-rounded">volume_up</span>';
-        btnAudio.onclick = () => lerTextoEmVoz(textoSemHTML);
-        actionsContainer.appendChild(btnAudio);
-        if (imagemNome && !texto.includes('image2-composicao-container')) {
-            const btnDownload = document.createElement('button');
-            btnDownload.className = 'action-icon-btn';
-            btnDownload.innerHTML = '<span class="material-symbols-rounded">download</span>';
-            btnDownload.onclick = () => baixarImagem(`img-IA/${imagemNome}`);
-            actionsContainer.appendChild(btnDownload);
-        }
-        divMensagem.appendChild(actionsContainer);
-
+        escreverLetra();
     } else {
         divContent.innerHTML = texto;
         divMensagem.appendChild(divContent);
+        chatBox.appendChild(divMensagem);
     }
-    
-    chatBox.appendChild(divMensagem);
     scrollParaBaixo();
 }
 
@@ -917,8 +940,38 @@ function lerTextoEmVoz(txt) {
     const synth = window.speechSynthesis;
     if (synth.speaking) synth.cancel();
     const u = new SpeechSynthesisUtterance(txtLimpo);
-    u.lang = 'pt-BR';
+    // tentativa de escolher uma voz pt-BR mais 'clássica' pelo nome/idioma
+    const voices = synth.getVoices ? synth.getVoices() : [];
+    let vozEscolhida = null;
+    // se a vo preferida foi selecionada anteriormente, tente reutilizá-la
+    if (window.__preferredVoiceName) {
+        vozEscolhida = voices.find(v => v.name === window.__preferredVoiceName) || null;
+    }
+    if (!vozEscolhida) {
+        const preferenciaNomes = ['google português', 'português do brasil', 'português (brasil)', 'português-br', 'pt-br', 'luciana', 'daniel', 'joão', 'joao', 'maria', 'brasil', 'brazil'];
+        for (const v of voices) {
+            const nameLower = (v.name || '').toLowerCase();
+            const langLower = (v.lang || '').toLowerCase();
+            for (const pref of preferenciaNomes) {
+                if (nameLower.includes(pref) || langLower.includes(pref)) { vozEscolhida = v; break; }
+            }
+            if (vozEscolhida) break;
+        }
+    }
+    // fallback: qualquer voz pt
+    if (!vozEscolhida) {
+        for (const v of voices) {
+            if (v.lang && v.lang.toLowerCase().startsWith('pt')) { vozEscolhida = v; break; }
+        }
+    }
+    if (vozEscolhida) u.voice = vozEscolhida;
+    u.lang = vozEscolhida && vozEscolhida.lang ? vozEscolhida.lang : 'pt-BR';
+    // parâmetros ajustados para voz mais natural
+    u.rate = 0.95;
+    u.pitch = 1.0;
+    console.log('TTS using voice:', (u.voice && u.voice.name) || u.lang);
     synth.speak(u);
+    return u;
 }
 
 // ===== INICIALIZAÇÃO E RESETS =====
@@ -958,36 +1011,83 @@ function ajustarAlturaTextarea(textarea) {
 
 function atualizarBotaoAudioEnviar() {
     const textarea = document.getElementById('input-mensagem');
-    const btnAction = document.getElementById('btn-action');
-    const iconAction = btnAction ?
-    btnAction.querySelector('.icon-action') : null;
-    if (!textarea || !btnAction || !iconAction) return;
-    iconAction.textContent = textarea.value.trim().length > 0 ? 'arrow_upward' : 'mic';
+    const btnSend = document.getElementById('btn-send');
+    if (!textarea || !btnSend) return;
+    const hasText = textarea.value.trim().length > 0;
+    // manter o botão habilitado mesmo sem texto (ele abre o modo Live)
+    btnSend.disabled = false;
+    if (hasText) {
+        btnSend.classList.remove('send-live');
+    } else {
+        btnSend.classList.add('send-live');
+    }
 }
 
 function clicouBotaoAcao() {
     const textarea = document.getElementById('input-mensagem');
-    if (textarea.value.trim().length > 0) enviarMensagem();
-    else iniciarTranscricao();
+    if (textarea && textarea.value.trim().length > 0) enviarMensagem();
+    else gravarAudio();
 }
 
 // Transcrição de Voz
 let isListening = false;
+let _tempTranscript = '';
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
-recognition.continuous = false;
+recognition.continuous = true; // mantem até o usuário parar
+recognition.interimResults = true; // resultados parciais
 recognition.lang = 'pt-BR';
 
-recognition.onstart = () => { isListening = true; document.getElementById('btn-action').classList.add('listening'); };
-recognition.onend = () => { isListening = false; document.getElementById('btn-action').classList.remove('listening'); };
-recognition.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    document.getElementById('input-mensagem').value += text;
-    atualizarBotaoAudioEnviar();
+recognition.onstart = () => {
+    isListening = true;
+    _tempTranscript = '';
+    const mic = document.getElementById('btn-mic');
+    if (mic) mic.classList.add('recording');
 };
-function iniciarTranscricao() {
-    if (!isListening) recognition.start();
-    else recognition.stop();
+
+recognition.onend = () => {
+    isListening = false;
+    const mic = document.getElementById('btn-mic');
+    if (mic) mic.classList.remove('recording');
+    // auto-enviar se houver algo transcrito
+    const val = (_tempTranscript || '').trim();
+    if (val.length > 0) {
+        const input = document.getElementById('input-mensagem');
+        if (input) {
+            input.value = val;
+            atualizarBotaoAudioEnviar();
+            enviarMensagem();
+        }
+    }
+};
+
+recognition.onresult = (e) => {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; ++i) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+    }
+    // guarda em temp e atualiza o input para visualização ao usuário
+    _tempTranscript = (final + ' ' + interim).trim();
+    const input = document.getElementById('input-mensagem');
+    if (input) {
+        input.value = _tempTranscript;
+        ajustarAlturaTextarea(input);
+        atualizarBotaoAudioEnviar();
+    }
+};
+
+function gravarAudio() {
+    try {
+        if (!isListening) {
+            recognition.start();
+        } else {
+            recognition.stop();
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 // LOAD
@@ -1012,6 +1112,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    // estado inicial do botão enviar
+    atualizarBotaoAudioEnviar();
 
     // Carregamento dos dados
     fetch('training.json').then(r => r.json()).then(d => treinamentos = d).catch(e => console.log(e));
@@ -1027,6 +1129,272 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(e => console.error("Erro ao carregar imagem.json:", e));
 
+    // Conectar o toast (informativo) e ajustar o comportamento do botão enviar
+    const voiceToast = document.getElementById('voice-toast');
+    function showVoiceToast(msg, ms = 4000) {
+        if (!voiceToast) return;
+        voiceToast.textContent = msg;
+        voiceToast.classList.add('show');
+        if (ms > 0) setTimeout(() => voiceToast.classList.remove('show'), ms);
+    }
+    // não mostrar instrução automática no toast por padrão
+
+    // botão enviar: se textarea vazio => ativa Live fullscreen; caso contrário envia texto
+    const btnSend = document.getElementById('btn-send');
+    function atualizarVisualBotaoSend() {
+        const ta = document.getElementById('input-mensagem');
+        if (!btnSend || !ta) return;
+        if (ta.value.trim().length === 0) {
+            btnSend.innerHTML = '<span class="material-symbols-rounded">graphic_eq</span>';
+            btnSend.title = 'Ativar Lhama Live (voz)';
+        } else {
+            btnSend.innerHTML = '<span class="material-symbols-rounded">arrow_upward</span>';
+            btnSend.title = 'Enviar mensagem';
+        }
+    }
+
+    const ta = document.getElementById('input-mensagem');
+    if (ta) ta.addEventListener('input', atualizarVisualBotaoSend);
+    atualizarVisualBotaoSend();
+
+    if (btnSend) {
+        btnSend.addEventListener('click', async (e) => {
+            const ta = document.getElementById('input-mensagem');
+            if (ta && ta.value.trim().length > 0) {
+                enviarMensagem();
+                return;
+            }
+
+            // Se vazio: ativar Live em tela cheia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showVoiceToast('Microfone não suportado neste navegador', 3000);
+                return;
+            }
+
+            try {
+                showVoiceToast('Solicitando acesso ao microfone...', 2000);
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(t => t.stop());
+                // abrir modal full-screen e iniciar sessão de reconhecimento contínuo
+                showLiveModal();
+                startLiveSession();
+            } catch (err) {
+                console.warn('Permissão de microfone negada ou erro:', err);
+                showVoiceToast('Permissão de microfone negada', 3000);
+            }
+        });
+    }
+
+    // tenta detectar e fixar uma voz pt-BR preferida (padrão clássico). Alguns navegadores só retornam vozes após onvoiceschanged
+    function pickPreferredVoice() {
+        const synth = window.speechSynthesis;
+        const voices = synth.getVoices ? synth.getVoices() : [];
+        if (!voices || voices.length === 0) return;
+        // preferir explicitamente a voz eSpeak PT-BR se disponível
+        const exact = voices.find(v => (v.name||'').toLowerCase() === 'espeak portuguese (brazil)');
+        if (exact) { window.__preferredVoiceName = exact.name; console.log('Preferred voice set to exact match', exact.name); return; }
+        const preferenciaNomes = ['google português do brasil','português do brasil','pt-br','luciana','daniel','joão','joao','maria','brasil'];
+        for (const pref of preferenciaNomes) {
+            const found = voices.find(v => (v.name||'').toLowerCase().includes(pref) || (v.lang||'').toLowerCase().includes(pref));
+            if (found) { window.__preferredVoiceName = found.name; console.log('Preferred voice set to', found.name); return; }
+        }
+        // fallback: primeira voz pt encontrada
+        const pt = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt'));
+        if (pt) { window.__preferredVoiceName = pt.name; console.log('Preferred voice fallback to', pt.name); }
+    }
+    if (window.speechSynthesis) {
+        pickPreferredVoice();
+        window.speechSynthesis.onvoiceschanged = pickPreferredVoice;
+    }
+
+
+/* ===== Lhama AI Live: hotword detection e sessão ao vivo (apenas áudio) ===== */
+let hotwordRecognition = null;
+let liveActive = false;
+let liveRecognition = null;
+
+function startHotwordListener() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    hotwordRecognition = new SR();
+    hotwordRecognition.continuous = true;
+    hotwordRecognition.interimResults = true;
+    hotwordRecognition.lang = 'pt-BR';
+
+    hotwordRecognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; ++i) transcript += e.results[i][0].transcript + ' ';
+        transcript = transcript.toLowerCase();
+        if (transcript.includes('hey lhama') || transcript.includes('ok lhama') || transcript.includes('oi lhama')) {
+            // Hotword detectada
+            triggerLiveMode();
+        }
+    };
+    hotwordRecognition.onerror = (err) => {
+        console.error('hotwordRecognition error:', err);
+        const vt = document.getElementById('voice-toast');
+        if (vt) { vt.textContent = 'Erro no reconhecimento de hotword'; vt.classList.add('show'); setTimeout(() => vt.classList.remove('show'), 3000); }
+    };
+    hotwordRecognition.onstart = () => { console.log('hotwordRecognition started'); };
+    hotwordRecognition.onend = () => { console.log('hotwordRecognition ended'); if (!liveActive) setTimeout(() => hotwordRecognition && hotwordRecognition.start(), 400); };
+    hotwordRecognition.start();
+}
+
+function stopHotwordListener() {
+    if (hotwordRecognition) {
+        try { hotwordRecognition.stop(); } catch(e){}
+        try { hotwordRecognition.abort && hotwordRecognition.abort(); } catch(e){}
+        hotwordRecognition = null;
+    }
+}
+
+/**
+ * Verifica se o SpeechRecognition está funcional (tenta iniciar uma instância curta).
+ * Retorna Promise<boolean>.
+ */
+function verifySpeechRecognitionAvailable(timeout = 1500) {
+    return new Promise((resolve) => {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return resolve(false);
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let tester = null;
+        let finished = false;
+        try {
+            tester = new SR();
+            tester.continuous = false;
+            tester.interimResults = false;
+            tester.lang = 'pt-BR';
+            tester.onstart = () => { if (!finished) { finished = true; try { tester.stop(); } catch(e){}; resolve(true); } };
+            tester.onerror = (e) => { if (!finished) { finished = true; resolve(false); } };
+            tester.onend = () => { if (!finished) { finished = true; resolve(true); } };
+            try { tester.start(); } catch (e) { finished = true; resolve(false); }
+        } catch (err) {
+            resolve(false);
+        }
+        // safety timeout
+        setTimeout(() => { if (!finished) { finished = true; try { tester && tester.stop(); } catch(e){}; resolve(false); } }, timeout);
+    });
+}
+
+// handler do botão de teste rápido (adicionado ao carregar)
+// handler do botão de teste removido (debug removed)
+
+function triggerLiveMode() {
+    if (liveActive) return;
+    liveActive = true;
+    showLiveModal();
+    // fala inicial de ativação
+    lerTextoEmVoz('Lhama Live ativada. O que você deseja?');
+    // start live recognition for conversation (only while modal open)
+    startLiveRecognition();
+}
+
+function showLiveModal() {
+    const modal = document.getElementById('live-modal');
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden','false');
+    const closeBtn = document.getElementById('live-close');
+    if (closeBtn) closeBtn.onclick = stopLiveMode;
+}
+
+function hideLiveModal() {
+    const modal = document.getElementById('live-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden','true');
+}
+
+function stopLiveMode() {
+    liveActive = false;
+    hideLiveModal();
+    stopLiveRecognition();
+    // parar sessão full-screen também
+    stopLiveSession();
+}
+
+function startLiveRecognition() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    liveRecognition = new SR();
+    liveRecognition.continuous = false; // single query then respond
+    liveRecognition.interimResults = false;
+    liveRecognition.lang = 'pt-BR';
+
+    liveRecognition.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        // adicionar mensagem do usuário no chat
+        try { adicionarMensagem(text, 'usuario'); } catch (err) { console.warn('erro ao adicionar msg usuario:', err); }
+        // processa por trás e responde (texto) baseado no treinamento
+        const resposta = gerarResposta(text);
+        // adiciona resposta como mensagem de bot no chat
+        try { adicionarMensagem(resposta, 'bot'); } catch (err) { console.warn('erro ao adicionar msg bot:', err); }
+        // fala a resposta
+        lerTextoEmVoz(resposta);
+        // após falar, escuta novamente enquanto modal aberto
+        const onEnd = () => {
+            if (liveActive) {
+                setTimeout(() => { try { liveRecognition.start(); } catch(e){} }, 300);
+            }
+            liveRecognition.onend = null;
+        };
+        liveRecognition.onend = onEnd;
+    };
+
+    liveRecognition.onerror = (err) => { /* ignore */ };
+    liveRecognition.onend = () => { if (liveActive) { try { liveRecognition.start(); } catch(e){} } };
+    try { liveRecognition.start(); } catch(e) { console.warn(e); }
+}
+
+// Sessão Live full-screen: reconhecimento contínuo, sem mostrar transcrição na UI modal
+let liveSessionRecognition = null;
+function startLiveSession() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showVoiceToast && showVoiceToast('Reconhecimento de voz não disponível neste navegador', 3000);
+        return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    liveSessionRecognition = new SR();
+    liveSessionRecognition.continuous = true;
+    liveSessionRecognition.interimResults = false; // não mostrar parciais
+    liveSessionRecognition.lang = 'pt-BR';
+
+    liveSessionRecognition.onresult = (e) => {
+        try {
+            const text = e.results[e.resultIndex][0].transcript;
+            // adicionar ao chat como mensagem do usuário (por trás)
+            adicionarMensagem(text, 'usuario');
+            // gerar resposta com base em training.json
+            const resp = gerarResposta(text);
+            adicionarMensagem(resp, 'bot');
+            // falar a resposta: pausar reconhecimento enquanto fala para evitar 'picote' e reiniciar depois
+            try { liveSessionRecognition && liveSessionRecognition.stop(); } catch(e){}
+            const utter = lerTextoEmVoz(resp);
+            if (utter) {
+                utter.onend = () => { try { if (liveSessionRecognition) liveSessionRecognition.start(); } catch(e){} };
+            } else {
+                try { if (liveSessionRecognition) liveSessionRecognition.start(); } catch(e){}
+            }
+        } catch (err) { console.error('Erro no liveSession onresult:', err); }
+    };
+
+    liveSessionRecognition.onerror = (err) => { console.error('liveSessionRecognition error:', err); };
+    liveSessionRecognition.onend = () => { console.log('liveSessionRecognition ended'); if (liveSessionRecognition) { try { liveSessionRecognition.start(); } catch(e){} } };
+    try { liveSessionRecognition.start(); } catch(e) { console.warn('Erro ao iniciar liveSessionRecognition:', e); }
+}
+
+function stopLiveSession() {
+    if (liveSessionRecognition) {
+        try { liveSessionRecognition.stop(); } catch(e){}
+        liveSessionRecognition = null;
+    }
+}
+
+function stopLiveRecognition() {
+    if (liveRecognition) {
+        try { liveRecognition.stop(); } catch(e){}
+        liveRecognition = null;
+    }
+}
     // Iniciar uma nova conversa ao carregar (se você quiser)
     // iniciarNovaConversa();
 });

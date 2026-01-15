@@ -181,6 +181,7 @@ body {
     overflow-y: auto;
     padding: 20px 0;
     background: var(--bg-page); /* Garante fundo branco */
+    padding-bottom: calc(180px + 40px); /* Espaço para a caixa de input fixa */
 }
 
 #chat-box {
@@ -326,35 +327,55 @@ body {
 
 
 /* === Nova Área de Input === */
+
 .input-area-container {
     background: var(--bg-page);
-    padding-bottom: 20px;
-    padding-top: 10px;
-    flex-shrink: 0;
-    position: relative;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    padding: 0 0 0 0;
+    display: flex;
+    justify-content: center;
+    border: none;
+    box-shadow: none;
 }
 
-/* O wrapper agora ocupa 100% do container centralizado */
+/* Wrapper com topo arredondado e parte inferior 'cortada' */
+/* Caixa encostada no rodapé, sem parte inferior visível */
 .chat-input-wrapper {
     display: flex;
     flex-direction: column;
-    background: #f4f4f4;
-    border-radius: 24px;
-    padding: 12px 16px;
+    background: #fff;
+    border-radius: 18px 18px 0 0;
+    padding: 14px 32px 0 32px; /* padding-top menor para subir os elementos */
     transition: background 0.3s, box-shadow 0.3s;
-    border: 1px solid transparent;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.18), 0 1.5px 8px rgba(60,60,60,0.10);
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+    width: 100%;
+    max-width: 980px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 0;
+    min-height: 140px;
 }
 
+/* Onda colorida na sombra quando envia mensagem */
+
+
 .chat-input-wrapper:focus-within {
-    background: #ffffff;
-    border-color: var(--border-light);
-    box-shadow: var(--shadow-soft);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
 }
 
 /* Linha de cima: Input de texto */
 .input-row-top {
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    flex: 0;
 }
 
 /* Campo de input principal (agora textarea responsiva) */
@@ -366,25 +387,51 @@ body {
     color: var(--text-primary);
     outline: none;
     font-family: inherit;
-    padding: 6px 0;
+    padding: 8px 0;
     line-height: 1.4;
-    resize: none; /* usuário não redimensiona manualmente */
-    overflow-y: hidden; /* será toggled via JS */
+    resize: none;
+    overflow-y: auto;
     min-height: 40px;
-    max-height: 45vh; /* nunca ultrapassar ~45% da altura da viewport */
+    max-height: 35vh;
     box-sizing: border-box;
 }
 
+/* Garante que a linha de baixo (ícones) fique acima do pseudo-elemento */
+.input-row-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    margin-top: 10px;
+    padding-bottom: 6px;
+    flex: 0;
+    gap: 16px;
+}
+.tools-send-audio {
+    display: flex;
+    flex-direction: column; /* empilha mic acima do enviar */
+    align-items: center;
+    gap: 8px;
+    align-self: center; /* mantém centralizado horizontalmente dentro da linha */
+    transform: translateY(-12px); /* sobe os botões para centralização vertical no card */
+    transition: transform 0.18s ease;
+}
+}
+
+/* Ajustes visuais pequenos para combinar com a imagem */
 #input-mensagem::placeholder {
-    color: #9ca3af;
-    font-weight: 400;
+    color: #9aa3b2;
+    font-weight: 500;
+    opacity: 0.9;
 }
 
 /* Se o conteúdo exceder max-height, o textarea terá scroll interno */
 #input-mensagem.scrolling {
     overflow-y: auto;
-    padding-right: 6px; /* espaço para a barra de rolagem */
+    padding-right: 6px;
 }
+
 
 /* --- Mobile specific adjustments: mantém a caixa de escrita acessível --- */
 @media (max-width: 480px) {
@@ -717,11 +764,43 @@ body {
     font-weight: 500;
 }
 
+/* Tamanhos específicos: enviar maior, microfone menor */
+.tool-icon-btn.send-btn {
+    width: 40px; /* voltar para tamanho menor */
+    height: 40px;
+}
+.tool-icon-btn.send-btn .material-symbols-rounded { font-size: 20px; }
+
+.tool-icon-btn.mic-btn {
+    width: 28px; /* mic menor */
+    height: 28px;
+    background: transparent;
+    color: var(--primary-color);
+}
+.tool-icon-btn.mic-btn:hover { background: rgba(0,0,0,0.04); }
+.tool-icon-btn.mic-btn.recording {
+    background: #e53935;
+    color: #fff;
+    border: 2px solid #e53935;
+}
+
 /* Botão Enviar */
 .tool-icon-btn.send-btn {
     background: var(--primary-color);
     color: white;
+    border: none;
+    transition: background 0.2s, box-shadow 0.2s;
+    position: relative;
 }
+}
+
+/* Visual para quando o botão enviar ativa o modo Live (textarea vazio) */
+.tool-icon-btn.send-btn.send-live {
+    background: linear-gradient(135deg,#0077be,#00c7d6);
+    color: #fff;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.28);
+}
+.tool-icon-btn.send-btn.send-live .material-symbols-rounded { font-size: 20px; }
 
 .send-btn:disabled {
     background: #e5e7eb;
@@ -732,13 +811,46 @@ body {
 
 /* Botão Microfone - mesmo estilo do send */
 .tool-icon-btn.mic-btn {
-    background: var(--primary-color);
-    color: white;
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid transparent;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
 }
 
 .tool-icon-btn.mic-btn.listening {
-    background: var(--accent-blue);
+    background: #e53935;
+    color: #fff;
+    border: 2px solid #e53935;
     animation: micListeningPulse 1s ease-in-out infinite;
+}
+.tool-icon-btn.send-btn.sending {
+    background: var(--primary-color);
+    color: white;
+    position: relative;
+}
+.tool-icon-btn.send-btn.sending .material-symbols-rounded {
+    display: none;
+}
+.tool-icon-btn.send-btn.sending::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border: 2.5px solid #fff;
+    border-top: 2.5px solid #333;
+    border-radius: 50%;
+    animation: spinnerSend 0.7s linear infinite;
+}
+
+@keyframes spinnerSend {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 }
 
 @keyframes micListeningPulse {
@@ -784,6 +896,113 @@ body {
     align-items: center;
     padding: 20px;
 }
+
+/* ===== LHAMA AI LIVE (modal embaçado + bola gradiente) ===== */
+.live-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.85);
+    justify-content: center;
+    align-items: center;
+}
+.live-modal.active { display: flex; }
+.live-modal-content {
+    width: min(70vw, 560px);
+    height: min(70vw, 560px);
+    max-width: 680px;
+    max-height: 680px;
+    background: radial-gradient(circle at 30% 30%, #0077be 0%, #00a0d6 25%, #00c7d6 55%, #a6f0ff 100%);
+    border-radius: 50%;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25), inset 0 -8px 40px rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+}
+.live-close-btn{
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    border: none;
+    background: rgba(255,255,255,0.18);
+    color: #042c3b;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.live-title{
+    color: #042c3b;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.12);
+}
+.live-ball{
+    width: 60%;
+    height: 60%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(0,119,190,0.98) 0%, rgba(0,160,214,0.95) 25%, rgba(0,199,214,0.9) 55%, rgba(166,240,255,0.85) 100%);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.24), inset 0 8px 30px rgba(255,255,255,0.06);
+    animation: livePulse 3.2s infinite ease-in-out;
+}
+.live-hint{ color: rgba(4,44,59,0.95); font-size: 14px; margin-top: 12px; }
+
+@keyframes livePulse{
+    0%{ transform: scale(0.98) rotate(0deg); filter: hue-rotate(0deg); }
+    50%{ transform: scale(1.04) rotate(8deg); filter: hue-rotate(45deg); }
+    100%{ transform: scale(0.98) rotate(0deg); filter: hue-rotate(0deg); }
+}
+
+/* Toast informativo de voz */
+.voice-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 100px;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    font-size: 13px;
+    z-index: 10001;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 280ms ease, transform 280ms ease;
+}
+.voice-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Botão flutuante de ativação de voz */
+/* voice-toggle removido: ativação agora via botão enviar quando o textarea estiver vazio */
+
+/* botão de teste rápido */
+.voice-test {
+    position: fixed;
+    right: 92px;
+    bottom: 28px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.72);
+    color: #fff;
+    border: none;
+    z-index: 10001;
+    cursor: pointer;
+    font-size: 13px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+}
+.voice-test:active { transform: translateY(1px); }
+/* voice-test removido */
 
 .modal-image2.active {
     display: flex;
