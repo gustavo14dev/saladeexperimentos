@@ -1,167 +1,990 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lhama AI 1 Preview</title>
-    <meta name="description" content="Sala de Experimentos é um hub criativo com ferramentas, jogos e projetos de inteligência artificial. Acesse projetos divertidos e educativos.">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400,0..1,0" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="conversa.css">
+<html class="" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lhama AI 1 - Professional Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400,0..1,0" />
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: "Inter"
+                    },
+                    colors: {
+                        primary: "#1A1A1A",
+                        primary_hover: "#6d28d9",
+                        "background-light": "#f7f7f7",
+                        "background-dark": "#191919",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#18181b"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        lg: "1rem",
+                        xl: "1.5rem",
+                        full: "9999px"
+                    },
+                    boxShadow: {
+                        soft: "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+                        glow: "0 0 15px rgba(124, 58, 237, 0.15)"
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.3);
+            border-radius: 20px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: rgba(75, 85, 99, 0.4);
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        /* Estilos customizados para as mensagens */
+        #chat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .mensagem {
+            display: flex;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .mensagem.usuario {
+            justify-content: flex-end;
+        }
+        .mensagem.usuario .message-content {
+            background: #f4f4f4;
+            color: #202123;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .mensagem.bot .message-content {
+            background: #ffffff;
+            color: #202123;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        .message-actions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+            padding: 0;
+        }
+        .action-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 4px;
+            color: #d1d5db;
+            font-size: 12px;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: fit-content;
+        }
+        .action-icon-btn:hover {
+            color: #202123;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .action-icon-btn .material-icons-outlined {
+            font-size: 14px !important;
+        }
+        .imagem-resposta-premium {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 8px 0;
+        }
+        @keyframes imageFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Status de digitação */
+        .mensagem.bot.digitando .message-content {
+            background: #f4f4f4;
+            padding: 16px;
+        }
+        .digitando-dots {
+            display: flex;
+            gap: 4px;
+        }
+        .digitando-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            animation: digitarPulse 1.4s infinite;
+        }
+        .digitando-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .digitando-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes digitarPulse {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+        /* Modal styles */
+        .modal-image2 {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-image2.active {
+            display: flex;
+        }
+        .modal-image2-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+        }
+        .live-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .live-modal.active {
+            display: flex;
+        }
+        .voice-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .voice-toast.show {
+            opacity: 1;
+        }
+        /* Estilos para Modal Image 2 */
+        .modal-image2-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-image2-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .modal-image2-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .opcao-image2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .opcao-image2:hover {
+            border-color: #0284c7;
+            background: #f0f9ff;
+        }
+        .opcao-image2 .material-icons-outlined {
+            font-size: 24px;
+            color: #0284c7;
+        }
+        .opcao-titulo {
+            font-weight: 600;
+            font-size: 14px;
+            color: #202123;
+        }
+        .opcao-desc {
+            font-size: 12px;
+            color: #6e6e80;
+        }
+        .card-image2-autocomplete {
+            display: none;
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card-image2-autocomplete.active {
+            display: block;
+        }
+        .card-image2-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+        }
+        .image2-item {
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+            font-size: 13px;
+            color: #202123;
+        }
+        .image2-item:hover {
+            background: #f4f4f4;
+        }
+        .image2-no-result {
+            padding: 16px;
+            text-align: center;
+            color: #6e6e80;
+            font-size: 13px;
+        }
+        .live-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            max-width: 300px;
+            position: relative;
+        }
+        .live-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6e6e80;
+        }
+        .live-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 20px 0;
+            color: #202123;
+        }
+        .live-ball {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #6d28d9);
+            margin: 20px auto;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .live-hint {
+            color: #6e6e80;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        /* Anúncio overlay */
+        .anuncio-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .anuncio-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .titulo-com-badge {
+            margin-bottom: 20px;
+        }
+        .titulo-animado {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0284c7, #6d28d9, #0284c7);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+            margin: 0;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+            100% { background-position: 0% center; }
+        }
+        .badge-beta {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .anuncio-texto {
+            margin: 20px 0;
+            text-align: left;
+            font-size: 14px;
+            color: #6e6e80;
+            line-height: 1.6;
+        }
+        .anuncio-texto ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .anuncio-texto li {
+            margin: 10px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .anuncio-texto li:before {
+            content: "✨";
+            position: absolute;
+            left: 0;
+            font-size: 14px;
+        }
+        .anuncio-botoes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .anuncio-botoes button {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: #1A1A1A;
+            color: white;
+        }
+        .anuncio-botoes button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        /* Histórico da sidebar */
+        .historico-item {
+            width: 100%;
+            text-align: left;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+            font-size: 0.875rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .historico-item:hover {
+            background: rgba(148, 163, 184, 0.1);
+            color: #475569;
+        }
+        .historico-item .material-icons-outlined {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .historico-vazio {
+            padding: 1rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        .historico-secao {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 1rem;
+        }
+        .historico-secao:first-child {
+            margin-top: 0;
+        }
+        /* Sidebar Toggle */
+        aside {
+            transition: width 0.3s ease, margin-left 0.3s ease;
+        }
+        aside.collapsed {
+            width: 80px !important;
+        }
+        aside.collapsed .sidebar-content {
+            display: none;
+        }
+        aside.collapsed .sidebar-mini {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0.5rem;
+        }
+        .sidebar-content {
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-mini {
+            display: none;
+        }
+        .mini-icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(148, 163, 184, 0.1);
+            border: none;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .mini-icon-btn:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: #475569;
+        }
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: -10px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .sidebar-toggle-btn:hover {
+            background: #f1f5f9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        /* Mobile Blocker */
+        #mobile-blocker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ff3b3b 0%, #ff6b6b 100%);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+        #mobile-blocker.active {
+            display: flex;
+        }
+        .mobile-blocker-content {
+            text-align: center;
+            color: white;
+        }
+        .mobile-blocker-content h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        .mobile-blocker-content p {
+            font-size: 16px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .mobile-blocker-btn {
+            margin-top: 30px;
+            padding: 12px 32px;
+            background: white;
+            color: #ff3b3b;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mobile-blocker-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+</style>
 </head>
-<body>
-    <div id="conteudo-principal">
-        <div class="header">
-            <div class="centralized-container header-inner">
-                <div class="header-content">
-                    <h1>Lhama AI 1</h1>
-                    <p>Sua IA pronta para tudo.</p>
-                </div>
-                <div class="header-buttons">
-                    <button class="header-btn admin-btn" onclick="window.location.href = 'admin.html'">Admin</button>
-                    <button id="new-chat-btn" class="header-btn" title="Iniciar uma nova conversa">
-                        <span class="material-symbols-rounded">add</span> Nova Conversa
-                    </button>
-                    <button class="header-btn voltar-btn" onclick="window.location.href = '../index.html'">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_back</span> Voltar
-                    </button>
-                </div>
-            </div>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white">
+    <!-- Mobile Blocker -->
+    <div id="mobile-blocker">
+        <div class="mobile-blocker-content">
+            <div style="font-size: 48px;">📱</div>
+            <h1>Indisponível em Celulares</h1>
+            <p>Por motivo de design, o Lhama AI 1 está indisponível para celulares.</p>
+            <p style="font-size: 14px;">Por favor, dirija-se a um computador ou tablet para poder usar o Lhama AI 1.</p>
+            <p style="font-size: 12px; margin-top: 20px; opacity: 0.9;">Desculpa pelo transtorno! 😔</p>
+            <button class="mobile-blocker-btn" onclick="history.back()">Voltar</button>
         </div>
-
-        <div id="chat-box-container">
-             <div id="chat-box" class="centralized-container">
-                <div class="mensagem bot boas-vindas-inicial">
-                    <div class="message-content">
-                        Olá! Sou a Lhama AI 1, o modelo em teste mais inteligente em teste público da Lhama. Posso fazer várias coisas, como: <br> <br><li>Acabar com seu tédio, sobre quase qualquer assunto;</li><li>Gerar tópicos do quê toda uma boa redação deve ter;</li><li>Gero imagens e envio junto com a resposta em alguns tópicos como som, livro, carro, etc;</li><li>Corrijo várias palavras erradas de seu texto, para não passar mico na apresentação de português  😎;</li><li>Resumo os textos que você me manda, e te entrego vários tópicos sobre seu texto.</li><br>Então, como posso te ajudar hoje? Escolha o que quiser, vou tentar te ajudar, dentro das minhas capacidades! ✨
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="input-area-container">
-            <div class="input-area centralized-container">
-                <div class="chat-input-wrapper">
-                    
-                    <div class="input-row-top">
-                        <textarea id="input-mensagem" rows="1" placeholder="Como posso te ajudar?" autocomplete="off"></textarea>
-                    </div>
-
-                    <div class="input-row-bottom">
-                        <!-- Menu Desktop (visível em telas maiores) -->
-                        <div class="tools-left">
-                            <button id="btn-redacao" class="function-pill-btn" onclick="alternarModoRedacao()">
-                                <span class="material-symbols-rounded icon-close">close</span>
-                                <span class="material-symbols-rounded icon-filled">menu_book</span>
-                                 Redação
-                                <span class="beta-label">Beta</span>
-                            </button>
-                            <button id="btn-resumo" class="function-pill-btn resumo" onclick="alternarModoResumo()">
-                                <span class="material-symbols-rounded icon-close">close</span>
-                                <span class="material-symbols-rounded">summarize</span>
-                                 Resumo
-                            </button>
-                            <button id="btn-correcao" class="function-pill-btn correcao" onclick="alternarModoCorrecao()">
-                                <span class="material-symbols-rounded icon-close">close</span>
-                                <span class="material-symbols-rounded">edit</span>
-                                 Correção
-                            </button>
-                            <button id="btn-image2" class="function-pill-btn image2" onclick="toggleModoImage2()">
-                                <span class="material-symbols-rounded icon-close">close</span>
-                                <span class="material-symbols-rounded icon-filled">image</span>
-                                 Image 2
-                                <span class="beta-label">Beta</span>
-                            </button>
-                        </div>
-
-                        <!-- Menu Mobile (3 pontinhos) -->
-                        <div class="tools-mobile-menu">
-                            <button class="menu-trigger-btn" id="menu-trigger" onclick="toggleToolsMenu()" title="Mais opções">
-                                <span class="material-symbols-rounded">more_vert</span>
-                            </button>
-                            <div class="tools-dropdown" id="tools-dropdown">
-                                <button id="btn-redacao-mobile" class="function-pill-btn mobile" onclick="alternarModoRedacao()">
-                                    <span class="material-symbols-rounded icon-close">close</span>
-                                    <span class="material-symbols-rounded icon-filled">menu_book</span>
-                                    Redação
-                                    <span class="beta-label">Beta</span>
-                                </button>
-                                <button id="btn-resumo-mobile" class="function-pill-btn resumo mobile" onclick="alternarModoResumo()">
-                                    <span class="material-symbols-rounded icon-close">close</span>
-                                    <span class="material-symbols-rounded">summarize</span>
-                                    Resumo
-                                </button>
-                                <button id="btn-correcao-mobile" class="function-pill-btn correcao mobile" onclick="alternarModoCorrecao()">
-                                    <span class="material-symbols-rounded icon-close">close</span>
-                                    <span class="material-symbols-rounded">edit</span>
-                                    Correção
-                                </button>
-                                <button id="btn-image2-mobile" class="function-pill-btn image2 mobile" onclick="toggleModoImage2()">
-                                    <span class="material-symbols-rounded icon-close">close</span>
-                                    <span class="material-symbols-rounded icon-filled">image</span>
-                                    Image 2
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="tools-send-audio">
-                            <button class="tool-icon-btn mic-btn" onclick="gravarAudio()" id="btn-mic" title="Gravar áudio">
-                                <span class="material-symbols-rounded">mic</span>
-                            </button>
-                            <button class="tool-icon-btn send-btn" id="btn-send" title="Enviar mensagem">
-                                <span class="material-symbols-rounded">arrow_upward</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Image 2 -->
-        <div id="modal-image2" class="modal-image2">
-            <div class="modal-image2-content">
-                <div class="modal-image2-header">
-                    <h2>Gerar Imagem</h2>
-                    <button class="modal-close-btn" onclick="fecharModalImage2()">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
-                <div class="modal-image2-body">
-                    <button class="opcao-image2" onclick="ativarModoImage2Simples()">
-                        <span class="material-symbols-rounded">image</span>
-                        <span class="opcao-titulo">Gerar Imagem</span>
-                        <span class="opcao-desc">Gera uma imagem baseada na sua descrição</span>
-                    </button>
-                    <button class="opcao-image2" onclick="ativarModoImage2Pessoa()">
-                        <span class="material-symbols-rounded">person</span>
-                        <span class="opcao-titulo">Gerar Imagem com Pessoas</span>
-                        <span class="opcao-desc">Em desenvolvimento</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card de Autocomplete para Image 2 -->
-        <div id="card-image2-autocomplete" class="card-image2-autocomplete">
-            <div id="card-image2-content" class="card-image2-content"></div>
-        </div>
-
-        <!-- Lhama AI Live Modal -->
-        <div id="live-modal" class="live-modal" aria-hidden="true">
-            <div class="live-modal-content">
-                <button class="live-close-btn" id="live-close" title="Fechar">×</button>
-                <h2 class="live-title">Lhama Live</h2>
-                <div class="live-ball" id="live-ball" aria-hidden="true"></div>
-                <div class="live-hint">Respondendo somente por áudio...</div>
-            </div>
-        </div>
-        <!-- Toast informativo para voz -->
-        <div id="voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
-
-        <!-- botão antigo de ativação por voz removido (agora ativação via botão enviar quando vazio) -->
-        <!-- botão de teste removido em produção -->
     </div>
 
-    <script src="conversa.js"></script>
-</body>
-</html>
+<aside class="w-[280px] hidden md:flex flex-col border-r border-slate-200 dark:border-zinc-800 bg-surface-light dark:bg-surface-dark flex-shrink-0 transition-colors duration-300 relative" id="sidebar">
+<button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+    <span class="material-icons-outlined" style="font-size: 16px;">menu</span>
+</button>
+<div class="sidebar-content">
+<div class="p-5 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold shadow-glow">
+<span class="material-icons-round text-lg">smart_toy</span>
+</div>
+<span class="font-semibold text-lg tracking-tight text-slate-900 dark:text-white">Lhama AI</span>
+</div>
+<div class="px-4 mb-4">
+<button class="w-full flex items-center gap-3 px-4 py-3 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-xl transition-all duration-200 group border border-transparent dark:border-zinc-700" id="new-chat-btn" onclick="iniciarNovaConversa()">
+<span class="material-icons-round text-primary group-hover:scale-110 transition-transform">add</span>
+<span class="font-medium text-sm">Nova Conversa</span>
+</button>
+</div>
+<div id="historico-sidebar" class="flex-1 overflow-y-auto px-2 space-y-1">
+            <!-- Histórico será carregado dinamicamente pelo JavaScript -->
+</div>
+</div>
+<div class="sidebar-mini">
+    <button class="mini-icon-btn" title="Lhama AI">
+        <span class="material-icons-round">smart_toy</span>
+    </button>
+    <button class="mini-icon-btn" onclick="toggleSidebar()" title="Abrir">
+        <span class="material-icons-outlined">menu</span>
+    </button>
+    <div id="historico-mini" class="flex flex-col gap-2 flex-1 overflow-y-auto pb-2">
+        <!-- Mini ícones das conversas -->
+    </div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col relative h-full">
+<header class="h-16 flex items-center justify-between px-6 border-b border-slate-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-background-dark/80 glass-effect z-10 sticky top-0">
+<div class="flex items-center gap-3 md:hidden">
+<button class="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300">
+<span class="material-icons-round">menu</span>
+</button>
+<span class="font-bold text-slate-900 dark:text-white">Lhama AI 1</span>
+</div>
+<div class="hidden md:block">
+<h1 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    Lhama AI 1
+                    <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide uppercase">Beta v1.2</span>
+</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Sua IA pronta para tudo.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors hidden sm:flex items-center gap-2" onclick="window.location.href = 'admin.html'">
+<span class="material-icons-outlined text-lg">admin_panel_settings</span>
+                    Admin
+                </button>
+<button class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="window.location.href = '../index.html'">
+<span class="material-icons-round text-lg">arrow_back</span>
+                    Voltar
+                </button>
+</div>
+</header>
+<div id="chat-box-container" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8" style="padding-bottom: 24rem;">
+<div id="chat-box" class="w-full max-w-2xl mx-auto">
+                <div class="mensagem bot boas-vindas-inicial" id="msg-boas-vindas" style="justify-content: center; margin-bottom: 0; flex-direction: column; align-items: center;">
+                    <div class="message-content" style="background: transparent; padding: 60px 20px; text-align: center; font-size: 48px; font-weight: 700; color: #202123; max-width: 100%; border: none;">
+                        Como posso ajudar?
+                    </div>
+                </div>
+            </div>
+</div>
+
+<div class="w-full px-4 absolute bottom-0 left-0 right-0 z-20">
+<div class="max-w-3xl mx-auto relative group">
+<div class="relative bg-white dark:bg-surface-dark rounded-t-3xl rounded-b-none shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.3)] border-x border-t border-slate-200 dark:border-zinc-700 overflow-hidden transition-all duration-300 pb-4">
+<textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
+<div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-2">
+<button id="btn-redacao" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoRedacao()">
+<span class="material-icons-outlined text-sm">article</span>
+                                Redação
+                                <span class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-[9px] font-bold uppercase tracking-wider ml-1">Beta</span>
+</button>
+<button id="btn-resumo" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoResumo()">
+<span class="material-icons-outlined text-sm">description</span>
+                                Resumo
+                            </button>
+<button id="btn-correcao" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoCorrecao()">
+<span class="material-icons-outlined text-sm">edit</span>
+                                Correção
+                            </button>
+<button id="btn-image2" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="toggleModoImage2()">
+<span class="material-icons-outlined text-sm">image</span>
+                                Image 2
+                                <span class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-[9px] font-bold uppercase tracking-wider ml-1">Beta</span>
+</button>
+</div>
+<div class="flex items-center gap-3 ml-auto">
+<button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" id="btn-mic" onclick="gravarAudio()">
+<span class="material-icons-round">mic</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-primary hover:bg-primary_hover text-white transition-all shadow-md shadow-primary/20" id="btn-send" onclick="enviarMensagem()">
+<span class="material-icons-round text-base">arrow_upward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="modal-image2" class="modal-image2">
+    <div class="modal-image2-content">
+        <div class="modal-image2-header">
+            <h2>Gerar Imagem</h2>
+            <button class="modal-close-btn" onclick="fecharModalImage2()">
+                <span class="material-icons-round">close</span>
+            </button>
+        </div>
+        <div class="modal-image2-body">
+            <button class="opcao-image2" onclick="ativarModoImage2Simples()">
+                <span class="material-icons-outlined">image</span>
+                <span class="opcao-titulo">Gerar Imagem</span>
+                <span class="opcao-desc">Gera uma imagem baseada na sua descrição</span>
+            </button>
+            <button class="opcao-image2" onclick="ativarModoImage2Pessoa()">
+                <span class="material-icons-outlined">person</span>
+                <span class="opcao-titulo">Gerar Imagem com Pessoas</span>
+                <span class="opcao-desc">Em desenvolvimento</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="card-image2-autocomplete" class="card-image2-autocomplete">
+    <div id="card-image2-content" class="card-image2-content"></div>
+</div>
+
+<div id="live-modal" class="live-modal" aria-hidden="true">
+    <div class="live-modal-content">
+        <button class="live-close-btn" id="live-close" title="Fechar">×</button>
+        <h2 class="live-title">Lhama Live</h2>
+        <div class="live-ball" id="live-ball" aria-hidden="true"></div>
+        <div class="live-hint">Respondendo somente por áudio...</div>
+    </div>
+</div>
+
+<div id="voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
+
+</main>
+<script src="conversa.js"></script>
+<script>
+// ===== SISTEMA DE HISTÓRICO E LOCALSTORAGE INTEGRADO =====
+
+// Função para carregar histórico da sidebar
+function carregarHistoricoSidebar() {
+    const sidebar = document.getElementById('historico-sidebar');
+    const miniSidebar = document.getElementById('historico-mini');
+    
+    if (!sidebar) return;
+
+    const dados = localStorage.getItem('lhama_conversas');
+    const conversas = dados ? JSON.parse(dados) : [];
+
+    if (conversas.length === 0) {
+        sidebar.innerHTML = '<div class="historico-vazio">Nenhuma conversa ainda</div>';
+        if (miniSidebar) miniSidebar.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    let miniHtml = '';
+    let dataAtual = null;
+
+    conversas.forEach(conversa => {
+        if (conversa.data !== dataAtual) {
+            dataAtual = conversa.data;
+            html += `<div class="historico-secao">${conversa.data}</div>`;
+        }
+
+        html += `
+            <div class="flex items-center gap-1 group mb-1">
+                <button class="historico-item flex-1" onclick="carregarConversaSidebar('${conversa.id}')" title="${conversa.titulo}">
+                    <span class="material-icons-outlined">chat_bubble_outline</span>
+                    <span>${conversa.titulo}</span>
+                </button>
+                <button class="p-1 rounded text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" onclick="editarNomeConversa('${conversa.id}', '${conversa.titulo}')" title="Editar nome">
+                    <span class="material-icons-outlined" style="font-size: 16px;">edit</span>
+                </button>
+                <button class="p-1 rounded text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity" onclick="deletarConversa('${conversa.id}')" title="Deletar">
+                    <span class="material-icons-outlined" style="font-size: 16px;">delete</span>
+                </button>
+            </div>
+        `;
+        
+        miniHtml += `
+            <button class="mini-icon-btn" onclick="carregarConversaSidebar('${conversa.id}')" title="${conversa.titulo}">
+                <span class="material-icons-outlined">chat_bubble_outline</span>
+            </button>
+        `;
+    });
+
+    sidebar.innerHTML = html;
+    if (miniSidebar) miniSidebar.innerHTML = miniHtml;
+}
+
+// Carregar conversa do histórico
+function carregarConversaSidebar(id) {
+    const dados = localStorage.getItem('lhama_conversas');
+    const conversas = dados ? JSON.parse(dados) : [];
+    const conversa = conversas.find(c => c.id === id);
+
+    if (!conversa) return;
+
+    const chatBox = document.getElementById('chat-box');
+    const msgBoasVindas = document.getElementById('msg-boas-vindas');
+    
+    chatBox.innerHTML = '';
+    if (msgBoasVindas) msgBoasVindas.style.display = 'none';
+
+    conversa.mensagens.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `mensagem ${msg.tipo}`;
+        let conteudo = msg.conteudo;
+        let htmlContent = '';
+        if (msg.tipo === 'bot') {
+            htmlContent = `
+                <div class="message-content">${conteudo}</div>
+                <div class="message-actions-container">
+                    <button class="action-icon-btn" onclick="copiarTexto('${msg.conteudo.replace(/'/g, "\\'")}')" title="Copiar" style="cursor: pointer;">
+                        <span class="material-icons-outlined" style="font-size: 14px;">content_copy</span> <span>Copiar</span>
+                    </button>
+                    <button class="action-icon-btn" onclick="lerTextoEmVoz('${msg.conteudo.replace(/'/g, "\\'")}')" title="Ouvir" style="cursor: pointer;">
+                        <span class="material-icons-outlined" style="font-size: 14px;">volume_up</span> <span>Ouvir</span>
+                    </button>
+                </div>
+            `;
+        } else {
+            htmlContent = `<div class="message-content">${conteudo}</div>`;
+        }
+        div.innerHTML = htmlContent;
+        chatBox.appendChild(div);
+    });
+
+    setTimeout(() => {
+        const container = document.getElementById('chat-box-container');
+        if (container) container.scrollTop = container.scrollHeight;
+    }, 100);
+
+    // Salvar conversa atual
+    window.conversaAtualID = id;
+}
+
+// Editar nome da conversa
+function editarNomeConversa(id, nomeAtual) {
+    const novoNome = prompt('Digite o novo nome da conversa:', nomeAtual);
+    if (!novoNome) return;
+
+    const dados = localStorage.getItem('lhama_conversas');
+    const conversas = dados ? JSON.parse(dados) : [];
+    const conversa = conversas.find(c => c.id === id);
+    
+    if (conversa) {
+        conversa.titulo = novoNome;
+        localStorage.setItem('lhama_conversas', JSON.stringify(conversas));
+        carregarHistoricoSidebar();
+    }
+}
+
+// Deletar conversa
+function deletarConversa(id) {
+    if (!confirm('Tem certeza que deseja deletar esta conversa?')) return;
+
+    const dados = localStorage.getItem('lhama_conversas');
+    const conversas = dados ? JSON.parse(dados) : [];
+    const index = conversas.findIndex(c => c.id === id);
+    
+    if (index > -1) {
+        conversas.splice(index, 1);
+        localStorage.setItem('lhama_conversas', JSON.stringify(conversas));
+        carregarHistoricoSidebar();
+        
+        // Se é a conversa atual, limpar chat
+        if (window.conversaAtualID === id) {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            const msgBoasVindas = document.getElementById('msg-boas-vindas');
+            if (msgBoasVindas) msgBoasVindas.style.display = 'block';
+            window.conversaAtualID = null;
+        }
+    }
+}
+
+// Salvar mensagem no histórico
+function salvarMensagemHistorico(tipo, conteudo) {
+    const dados = localStorage.getItem('lhama_conversas');
+    let conversas = dados ? JSON.parse(dados) : [];
+
+    // Se não há conversa atual, criar uma
+    if (!window.conversaAtualID || conversas.find(c => c.id === window.conversaAtualID) === undefined) {
+        const id = Date.now().toString();
+        const agora = new Date();
+        const hoje = new Date();
+        const ontem = new Date(hoje);
+        ontem.setDate(ontem.getDate() - 1);
+        
+        let dataFormatada = 'Hoje';
+        if (agora.toDateString() === ontem.toDateString()) {
+            dataFormatada = 'Ontem';
+        } else if (agora.toDateString() !== hoje.toDateString()) {
+            dataFormatada = agora.toLocaleDateString('pt-BR');
+        }
+
+        conversas.unshift({
+            id,
+            titulo: tipo === 'usuario' ? conteudo.substring(0, 50) : 'Nova Conversa',
+            data: dataFormatada,
+            timestamp: agora.getTime(),
+            mensagens: []
+        });
+        window.conversaAtualID = id;
+    }
+
+    // Adicionar mensagem
+    const conversa = conversas.find(c => c.id === window.conversaAtualID);
+    if (conversa) {
+        conversa.mensagens.push({
+            tipo,
+            conteudo,
+            timestamp: Date.now()
+        });
+        localStorage.setItem('lhama_conversas', JSON.stringify(conversas));
+        carregarHistoricoSidebar();
+    }
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+    // Verificar se é dispositivo mobile
+    function checkMobileView() {
+        const isMobile = window.innerWidth < 768;
+        const blocker = document.getElementById('mobile-blocker');
+        const mainContent = document.querySelector('aside');
+        
+        if (isMobile) {
+            blocker.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        } else {
+            blocker.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    checkMobileView();
+    window.addEventListener('resize', checkMobileView);
+    
+    carregarHistoricoSidebar();
+    
+    const btnNovaConversa = document.getElementById('new-chat-btn');
+    if (btnNovaConversa) {
+        btnNovaConversa.onclick = (e) => {
+            e.preventDefault();
+            window.conversaAtualID = null;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            const msgBoasVindas = document.getElementById('msg-boas-vindas');
+            if (msgBoasVindas) msgBoasVindas.style.display = 'block';
+            const input = document.getElementById('input-mensagem');
+            input.value = '';
+            input.focus();
+        };
+    }
+});
+
+// Toggle Sidebar
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+}
+</script>
+</body></html>

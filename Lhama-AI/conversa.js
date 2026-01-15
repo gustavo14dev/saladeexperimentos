@@ -830,6 +830,11 @@ function adicionarMarcaDagua(imgElement, caminhoMarca = 'img-IA/logo.png') {
 }
 
 function adicionarMensagem(texto, tipo, imagemNome = null) {
+    // Salvar no histórico
+    if (typeof salvarMensagemHistorico !== 'undefined') {
+        salvarMensagemHistorico(tipo, texto);
+    }
+
     const chatBox = document.getElementById('chat-box');
     const divMensagem = document.createElement('div');
     divMensagem.className = `mensagem ${tipo}`;
@@ -878,18 +883,18 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
                 actionsContainer.className = 'message-actions-container';
                 const btnCopy = document.createElement('button');
                 btnCopy.className = 'action-icon-btn';
-                btnCopy.innerHTML = '<span class="material-symbols-rounded">content_copy</span>';
+                btnCopy.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">content_copy</span> <span>Copiar</span>';
                 btnCopy.onclick = () => copiarTexto(textoSemHTML);
                 actionsContainer.appendChild(btnCopy);
                 const btnAudio = document.createElement('button');
                 btnAudio.className = 'action-icon-btn audio-btn';
-                btnAudio.innerHTML = '<span class="material-symbols-rounded">volume_up</span>';
+                btnAudio.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">volume_up</span> <span>Ouvir</span>';
                 btnAudio.onclick = () => lerTextoEmVoz(textoSemHTML);
                 actionsContainer.appendChild(btnAudio);
                 if (imagemNome && !texto.includes('image2-composicao-container')) {
                     const btnDownload = document.createElement('button');
                     btnDownload.className = 'action-icon-btn';
-                    btnDownload.innerHTML = '<span class="material-symbols-rounded">download</span>';
+                    btnDownload.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">download</span> <span>Download</span>';
                     btnDownload.onclick = () => baixarImagem(`img-IA/${imagemNome}`);
                     actionsContainer.appendChild(btnDownload);
                 }
@@ -940,35 +945,65 @@ function lerTextoEmVoz(txt) {
     const synth = window.speechSynthesis;
     if (synth.speaking) synth.cancel();
     const u = new SpeechSynthesisUtterance(txtLimpo);
-    // tentativa de escolher uma voz pt-BR mais 'clássica' pelo nome/idioma
+    
+    // Buscar vozes de português português (Portugal) primeiro
     const voices = synth.getVoices ? synth.getVoices() : [];
     let vozEscolhida = null;
-    // se a vo preferida foi selecionada anteriormente, tente reutilizá-la
-    if (window.__preferredVoiceName) {
-        vozEscolhida = voices.find(v => v.name === window.__preferredVoiceName) || null;
-    }
-    if (!vozEscolhida) {
-        const preferenciaNomes = ['google português', 'português do brasil', 'português (brasil)', 'português-br', 'pt-br', 'luciana', 'daniel', 'joão', 'joao', 'maria', 'brasil', 'brazil'];
-        for (const v of voices) {
+    
+    // Preferências: primeiro pt-PT (Portugal), depois Google Portuguese, depois qualquer português
+    const preferenciaNomes = [
+        'pt-pt',
+        'portuguese (portugal)',
+        'portuguese portugal',
+        'português (portugal)',
+        'português portugal',
+        'google português',
+        'portuguese',
+        'pt-br',
+        'portuguese (brazil)',
+        'português (brasil)',
+        'luciana',
+        'daniel',
+        'joão',
+        'joao',
+        'maria'
+    ];
+    
+    // Tentar encontrar pela ordem de preferência
+    for (const pref of preferenciaNomes) {
+        const encontrada = voices.find(v => {
             const nameLower = (v.name || '').toLowerCase();
             const langLower = (v.lang || '').toLowerCase();
-            for (const pref of preferenciaNomes) {
-                if (nameLower.includes(pref) || langLower.includes(pref)) { vozEscolhida = v; break; }
-            }
-            if (vozEscolhida) break;
+            return nameLower.includes(pref) || langLower.includes(pref);
+        });
+        if (encontrada) {
+            vozEscolhida = encontrada;
+            break;
         }
     }
-    // fallback: qualquer voz pt
+    
+    // Fallback: qualquer voz portuguesa
     if (!vozEscolhida) {
         for (const v of voices) {
-            if (v.lang && v.lang.toLowerCase().startsWith('pt')) { vozEscolhida = v; break; }
+            if (v.lang && v.lang.toLowerCase().startsWith('pt')) {
+                vozEscolhida = v;
+                break;
+            }
         }
     }
-    if (vozEscolhida) u.voice = vozEscolhida;
-    u.lang = vozEscolhida && vozEscolhida.lang ? vozEscolhida.lang : 'pt-BR';
-    // parâmetros ajustados para voz mais natural
-    u.rate = 0.95;
-    u.pitch = 1.0;
+    
+    if (vozEscolhida) {
+        u.voice = vozEscolhida;
+        u.lang = vozEscolhida.lang;
+    } else {
+        u.lang = 'pt-PT'; // Preferir pt-PT por padrão
+    }
+    
+    // Parâmetros para voz clara e natural
+    u.rate = 0.9;      // Velocidade um pouco mais lenta para clareza
+    u.pitch = 1.0;     // Tom natural
+    u.volume = 1.0;    // Volume máximo
+    
     console.log('TTS using voice:', (u.voice && u.voice.name) || u.lang);
     synth.speak(u);
     return u;
