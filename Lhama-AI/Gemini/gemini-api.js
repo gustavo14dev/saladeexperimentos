@@ -54,8 +54,9 @@ class GeminiAPI {
 
             // Preparar o payload com system prompt em português
             const payload = {
-                system: {
-                    instructions: `Você é a Lhama AI 1, uma assistente de IA amigável e inteligente. 
+                systemInstruction: {
+                    parts: [{
+                        text: `Você é a Lhama AI 1, uma assistente de IA amigável e inteligente. 
                     
 INSTRUÇÕES IMPORTANTES:
 1. Sempre responda em PORTUGUÊS BRASILEIRO, a menos que o usuário peça explicitamente outra língua
@@ -66,10 +67,9 @@ INSTRUÇÕES IMPORTANTES:
 6. Mantenha consistência nas respostas anteriores nesta conversa
 7. Se pedir imagem, você pode gerar (mas isso é tratado no frontend)
 8. Responda de forma natural e conversacional`
+                    }]
                 },
-                contents: [{
-                    parts: conteudo
-                }],
+                contents: conteudo,
                 generationConfig: {
                     temperature: GEMINI_CONFIG.REQUEST_CONFIG.temperature,
                     topK: GEMINI_CONFIG.REQUEST_CONFIG.topK,
