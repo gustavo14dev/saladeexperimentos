@@ -596,6 +596,115 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
+        /* Estilos para Blocos de Código */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+            position: relative;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .code-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #444;
+        }
+        .code-language {
+            color: #858585;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .code-copy-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .code-copy-btn:hover {
+            background: #0284c7;
+            transform: translateY(-2px);
+        }
+        .code-copy-btn.copied {
+            background: #10b981;
+        }
+        .code-content {
+            margin: 0;
+            overflow-x: auto;
+        }
+        .code-content code {
+            color: #d4d4d4;
+        }
+        /* Tabelas */
+        .markdown-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        .markdown-table th, 
+        .markdown-table td {
+            border: 1px solid #d1d5db;
+            padding: 8px;
+            text-align: left;
+        }
+        .markdown-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        /* Formatação Markdown */
+        .message-content strong {
+            font-weight: 600;
+        }
+        .message-content em {
+            font-style: italic;
+        }
+        .message-content code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .message-content h1 {
+            font-size: 22px;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+        .message-content h2 {
+            font-size: 18px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+        }
+        .message-content h3 {
+            font-size: 16px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+        .message-content ul,
+        .message-content ol {
+            margin-left: 20px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+        .message-content li {
+            margin: 4px 0;
+        }
 </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white">
@@ -763,6 +872,7 @@
 <script src="Gemini/training-search.js"></script>
 <script src="Gemini/gemini-api.js"></script>
 <script src="Gemini/gemini-image.js"></script>
+<script src="Gemini/resposta-renderer.js"></script>
 <!-- Fim dos scripts da API -->
 
 <script src="conversa.js"></script>

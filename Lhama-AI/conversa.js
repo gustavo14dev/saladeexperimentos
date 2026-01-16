@@ -877,6 +877,12 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
     const divContent = document.createElement('div');
     divContent.className = 'message-content';
     if (tipo === 'bot') {
+        // Processar o texto com o renderizador se disponível
+        let textoProcessado = texto;
+        if (typeof RespostaRenderer !== 'undefined' && RespostaRenderer && RespostaRenderer.processar) {
+            textoProcessado = RespostaRenderer.processar(texto);
+        }
+        
         const textoSemHTML = texto.replace(/<[^>]*>/g, '');
         // Animação de digitação letra por letra
         let i = 0;
@@ -884,13 +890,13 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
         divMensagem.appendChild(divContent); // Corrige bug: adiciona conteúdo antes da animação
         chatBox.appendChild(divMensagem);
         function escreverLetra() {
-            if (i <= texto.length) {
-                divContent.innerHTML = texto.slice(0, i);
+            if (i <= textoProcessado.length) {
+                divContent.innerHTML = textoProcessado.slice(0, i);
                 scrollParaBaixo();
                 i++;
                 setTimeout(escreverLetra, 8 + Math.random() * 18);
             } else {
-                divContent.innerHTML = texto;
+                divContent.innerHTML = textoProcessado;
                 // ...ações e imagem...
                 if (imagemNome) {
                     const imgContainer = document.createElement('div');
