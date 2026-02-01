@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnóstico - Lhama</title>
+    <style>
+        body {
+            background: #1F1A18;
+            color: #F2EBE9;
+            font-family: monospace;
+            padding: 20px;
+        }
+        pre {
+            background: #2D2624;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico do Lhama Code 1</h1>
+    <p>Abre o console (F12 ou Dev Tools) para ver as mensagens de erro.</p>
+    <pre id="output"></pre>
+
+    <script>
+        const $ = (el) => document.getElementById(el);
+        const log = (msg, isError = false) => {
+            console.log(msg);
+            const output = $('output');
+            output.innerHTML += `<span class="${isError ? 'error' : 'success'}">${msg}</span>\n`;
+        };
+
+        // Tentar carregar módulos
+        (async () => {
+            try {
+                log('Carregando agent.js...');
+                const agent = await import('./agent.js');
+                log('✅ agent.js OK');
+                
+                log('Carregando main.js...');
+                const ui = await import('./main.js');
+                log('✅ main.js OK');
+                
+                log('\nTENTE CLICAR NO BOTÃO SEND AGORA!');
+            } catch (e) {
+                log(`❌ ERRO: ${e.message}`, true);
+                log(`Stack: ${e.stack}`, true);
+            }
+        })();
+
+        // Capturar erros globais
+        window.addEventListener('error', (event) => {
+            log(`❌ Global Error: ${event.message} (${event.filename}:${event.lineno})`, true);
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`❌ Unhandled Promise: ${event.reason}`, true);
+        });
+    </script>
+</body>
+</html>

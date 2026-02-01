@@ -1,0 +1,4 @@
+find /code/main.js and replace lines 1304-1317 with just:
+
+        // Scroll final após formatter
+        setTimeout(() => this.scrollToBottom(), 100);

@@ -4,6 +4,57 @@ let redacoesData = [];
 let correcoesData = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
+// ===== SISTEMA DE SCROLL INTELIGENTE =====
+let isUserScrolling = false;
+let _scrollTimeout = null;
+const SCROLL_DISTANCE_THRESHOLD = 300; // px - quando exceder, mostra botão
+
+function initScrollSystem() {
+    const container = document.getElementById('chat-box-container');
+    const btn = document.getElementById('scrollToBottomBtn');
+    if (!container) return;
+
+    container.addEventListener('scroll', () => {
+        isUserScrolling = true;
+        checkScrollButtonVisibility();
+        if (_scrollTimeout) clearTimeout(_scrollTimeout);
+        _scrollTimeout = setTimeout(() => {
+            isUserScrolling = false;
+            checkScrollButtonVisibility();
+        }, 1500);
+    });
+
+    if (btn) {
+        btn.addEventListener('click', () => {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            btn.style.display = 'none';
+            isUserScrolling = false;
+            setTimeout(() => checkScrollButtonVisibility(), 300);
+        });
+    }
+}
+
+// Inicializar sistema de scroll ao carregar a página
+document.addEventListener('DOMContentLoaded', () => {
+    try { initScrollSystem(); } catch (e) { /* ignore */ }
+    // Checar visibilidade do botão uma vez após carregamento
+    setTimeout(() => { try { checkScrollButtonVisibility(); } catch(e){} }, 300);
+});
+
+function checkScrollButtonVisibility() {
+    const container = document.getElementById('chat-box-container');
+    const btn = document.getElementById('scrollToBottomBtn');
+    if (!container || !btn) return;
+    const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+    if (distance > SCROLL_DISTANCE_THRESHOLD) {
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
 // Estados dos Modos
 let modoRedacaoAtivo = false;
 let modoResumoAtivo = false;
@@ -954,7 +1005,10 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
 
 function scrollParaBaixo() {
     const chatBoxContainer = document.getElementById('chat-box-container');
+    if (!chatBoxContainer) return;
     chatBoxContainer.scrollTo({ top: chatBoxContainer.scrollHeight, behavior: 'smooth' });
+    const btn = document.getElementById('scrollToBottomBtn');
+    if (btn) btn.style.display = 'none';
 }
 
 function mostrarDigitando(mostrar) {

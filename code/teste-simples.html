@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples - Lhama Code 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1F1A18;
+            color: #F2EBE9;
+            padding: 20px;
+        }
+        button {
+            background: #E26543;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #d95532;
+        }
+        #log {
+            background: #2D2624;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐞 Teste Rápido</h1>
+    <button onclick="testImports()">Testar Importações</button>
+    <button onclick="testDOM()">Testar DOM</button>
+    <button onclick="clear()">Limpar</button>
+    <div id="log"></div>
+
+    <script>
+        const log = (msg) => {
+            document.getElementById('log').innerHTML += msg + '\n';
+            console.log(msg);
+        };
+
+        const clear = () => {
+            document.getElementById('log').innerHTML = '';
+        };
+
+        const testDOM = async () => {
+            log('=== TESTE DOM ===');
+            log('Buscando elementos...');
+            
+            const elements = [
+                'welcomeScreen',
+                'titleSection',
+                'chatArea',
+                'messagesContainer',
+                'userInput',
+                'sendButton',
+                'modelButton'
+            ];
+
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                log(`${id}: ${el ? '✅ ENCONTRADO' : '❌ NÃO ENCONTRADO'}`);
+            });
+
+            log('\nTestando event listeners...');
+            const btn = document.getElementById('sendButton');
+            if (btn) {
+                btn.addEventListener('click', () => log('✅ Click listener funcionando!'));
+                btn.click();
+            }
+        };
+
+        const testImports = async () => {
+            log('=== TESTE IMPORTAÇÕES ===');
+            try {
+                log('Carregando agent.js...');
+                const agentModule = await import('./agent.js');
+                log('✅ agent.js carregado');
+                
+                log('Carregando main.js...');
+                const uiModule = await import('./main.js');
+                log('✅ main.js carregado');
+                
+                log('\nTentando criar instâncias...');
+                // Note: Isso não vai funcionar porque main.js cria automaticamente
+                log('✅ Tudo carregou com sucesso!');
+            } catch (e) {
+                log('❌ ERRO: ' + e.message);
+                log(e.stack);
+            }
+        };
+
+        window.addEventListener('load', () => {
+            log('Página carregada!');
+        });
+
+        // Teste de erro global
+        window.addEventListener('error', (e) => {
+            log('❌ ERRO GLOBAL: ' + e.message);
+            log('   Arquivo: ' + e.filename);
+            log('   Linha: ' + e.lineno);
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            log('❌ PROMISE REJECTION: ' + e.reason);
+        });
+    </script>
+</body>
+</html>

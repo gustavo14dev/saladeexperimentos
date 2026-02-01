@@ -791,6 +791,10 @@
 
 <div class="w-full px-4 absolute bottom-0 left-0 right-0 z-20">
 <div class="max-w-3xl mx-auto relative group">
+    <!-- Botão flutuante para voltar para a última mensagem -->
+    <button id="scrollToBottomBtn" title="Voltar para mensagem mais recente" style="position: absolute; right: 1.25rem; bottom: 6.5rem; width:44px; height:44px; border-radius:9999px; background:#1A1A1A; color:#fff; display:none; align-items:center; justify-content:center; z-index:40; box-shadow:0 6px 18px rgba(0,0,0,0.18); border:none;">
+        <span class="material-icons-round" style="font-size:20px; line-height:1;">keyboard_double_arrow_down</span>
+    </button>
 <div class="relative bg-white dark:bg-surface-dark rounded-t-3xl rounded-b-none shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.3)] border-x border-t border-slate-200 dark:border-zinc-700 overflow-hidden transition-all duration-300 pb-4">
 <textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">

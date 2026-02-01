@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Lhama Code 1</title>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #1F1A18;
+            color: #F2EBE9;
+            padding: 20px;
+        }
+        .debug-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #2D2624;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #3D2F2A;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        button {
+            background: #E26543;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #d95532;
+        }
+        #output {
+            background: #1F1A18;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🐞 Debug Lhama Code 1</h1>
+        
+        <div class="status" id="status1">
+            <span class="error">⏳</span> Verificando arquivos...
+        </div>
+        <div class="status" id="status2">
+            <span class="error">⏳</span> Carregando agent.js...
+        </div>
+        <div class="status" id="status3">
+            <span class="error">⏳</span> Carregando main.js...
+        </div>
+        
+        <button onclick="testLoad()">Testar Carregamento</button>
+        <button onclick="testAgent()">Testar Agent</button>
+        <button onclick="testUI()">Testar UI</button>
+        <button onclick="clearOutput()">Limpar Saída</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        // Redirecionar console para a página
+        console.log = function(...args) {
+            output.innerHTML += '📝 ' + args.join(' ') + '<br>';
+            output.scrollTop = output.scrollHeight;
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            output.innerHTML += '<span style="color: #f44336;">❌ ' + args.join(' ') + '</span><br>';
+            output.scrollTop = output.scrollHeight;
+            originalError.apply(console, args);
+        };
+
+        async function testLoad() {
+            console.log('🔍 Iniciando testes...');
+            
+            try {
+                // Testar agente
+                const agentModule = await import('./agent.js');
+                console.log('✅ agent.js carregado com sucesso');
+                console.log('Classes/exports disponíveis:', Object.keys(agentModule));
+                
+                // Testar UI
+                const uiModule = await import('./main.js');
+                console.log('✅ main.js carregado com sucesso');
+                console.log('Classes/exports disponíveis:', Object.keys(uiModule));
+                
+                document.getElementById('status1').innerHTML = '<span class="success">✅</span> Arquivos carregados com sucesso';
+            } catch (error) {
+                console.error('Erro ao carregar módulos:', error);
+                document.getElementById('status1').innerHTML = '<span class="error">❌</span> Erro ao carregar: ' + error.message;
+            }
+        }
+
+        async function testAgent() {
+            console.log('🤖 Testando Agent...');
+            try {
+                const { Agent } = await import('./agent.js');
+                console.log('✅ Agent classe encontrada');
+                
+                // Verificar métodos
+                const methods = Object.getOwnPropertyNames(Agent.prototype);
+                console.log('Métodos disponíveis:', methods);
+                
+                if (methods.includes('processMessage')) {
+                    console.log('✅ processMessage encontrado');
+                }
+                if (methods.includes('callGroqAPI')) {
+                    console.log('✅ callGroqAPI encontrado');
+                }
+            } catch (error) {
+                console.error('Erro ao testar Agent:', error);
+            }
+        }
+
+        async function testUI() {
+            console.log('🎨 Testando UI...');
+            try {
+                const { UI } = await import('./main.js');
+                console.log('✅ UI classe encontrada');
+                
+                // Verificar métodos
+                const methods = Object.getOwnPropertyNames(UI.prototype);
+                console.log('Métodos UI disponíveis:', methods.slice(0, 10));
+            } catch (error) {
+                console.error('Erro ao testar UI:', error);
+            }
+        }
+
+        function clearOutput() {
+            output.innerHTML = '';
+            console.log('🗑️ Saída limpa');
+        }
+
+        // Auto-test no carregamento
+        window.addEventListener('load', () => {
+            console.log('📄 Página carregada. Executando testes automáticos...');
+            testLoad();
+        });
+    </script>
+</body>
+</html>
