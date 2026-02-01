@@ -1409,11 +1409,9 @@ const session = {
             console.error('❌ API Key inválida');
             return;
         }
+        // Apenas para desenvolvimento local: armazena localmente. Em produção, defina GROQ_API_KEY nas ENV do Vercel.
         localStorage.setItem('groq_api_key', apiKey);
-        console.log('✅ API Key Groq salva com sucesso!');
-        console.log("Use este comando se sua chave veio da Groq (recomendado para 'codestral-latest' via Groq):\n  session.start('SUA_CHAVE_GROQ')");
-        console.log("Se você tem uma chave Mistral (ex: da Mistral AI), NÃO cole aqui — use: session.startMistral('SUA_CHAVE_MISTRAL') (opcional, apenas para armazenar sua chave Mistral)");
-        console.log("Teste rápido no navegador: anexe até 3 arquivos de texto no chat e envie uma mensagem — quando houver anexos, o sistema tentará usar 'codestral-latest' via Groq.");
+        console.log('✅ API Key Groq salva localmente. Para produção, defina GROQ_API_KEY nas ENV do Vercel.');
         console.log("Teste via Node (recomendado): node code/test_codestral.js SUA_CHAVE_GROQ");
     },
     startMistral: (apiKey) => {
@@ -1421,9 +1419,9 @@ const session = {
             console.error('❌ API Key Mistral inválida');
             return;
         }
+        // Apenas para desenvolvimento local: armazena localmente. Em produção, defina MISTRAL_API_KEY nas ENV do Vercel.
         localStorage.setItem('mistral_api_key', apiKey);
-        console.log('✅ API Key Mistral salva com sucesso!');
-        console.log('Nota: atualmente o chat envia requisições para o endpoint Groq. Se você quer testar Mistral diretamente, use um script separado e a API oficial da Mistral.');
+        console.log('✅ API Key Mistral salva localmente. Para produção, defina MISTRAL_API_KEY nas ENV do Vercel.');
     },
     clearMistral: () => {
         localStorage.removeItem('mistral_api_key');
@@ -1433,16 +1431,17 @@ const session = {
         localStorage.removeItem('groq_api_key');
         console.log('🗑️ API Key Groq removida');
     },
-    status: () => {
-        const groqKey = localStorage.getItem('groq_api_key');
-        
-        if (DEBUG) {
-            console.log('📊 Status das APIs:');
-            if (groqKey) {
-                console.log(`✅ Groq: ${groqKey.substring(0, 10)}...`);
-            } else {
-                console.log('❌ Groq: Não configurada');
-            }
+    status: async () => {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            console.log('📊 Status do servidor:');
+            console.log(`- Groq (ENV): ${data.groq ? '✅ configurada' : '❌ NÃO configurada'}`);
+            console.log(`- Mistral (ENV): ${data.mistral ? '✅ configurada' : '❌ NÃO configurada'}`);
+            if (!data.groq) console.warn('Defina GROQ_API_KEY nas ENV do Vercel para ativar chamadas Groq.');
+            if (!data.mistral) console.warn('Defina MISTRAL_API_KEY nas ENV do Vercel para ativar chamadas Mistral.');
+        } catch (e) {
+            console.error('Falha ao consultar /api/status:', e);
         }
     }
 };
