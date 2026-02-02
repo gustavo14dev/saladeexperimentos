@@ -81,11 +81,7 @@ export class Agent {
     }
     // ==================== MODELO MISTRAL (codestral-latest) ====================
     async processMistralModel(userMessage) {
-        const apiKey = localStorage.getItem('mistral_api_key');
-        if (!apiKey) {
-            this.showError('❌ API Key Mistral não configurada. Use: session.startMistral("SUA_CHAVE_MISTRAL")');
-            return;
-        }
+        // Usamos proxy server-side; não é obrigatório ter chave no localStorage para o deploy no Vercel
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
         this.ui.setThinkingHeader('Processando com Mistral (codestral-latest)...', messageContainer.headerId);
@@ -109,7 +105,7 @@ export class Agent {
                 content: 'Você é o Lhama Code 1, um assistente de código inteligente. Forneça respostas COMPLETAS e ESTRUTURADAS com: múltiplos parágrafos bem organizados, **palavras em negrito** para destacar conceitos, listas com • ou números, tópicos claros com headings, e quando apropriado use tabelas (em formato markdown), notação matemática (com $símbolos$ para inline ou $$blocos$$), e diagramas em ASCII. Evite blocos enormes de código - prefira explicações visuais. Seja técnico mas acessível.'
             };
             const messages = this.extraMessagesForNextCall ? [systemPrompt, ...this.extraMessagesForNextCall, ...this.conversationHistory] : [systemPrompt, ...this.conversationHistory];
-            let response = await this.callMistralAPI('codestral-latest', messages, apiKey);
+            let response = await this.callMistralAPI('codestral-latest', messages);
             this.extraMessagesForNextCall = null;
 
             // Tentar extrair arquivos gerados na resposta e anexá-los ao chat
@@ -152,33 +148,37 @@ export class Agent {
         }
     }
 
-    async callMistralAPI(model, messages, apiKey) {
-        const mistralUrl = 'https://api.mistral.ai/v1/chat/completions';
+    async callMistralAPI(model, messages) {
+        // Usa proxy server-side /api/mistral-proxy
+        this.abortController = new AbortController();
         try {
-            const response = await fetch(mistralUrl, {
+            const response = await fetch('/api/mistral-proxy', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    model: model,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 2048
-                })
+                body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 2048 }),
+                signal: this.abortController.signal
             });
+
             if (!response.ok) {
                 const status = response.status;
-                if (status === 401) {
-                    throw new Error('Invalid API Key Mistral: configure com session.startMistral("SUA_CHAVE_MISTRAL")');
+                const text = await response.text().catch(() => null);
+                if (status === 500 && text && text.includes('MISTRAL_API_KEY is not configured')) {
+                    throw new Error('Mistral API Key não está configurada no servidor. Adicione MISTRAL_API_KEY nas Environment Variables do Vercel.');
                 }
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error?.message || `Erro HTTP ${status}`);
+                if (status === 401) {
+                    throw new Error('Invalid API Key Mistral: verifique sua chave no Vercel para MISTRAL_API_KEY');
+                }
+                throw new Error(text || `Erro HTTP ${status}`);
             }
+
             const data = await response.json();
             return data.choices[0].message.content;
         } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('ABORTED');
+            }
             throw error;
         }
     }
@@ -280,12 +280,8 @@ export class Agent {
 
     // ==================== MODELO RÁPIDO ====================
     async processRapidoModel(userMessage) {
-        const apiKey = this.getGroqApiKey();
-        
-        if (!apiKey) {
-            this.showError('❌ API Key Groq não configurada. Use: session.start("sua_chave")');
-            return;
-        }
+        // Usamos proxy server-side (/api/groq-proxy) que utiliza GROQ_API_KEY em Vercel.
+        // Não é necessário ter chave no localStorage para deploy em produção.
 
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
@@ -341,12 +337,8 @@ export class Agent {
 
     // ==================== MODELO RACIOCÍNIO ====================
     async processRaciocioModel(userMessage) {
-        const apiKey = this.getGroqApiKey();
-        
-        if (!apiKey) {
-            this.showError('❌ API Key Groq não configurada. Use: session.start("sua_chave")');
-            return;
-        }
+        // Usamos proxy server-side (/api/groq-proxy) que utiliza GROQ_API_KEY em Vercel.
+        // Não é necessário ter chave no localStorage para deploy em produção.
 
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
@@ -448,12 +440,8 @@ export class Agent {
     // ==================== MODELO PRO ====================
     // 3 modelos Groq em 5 rounds + sintetizador
     async processProModel(userMessage) {
-        const apiKey = this.getGroqApiKey();
-        
-        if (!apiKey) {
-            this.showError('❌ API Key Groq não configurada. Use: session.start("sua_chave")');
-            return;
-        }
+        // Usamos proxy server-side (/api/groq-proxy) que utiliza GROQ_API_KEY em Vercel.
+        // Não é necessário ter chave no localStorage para deploy em produção.
 
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
@@ -612,7 +600,8 @@ export class Agent {
     // Gemini API methods removed (attachments/Gemini integration disabled)
 
     async callGroqAPI(model, customMessages = null) {
-        const apiKey = this.getGroqApiKey();
+        // Not required to have a client-side Groq API key when using server-side proxy
+        // The proxy will use GROQ_API_KEY from environment variables on Vercel
         
         // System prompts diferenciados por modelo
         let systemPrompt;
@@ -635,31 +624,27 @@ export class Agent {
         this.abortController = new AbortController();
 
         try {
-            const response = await fetch(this.groqUrl, {
+            // Chamar proxy server-side no Vercel
+            const response = await fetch('/api/groq-proxy', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    model: model,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 8192,
-                    top_p: 1,
-                    stream: false
-                }),
+                body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 8192, top_p: 1, stream: false }),
                 signal: this.abortController.signal
             });
 
             if (!response.ok) {
                 const status = response.status;
-                // Mensagem de erro mais amigável para 401 (invalid key)
-                if (status === 401) {
-                    throw new Error('Invalid API Key: Verifique se você configurou a chave Groq correta com session.start("SUA_CHAVE_GROQ"). Se você reduziu uma chave Mistral aqui, ela não será válida para o endpoint Groq.');
+                const text = await response.text().catch(() => null);
+                // Mensagens amigáveis para erros comuns
+                if (status === 500 && text && text.includes('GROQ_API_KEY is not configured')) {
+                    throw new Error('GROQ API Key não está configurada no servidor. Adicione GROQ_API_KEY nas Environment Variables do Vercel.');
                 }
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error?.message || `Erro HTTP ${status}`);
+                if (status === 401) {
+                    throw new Error('Invalid API Key: Verifique sua chave no Vercel para GROQ_API_KEY.');
+                }
+                throw new Error(text || `Erro HTTP ${status}`);
             }
 
             const data = await response.json();
@@ -715,14 +700,8 @@ export class Agent {
     async test() {
         console.log('🧪 Iniciando teste do agente...');
         
-        const apiKey = this.getGroqApiKey();
-        if (!apiKey) {
-            console.error('❌ Configure a API Key primeiro: session.start("sua_chave")');
-            return;
-        }
-
-        console.log('✅ API Key encontrada');
-        console.log('📡 Testando conexão com Groq...');
+        console.log('📡 Testando conexão com Groq via proxy (server-side) ...');
+        console.log('ℹ️ Se você configurou a variável GROQ_API_KEY no Vercel, este teste usará ela. Caso contrário, o teste falhará com mensagem adequada.');
 
         try {
             const testMessage = 'Olá! Estou testando a conexão.';

@@ -1493,6 +1493,7 @@ const session = {
         localStorage.setItem('groq_api_key', apiKey);
         console.log('✅ API Key Groq salva com sucesso!');
         console.log("Use este comando se sua chave veio da Groq (recomendado para 'codestral-latest' via Groq):\n  session.start('SUA_CHAVE_GROQ')");
+        console.log('ℹ️ Em produção (Vercel) prefira configurar GROQ_API_KEY em Environment Variables e fazer um redeploy.');
         console.log("Se você tem uma chave Mistral (ex: da Mistral AI), NÃO cole aqui — use: session.startMistral('SUA_CHAVE_MISTRAL') (opcional, apenas para armazenar sua chave Mistral)");
         console.log("Teste rápido no navegador: anexe até 3 arquivos de texto no chat e envie uma mensagem — quando houver anexos, o sistema tentará usar 'codestral-latest' via Groq.");
         console.log("Teste via Node (recomendado): node code/test_codestral.js SUA_CHAVE_GROQ");
@@ -1504,7 +1505,8 @@ const session = {
         }
         localStorage.setItem('mistral_api_key', apiKey);
         console.log('✅ API Key Mistral salva com sucesso!');
-        console.log('Nota: atualmente o chat envia requisições para o endpoint Groq. Se você quer testar Mistral diretamente, use um script separado e a API oficial da Mistral.');
+        console.log('Nota: atualmente o chat usa Groq via proxy server-side em produção; se quiser testar Mistral diretamente no navegador, use session.startMistral para armazenar a chave localmente ou execute scripts server-side para testar.');
+        console.log('ℹ️ Em produção (Vercel) prefira configurar MISTRAL_API_KEY em Environment Variables e fazer um redeploy.');
     },
     clearMistral: () => {
         localStorage.removeItem('mistral_api_key');

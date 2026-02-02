@@ -34,6 +34,8 @@
 
 ## 🔑 Configuração das APIs
 
+> **Nota importante (Produção / Vercel):** Adicione suas chaves como Environment Variables no painel do Vercel com os nomes exatos `GROQ_API_KEY`, `MISTRAL_API_KEY` e `GEMINI_API_KEY`. O sistema usa proxies server-side (`/api/groq-proxy` e `/api/mistral-proxy`) em produção para evitar expor chaves no cliente.
+
 ### Passo 1: Obter a API Key do Groq
 
 1. Acesse [https://console.groq.com](https://console.groq.com)
@@ -100,6 +102,22 @@ Para verificar se as duas APIs estão configuradas corretamente, execute:
 session.status()
 ```
 
+Você também pode verificar o status das variáveis no servidor (não retorna chaves, apenas presença):
+
+```bash
+curl https://<seu-dominio>.vercel.app/api/status
+```
+
+Para testar o proxy Groq (apenas para depuração), exemplo curl:
+
+```bash
+curl -X POST https://<seu-dominio>.vercel.app/api/groq-proxy \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama-3.1-8b-instant","messages":[{"role":"system","content":"Teste"},{"role":"user","content":"Olá"}]}'
+```
+
+Se tudo estiver certo, você receberá a resposta da API Groq ou um erro que indique configuração ausente no servidor.
+
 **Saída esperada (quando ambas estão configuradas):**
 ```
 📊 Status das APIs:
@@ -163,7 +181,8 @@ agent.clearHistory()
 
 ### Erro: "API Key não configurada"
 ```
-Solução: Execute session.start("sua_chave_groq")
+Solução local: Execute `session.start("sua_chave_groq")` no Console do navegador para testes locais.
+Solução produção (Vercel): Verifique se `GROQ_API_KEY` está configurada em **Settings → Environment Variables** do seu projeto no Vercel e faça um redeploy.
 ```
 
 ### Erro: "API Key Gemini não configurada"
