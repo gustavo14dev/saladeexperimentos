@@ -578,22 +578,7 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
 
     let melhorResposta = null;
     const textoPrefixoRedacao = "pode me ajudar a escrever uma redação sobre ";
-    
-    // 🆕 NOVO: Detectar se está pedindo para gerar imagem
-    if (geminiImageAPI && geminiImageAPI.estasPedindoImagem(mensagemOriginal)) {
-        // Tentar gerar imagem com Gemini
-        const imagemURL = await geminiImageAPI.gerarImagem(mensagemOriginal);
-        if (imagemURL) {
-            // Retornar HTML com a imagem
-            const htmlComImagem = `<div style="text-align: center; margin: 10px 0;">
-                <img src="${imagemURL}" alt="Imagem gerada" style="max-width: 100%; border-radius: 8px;">
-                <p style="font-size: 12px; color: #999; margin-top: 5px;">✨ Gerada por Lhama AI 1</p>
-            </div>`;
-            return htmlComImagem;
-        } else {
-            return "Desculpe, não consegui gerar a imagem no momento. Tente novamente mais tarde! 🎨";
-        }
-    }
+    // Todas as lógicas de API removidas. Só responde pelo training.json.
     
     if (mensagemUsuario.startsWith("resumir: ")) {
         const textoParaResumir = mensagemOriginal.substring("resumir: ".length).trim();
