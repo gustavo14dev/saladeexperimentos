@@ -648,15 +648,14 @@ Aqui estão alguns tópicos e ideias para você começar sua redação sobre **$
         }
     }
 
-    // 🆕 NOVO: Se não achou no training.json, tenta API do Gemini
-    if (geminiAPI && geminiAPI.estaDisponivel()) {
+    // 🆕 NOVO: Se não achou no training.json, tenta API Groq (Lhama1)
+    if (typeof lhama1API !== 'undefined' && lhama1API.estaDisponivel()) {
         try {
-            // Passa o histórico para manter contexto da conversa
-            melhorResposta = await geminiAPI.obterResposta(mensagemOriginal, historicoConversa);
+            melhorResposta = await lhama1API.obterResposta(mensagemOriginal, historicoConversa);
             if (sentimento === 'triste') melhorResposta += ' 😊 Vai ficar tudo bem!';
             return formatarResposta(melhorResposta);
         } catch (erro) {
-            console.error('Erro ao chamar API Gemini:', erro);
+            console.error('Erro ao chamar API Groq:', erro);
             // Continua para fallback abaixo
         }
     }
