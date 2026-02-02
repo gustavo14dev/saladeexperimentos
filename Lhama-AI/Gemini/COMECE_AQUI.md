@@ -20,7 +20,7 @@ Olá! Tudo foi configurado com sucesso. Aqui está o que você precisa fazer ago
 → Seu projeto → Settings
 → Environment Variables
 → Adicione:
-   Name:  GEMINI_API_KEY
+  Name:  GROQ_API_KEY_LHAMA1
    Value: [Cole a chave aqui]
 → Clique "Save"
 ```
@@ -45,7 +45,7 @@ Gemini/
 ├── config.js              ← Configurações
 ├── api-init.js            ← Carrega chave
 ├── training-search.js     ← Busca no training.json
-├── gemini-api.js          ← Chamadas à API
+├── gemini-api.js          ← Handler Groq (Llama 3.1 8B)
 ├── README.md              ← Documentação rápida
 ├── SETUP_VERCEL.md        ← Guia completo (leia se tiver dúvidas)
 ├── CHECKLIST.md           ← Checklist de tudo
@@ -60,7 +60,7 @@ Gemini/
 ### ✅ `conversa.js` (MODIFICADO)
 - Função `gerarResposta()` agora usa:
   1. Primeiro: Busca exata no training.json
-  2. Depois: API Gemini (se não encontrou)
+  2. Depois: API Groq (se não encontrou)
 - Compatível com tudo antigo
 
 ---
@@ -80,7 +80,7 @@ Procura no training.json (EXATO)
         │
    ┌────┴────┐
    ↓         ↓
- Training  Gemini API
+ Training  Groq API
  (rápido)   (criativo)
    ↓         ↓
    └────┬────┘
@@ -127,7 +127,7 @@ buscaTrainamento.estaCarregado()  // true se OK
 - Sem gastar API
 - Perfeitas para FAQ
 
-✅ **Respostas Criativas** (Gemini)
+✅ **Respostas Criativas** (Groq)
 - Para perguntas novas
 - Geradas por IA
 - Automáticas
@@ -147,7 +147,7 @@ buscaTrainamento.estaCarregado()  // true se OK
 ## 🚨 Importante!
 
 ### Variável de Ambiente
-**Nome exato:** `GEMINI_API_KEY`
+**Nome exato:** `GROQ_API_KEY_LHAMA1`
 **Valor:** Sua chave do Google
 
 Se errar o nome, não funciona!

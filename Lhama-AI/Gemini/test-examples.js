@@ -10,7 +10,7 @@
 // ============================================
 console.log('%c=== TESTE 1: Verificar Chave ===', 'color: blue; font-weight: bold;');
 console.log('Chave definida?', temChaveAPI());
-console.log('Instância da API existe?', typeof geminiAPI !== 'undefined');
+console.log('Instância da API existe?', typeof lhama1API !== 'undefined');
 console.log('Training carregado?', buscaTrainamento.estaCarregado());
 
 
@@ -44,7 +44,7 @@ console.log('%c=== TESTE 3: Chamar API Gemini ===', 'color: blue; font-weight: b
 async function testarAPIGemini() {
     console.log('Testando API...');
     
-    const resposta = await geminiAPI.obterResposta('Como é viver num planeta dourado?');
+    const resposta = await lhama1API.obterResposta('Como é viver num planeta dourado?');
     console.log('Resposta:', resposta);
 }
 
@@ -67,9 +67,9 @@ console.log('  testarAPIGemini()');
 // ============================================
 console.log('%c=== ESTATÍSTICAS ===', 'color: green; font-weight: bold;');
 console.log(`Total de treinamentos: ${buscaTrainamento.getTotalTreinamentos()}`);
-console.log(`Modelo Gemini: ${GEMINI_CONFIG.MODEL}`);
-console.log(`Temperatura: ${GEMINI_CONFIG.REQUEST_CONFIG.temperature}`);
-console.log(`Max Tokens: ${GEMINI_CONFIG.REQUEST_CONFIG.maxOutputTokens}`);
+console.log(`Modelo Groq: ${LHAMA1_GROQ_CONFIG.MODEL}`);
+console.log(`Temperatura: ${LHAMA1_GROQ_CONFIG.REQUEST_CONFIG.temperature}`);
+console.log(`Max Tokens: ${LHAMA1_GROQ_CONFIG.REQUEST_CONFIG.max_tokens}`);
 
 
 // ============================================
@@ -100,7 +100,7 @@ async function testeRapidoAPI() {
     console.log('⏳ Testando API do Gemini...');
     const inicio = Date.now();
     
-    const resposta = await geminiAPI.obterResposta('Qual é o significado da vida?');
+    const resposta = await lhama1API.obterResposta('Qual é o significado da vida?');
     
     const tempo = Date.now() - inicio;
     console.log(`✅ Resposta em ${tempo}ms:`);
@@ -132,7 +132,7 @@ async function simularFluxoCompleto(pergunta) {
     }
     
     console.log('Passo 2: Chamando API do Gemini...');
-    const respostaAPI = await geminiAPI.obterResposta(pergunta);
+    const respostaAPI = await lhama1API.obterResposta(pergunta);
     console.log('✅ Resposta da API:');
     console.log(respostaAPI);
 }

@@ -64,9 +64,9 @@ class GeminiImageAPI {
         this.estaProcessando = true;
 
         try {
-            // Usar proxy server-side para não expor a chave no cliente
-            const url = '/api/gemini-proxy';
-            const proxyBody = {
+                // Usar proxy server-side Groq para não expor a chave no cliente
+                const url = '/api/groq-proxy-lhama1';
+                const proxyBody = {
                 model: this.modeloImagem,
                 payload
             }; 
