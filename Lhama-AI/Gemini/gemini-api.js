@@ -10,48 +10,62 @@ class Lhama1GroqAPI {
             return "⏳ Por favor, aguarde a resposta anterior...";
         }
         this.estaProcessando = true;
-        try {
-            // Montar histórico no formato OpenAI
-            let messages = [];
-            if (historicoConversa && historicoConversa.length > 0) {
-                historicoConversa.forEach(msg => {
-                    messages.push({
-                        role: msg.tipo === 'usuario' ? 'user' : 'assistant',
-                        content: msg.texto
-                    });
+        let messages = [];
+        if (historicoConversa && historicoConversa.length > 0) {
+            historicoConversa.forEach(msg => {
+                messages.push({
+                    role: msg.tipo === 'usuario' ? 'user' : 'assistant',
+                    content: msg.texto
                 });
-            }
-            messages.push({ role: 'user', content: pergunta });
-
-            const payload = {
-                model: LHAMA1_GROQ_CONFIG.MODEL,
-                messages,
-                temperature: LHAMA1_GROQ_CONFIG.REQUEST_CONFIG.temperature,
-                max_tokens: LHAMA1_GROQ_CONFIG.REQUEST_CONFIG.max_tokens || 2048
-            };
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), LHAMA1_GROQ_CONFIG.TIMEOUT);
+            });
+        }
+        messages.push({ role: 'user', content: pergunta });
+        const payloadLhama1 = {
+            model: LHAMA1_GROQ_CONFIG.MODEL,
+            messages,
+            temperature: LHAMA1_GROQ_CONFIG.REQUEST_CONFIG.temperature,
+            max_tokens: LHAMA1_GROQ_CONFIG.REQUEST_CONFIG.max_tokens || 2048
+        };
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), LHAMA1_GROQ_CONFIG.TIMEOUT);
+        try {
             const resposta = await fetch(LHAMA1_GROQ_CONFIG.API_PROXY, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(payloadLhama1),
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
             if (!resposta.ok) {
-                const erro = await resposta.json().catch(() => ({}));
-                if (resposta.status === 401) {
-                    return "🔐 Chave API inválida ou expirada.";
-                } else if (resposta.status === 403) {
-                    return "❌ Sem permissão para usar a API. Verifique a chave.";
-                } else if (resposta.status === 429) {
-                    return "⏱️ Muitas requisições. Tente novamente em alguns segundos.";
-                } else if (resposta.status === 500) {
-                    return "🔧 Servidor da API indisponível. Tente novamente.";
-                } else {
-                    return `Erro na API: ${erro.error?.message || resposta.statusText}`;
+                console.warn('API Lhama AI 1 falhou, tentando fallback Lhama Code 1...');
+                // Fallback para API Groq padrão (Lhama Code 1)
+                const payloadCode1 = {
+                    model: 'mixtral-8x7b-32768', // modelo diferente para evitar limite
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 2048
+                };
+                const respostaCode = await fetch('/api/groq-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadCode1)
+                });
+                if (!respostaCode.ok) {
+                    const erroCode = await respostaCode.json().catch(() => ({}));
+                    console.error('Falha no fallback Lhama Code 1:', erroCode);
+                    return `❌ Erro nas duas APIs Groq: ${erroCode.error || respostaCode.statusText}`;
                 }
+                const dadosCode = await respostaCode.json();
+                if (!dadosCode.choices || dadosCode.choices.length === 0) {
+                    return "Desculpe, não consegui gerar uma resposta. Tente novamente.";
+                }
+                const conteudoCode = dadosCode.choices[0]?.message?.content;
+                if (!conteudoCode) {
+                    return "Desculpe, a resposta veio vazia. Tente novamente.";
+                }
+                this.historico.push({ tipo: 'usuario', texto: pergunta });
+                this.historico.push({ tipo: 'bot', texto: conteudoCode });
+                return conteudoCode;
             }
             const dados = await resposta.json();
             if (!dados.choices || dados.choices.length === 0) {
@@ -66,13 +80,39 @@ class Lhama1GroqAPI {
             return conteudoResposta;
         } catch (erro) {
             console.error('Erro ao chamar API Groq:', erro);
-            if (erro.name === 'AbortError') {
-                return "⏱️ Requisição expirou. A API demorou muito para responder.";
+            // Fallback para API Groq padrão (Lhama Code 1)
+            try {
+                const payloadCode1 = {
+                    model: 'mixtral-8x7b-32768',
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 2048
+                };
+                const respostaCode = await fetch('/api/groq-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadCode1)
+                });
+                if (!respostaCode.ok) {
+                    const erroCode = await respostaCode.json().catch(() => ({}));
+                    console.error('Falha no fallback Lhama Code 1:', erroCode);
+                    return `❌ Erro nas duas APIs Groq: ${erroCode.error || respostaCode.statusText}`;
+                }
+                const dadosCode = await respostaCode.json();
+                if (!dadosCode.choices || dadosCode.choices.length === 0) {
+                    return "Desculpe, não consegui gerar uma resposta. Tente novamente.";
+                }
+                const conteudoCode = dadosCode.choices[0]?.message?.content;
+                if (!conteudoCode) {
+                    return "Desculpe, a resposta veio vazia. Tente novamente.";
+                }
+                this.historico.push({ tipo: 'usuario', texto: pergunta });
+                this.historico.push({ tipo: 'bot', texto: conteudoCode });
+                return conteudoCode;
+            } catch (erroCode) {
+                console.error('Erro no fallback Lhama Code 1:', erroCode);
+                return "❌ Erro ao conectar com as APIs Groq. Tente novamente mais tarde.";
             }
-            if (erro instanceof TypeError) {
-                return "🌐 Erro de conexão. Verifique sua internet.";
-            }
-            return "❌ Erro ao conectar com a API. Tente novamente mais tarde.";
         } finally {
             this.estaProcessando = false;
         }
