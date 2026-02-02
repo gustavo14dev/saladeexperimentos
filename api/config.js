@@ -15,9 +15,10 @@ export default (req, res) => {
     // Log seguro para diagnóstico (não imprime a chave)
     console.log('[API CONFIG] GEMINI_API_KEY present:', !!process.env.GEMINI_API_KEY, 'NODE_ENV:', process.env.NODE_ENV);
 
-    // Retorna a chave de forma segura (mantém comportamento atual)
+    // Retorna a chave SOMENTE se a variável EXPOSE_GEMINI_KEY estiver explícita (melhora segurança em produção)
+    // Inclui hasKey/timestamp para diagnósticos sem expor a chave
     res.status(200).json({
-        GEMINI_API_KEY: process.env.GEMINI_API_KEY || null,
+        GEMINI_API_KEY: process.env.EXPOSE_GEMINI_KEY === 'true' ? (process.env.GEMINI_API_KEY || null) : null,
         hasKey: !!process.env.GEMINI_API_KEY,
         timestamp: new Date().toISOString()
     });

@@ -188,6 +188,7 @@ Modelos disponíveis:
 - [ ] Criei chave API no Google AI Studio
 - [ ] Copiei a chave completa
 - [ ] Adicionei a variável `GEMINI_API_KEY` no Vercel
+- [ ] (Opcional, recomendação de segurança) Adicionei `EXPOSE_GEMINI_KEY=false` para NÃO expor a chave via `/api/config` e optei por usar `/api/gemini-proxy`
 - [ ] Selecionei todos os ambientes (Production, Preview, Development)
 - [ ] Cliquei em "Save"
 - [ ] Fiz um novo deploy no Vercel

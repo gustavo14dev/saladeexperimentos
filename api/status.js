@@ -1,17 +1,16 @@
 export default async function handler(req, res) {
-    // Return whether server ENV vars are configured
-    // Allow a local-config.js fallback for easy local development (gitignored)
+    // Apenas GET
+    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+    // Allow a local-config.js fallback for local dev convenience (gitignored)
     let LOCAL_CONFIG = {};
-    try {
-        LOCAL_CONFIG = (await import('./local-config.js')).default || {};
-    } catch (e) {
-        // ignore if not present
-    }
+    try { LOCAL_CONFIG = (await import('./local-config.js')).default || {}; } catch (e) { /* ignore */ }
 
-    const GROQ_API_KEY = process.env.GROQ_API_KEY || LOCAL_CONFIG.GROQ_API_KEY;
-    const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY || LOCAL_CONFIG.MISTRAL_API_KEY;
+    const GROQ = !!(process.env.GROQ_API_KEY || LOCAL_CONFIG.GROQ_API_KEY);
+    const MISTRAL = !!(process.env.MISTRAL_API_KEY || LOCAL_CONFIG.MISTRAL_API_KEY);
+    const GEMINI = !!(process.env.GEMINI_API_KEY || LOCAL_CONFIG.GEMINI_API_KEY);
 
-    console.log('[API STATUS] GROQ present:', !!GROQ_API_KEY, 'MISTRAL present:', !!MISTRAL_API_KEY, 'NODE_ENV:', process.env.NODE_ENV);
+    console.log('[API STATUS] GROQ:', GROQ, 'MISTRAL:', MISTRAL, 'GEMINI:', GEMINI, 'NODE_ENV:', process.env.NODE_ENV);
 
-    res.status(200).json({ groq: !!GROQ_API_KEY, mistral: !!MISTRAL_API_KEY, timestamp: new Date().toISOString() });
+    res.status(200).json({ status: { GROQ, MISTRAL, GEMINI }, timestamp: new Date().toISOString() });
 }

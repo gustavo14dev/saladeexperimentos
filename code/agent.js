@@ -81,7 +81,7 @@ export class Agent {
     }
     // ==================== MODELO MISTRAL (codestral-latest) ====================
     async processMistralModel(userMessage) {
-        // Usar proxy serverless para Mistral (chaves lidas do ENV no servidor)
+        // Usamos proxy server-side; não é obrigatório ter chave no localStorage para o deploy no Vercel
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
         this.ui.setThinkingHeader('Processando com Mistral (codestral-latest)...', messageContainer.headerId);
@@ -106,21 +106,21 @@ export class Agent {
             };
             const messages = this.extraMessagesForNextCall ? [systemPrompt, ...this.extraMessagesForNextCall, ...this.conversationHistory] : [systemPrompt, ...this.conversationHistory];
 
-            // Chamamos o proxy serverless para Mistral (usar MISTRAL_API_KEY no servidor)
-            const res = await this.callMistralAPI('codestral-latest', messages);
+            // Chamamos o proxy server-side para Mistral (usar MISTRAL_API_KEY no servidor)
+            let response = await this.callMistralAPI('codestral-latest', messages);
             this.extraMessagesForNextCall = null;
 
-            if (!res || res.error) {
-                const errMsg = res && res.error ? res.error : 'Resposta vazia do servidor Mistral';
-                throw new Error(errMsg);
+            if (!response || typeof response !== 'string') {
+                throw new Error('Resposta vazia ou inválida do servidor Mistral');
             }
-            const response = res.content || '';
 
             // Tentar extrair arquivos gerados na resposta e anexá-los ao chat
             try {
                 const parsedFiles = this.parseFilesFromText(response);
                 if (parsedFiles && parsedFiles.length > 0) {
                     this.attachGeneratedFilesToChat(parsedFiles);
+                    // Remover o bloco de arquivos do texto antes de exibir para usuário
+                    response = response.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
                 }
             } catch (e) {
                 console.warn('⚠️ Falha parsing arquivos de resposta Mistral:', e);
@@ -154,21 +154,38 @@ export class Agent {
         }
     }
 
-    // Proxy to serverless endpoint on Vercel that reads MISTRAL_API_KEY from ENV
     async callMistralAPI(model, messages) {
+        // Usa proxy server-side /api/mistral-proxy
+        this.abortController = new AbortController();
         try {
-            const r = await fetch('/api/mistral', {
+            const response = await fetch('/api/mistral-proxy', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model, messages })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 2048 }),
+                signal: this.abortController.signal
             });
-            const data = await r.json().catch(() => ({}));
-            if (!r.ok) {
-                return { error: data.error || `Mistral proxy error ${r.status}` };
+
+            if (!response.ok) {
+                const status = response.status;
+                const text = await response.text().catch(() => null);
+                if (status === 500 && text && text.includes('MISTRAL_API_KEY is not configured')) {
+                    throw new Error('Mistral API Key não está configurada no servidor. Adicione MISTRAL_API_KEY nas Environment Variables do Vercel.');
+                }
+                if (status === 401) {
+                    throw new Error('Invalid API Key Mistral: verifique sua chave no Vercel para MISTRAL_API_KEY');
+                }
+                throw new Error(text || `Erro HTTP ${status}`);
             }
-            return { content: data.content };
-        } catch (e) {
-            return { error: e.message || String(e) };
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('ABORTED');
+            }
+            throw error;
         }
     }
 
@@ -269,7 +286,9 @@ export class Agent {
 
     // ==================== MODELO RÁPIDO ====================
     async processRapidoModel(userMessage) {
-        // Em produção, a chave GROQ_API_KEY é lida do servidor (ENV VAR). Em dev, use session.start('sua_chave') para teste local.
+        // Usamos proxy server-side (/api/groq-proxy) que utiliza GROQ_API_KEY em Vercel.
+        // Não é necessário ter chave no localStorage para deploy em produção.
+
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
 
@@ -324,12 +343,8 @@ export class Agent {
 
     // ==================== MODELO RACIOCÍNIO ====================
     async processRaciocioModel(userMessage) {
-        const apiKey = this.getGroqApiKey();
-        
-        if (!apiKey) {
-            this.showError('❌ API Key Groq não configurada. Use: session.start("sua_chave")');
-            return;
-        }
+        // Usamos proxy server-side (/api/groq-proxy) que utiliza GROQ_API_KEY em Vercel.
+        // Não é necessário ter chave no localStorage para deploy em produção.
 
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
@@ -390,6 +405,8 @@ export class Agent {
                 const parsedFiles = this.parseFilesFromText(response);
                 if (parsedFiles && parsedFiles.length > 0) {
                     this.attachGeneratedFilesToChat(parsedFiles);
+                    // Remover o bloco de arquivos do texto antes de exibir para usuário
+                    response = response.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
                 }
             } catch (e) {
                 console.warn('⚠️ Falha parsing arquivos de resposta Groq:', e);
@@ -429,7 +446,9 @@ export class Agent {
     // ==================== MODELO PRO ====================
     // 3 modelos Groq em 5 rounds + sintetizador
     async processProModel(userMessage) {
-        // Em produção, a chave GROQ_API_KEY é lida do servidor (ENV VAR). Em dev, use session.start('sua_chave') para teste local.
+        // Usamos proxy server-side (/api/groq-proxy) que utiliza GROQ_API_KEY em Vercel.
+        // Não é necessário ter chave no localStorage para deploy em produção.
+
         const messageContainer = this.ui.createAssistantMessageContainer();
         const timestamp = Date.now();
 
@@ -459,7 +478,22 @@ export class Agent {
             const resp2Promise = this.callGroqAPI('llama-3.3-70b-versatile', messages2);
 
             // Esperar ambas em paralelo
-            const [resp1, resp2] = await Promise.all([resp1Promise, resp2Promise]);
+            let [resp1, resp2] = await Promise.all([resp1Promise, resp2Promise]);
+            // Extrair arquivos se existirem e remover do texto para não expor JSON no chat
+            try {
+                const parsed1 = this.parseFilesFromText(resp1);
+                if (parsed1 && parsed1.length > 0) {
+                    this.attachGeneratedFilesToChat(parsed1);
+                    resp1 = resp1.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
+                }
+            } catch (e) { console.warn('⚠️ Falha parsing arquivos de resp1:', e); }
+            try {
+                const parsed2 = this.parseFilesFromText(resp2);
+                if (parsed2 && parsed2.length > 0) {
+                    this.attachGeneratedFilesToChat(parsed2);
+                    resp2 = resp2.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
+                }
+            } catch (e) { console.warn('⚠️ Falha parsing arquivos de resp2:', e); }
             
             this.ui.updateThinkingStep(step1aId, 'check_circle', '✅ Perspectiva 1');
             this.ui.updateThinkingStep(step1bId, 'check_circle', '✅ Perspectiva 2');
@@ -527,7 +561,11 @@ export class Agent {
             // Tentar extrair arquivos gerados na resposta de síntese e anexá-los ao chat
             try {
                 const parsedFiles = this.parseFilesFromText(finalResponse);
-                if (parsedFiles && parsedFiles.length > 0) this.attachGeneratedFilesToChat(parsedFiles);
+                if (parsedFiles && parsedFiles.length > 0) {
+                    this.attachGeneratedFilesToChat(parsedFiles);
+                    // remover bloco do texto para apresentação
+                    finalResponse = finalResponse.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
+                }
             } catch (e) {
                 console.warn('⚠️ Falha parsing arquivos de resposta (Pro):', e);
             }
@@ -568,6 +606,12 @@ export class Agent {
     // Gemini API methods removed (attachments/Gemini integration disabled)
 
     async callGroqAPI(model, customMessages = null) {
+<<<<<<< HEAD
+=======
+        // Not required to have a client-side Groq API key when using server-side proxy
+        // The proxy will use GROQ_API_KEY from environment variables on Vercel
+        
+>>>>>>> v2.0-oficial
         // System prompts diferenciados por modelo
         let systemPrompt;
         if (this.currentModel === 'rapido') {
@@ -589,20 +633,44 @@ export class Agent {
         this.abortController = new AbortController();
 
         try {
-            const r = await fetch('/api/groq', {
+            // Chamar proxy server-side no Vercel
+            const response = await fetch('/api/groq-proxy', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 8192 }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 8192, top_p: 1, stream: false }),
                 signal: this.abortController.signal
             });
 
-            const data = await r.json().catch(() => ({}));
-            if (!r.ok) {
-                const status = r.status;
-                if (status === 401) {
-                    throw new Error('Invalid API Key: Verifique se você configurou a chave Groq correta em suas ENV VARS (GROQ_API_KEY).');
+            if (!response.ok) {
+                const status = response.status;
+                const text = await response.text().catch(() => null);
+                // Mensagens amigáveis para erros comuns
+                if (status === 500 && text && text.includes('GROQ_API_KEY is not configured')) {
+                    throw new Error('GROQ API Key não está configurada no servidor. Adicione GROQ_API_KEY nas Environment Variables do Vercel.');
                 }
-                throw new Error(data.error || `Groq proxy error ${status}`);
+                if (status === 401) {
+                    throw new Error('Invalid API Key: Verifique sua chave no Vercel para GROQ_API_KEY.');
+                }
+                throw new Error(text || `Erro HTTP ${status}`);
+            }
+
+            const data = await response.json().catch(() => ({}));
+            return data.content;
+
+            if (!response.ok) {
+                const status = response.status;
+                const text = await response.text().catch(() => null);
+                // Mensagens amigáveis para erros comuns
+                if (status === 500 && text && text.includes('GROQ_API_KEY is not configured')) {
+                    throw new Error('GROQ API Key não está configurada no servidor. Adicione GROQ_API_KEY nas Environment Variables do Vercel.');
+                }
+                if (status === 401) {
+                    throw new Error('Invalid API Key: Verifique sua chave no Vercel para GROQ_API_KEY.');
+                }
+                throw new Error(text || `Erro HTTP ${status}`);
+>>>>>>> v2.0-oficial
             }
 
             return data.content;
@@ -657,14 +725,8 @@ export class Agent {
     async test() {
         console.log('🧪 Iniciando teste do agente...');
         
-        const apiKey = this.getGroqApiKey();
-        if (!apiKey) {
-            console.error('❌ Configure a API Key primeiro: session.start("sua_chave")');
-            return;
-        }
-
-        console.log('✅ API Key encontrada');
-        console.log('📡 Testando conexão com Groq...');
+        console.log('📡 Testando conexão com Groq via proxy (server-side) ...');
+        console.log('ℹ️ Se você configurou a variável GROQ_API_KEY no Vercel, este teste usará ela. Caso contrário, o teste falhará com mensagem adequada.');
 
         try {
             const testMessage = 'Olá! Estou testando a conexão.';
