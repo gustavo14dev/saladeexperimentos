@@ -16,7 +16,7 @@ class GeminiImageAPI {
      * @returns {boolean}
      */
     podeGerar() {
-        return temChaveAPI();
+        return true;
     }
 
     /**

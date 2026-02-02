@@ -85,39 +85,6 @@ class Lhama1GroqAPI {
 
 // Instância global da nova API
 const lhama1API = new Lhama1GroqAPI();
-/**
- * Handler da API Gemini
- * Gerencia chamadas à API do Gemini com tratamento de erros e requisições
- */
-
-class GeminiAPI {
-    constructor() {
-        this.estaProcessando = false;
-        this.ultimaRequisicao = null;
-        this.historico = [];  // Mantém histórico de conversa
-    }
-
-    /**
-     * Faz uma requisição à API Gemini
-     * @param {string} pergunta - A pergunta do usuário
-     * @param {Array} historicoConversa - Histórico de conversa anterior
-     * @returns {Promise<string>} - A resposta da IA
-     */
-    async obterResposta(pergunta, historicoConversa = []) {
-        // Validar se há chave API disponível
-        if (!temChaveAPI()) {
-            return "⚠️ Desculpe, a integração com API está configurada. Por favor, contacte o administrador.";
-        }
-
-        // Evitar requisições simultâneas
-        if (this.estaProcessando) {
-            return "⏳ Por favor, aguarde a resposta anterior...";
-        }
-
-        this.estaProcessando = true;
-
-        try {
-            const chave = GEMINI_CONFIG.API_KEY();
             const url = construirURLAPI(chave);
 
             // Preparar histórico para context
@@ -294,9 +261,9 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
      * @returns {boolean}
      */
     estaDisponivel() {
-        return temChaveAPI();
+        return true;
     }
 }
 
 // Instância global da API
-const geminiAPI = new GeminiAPI();
+

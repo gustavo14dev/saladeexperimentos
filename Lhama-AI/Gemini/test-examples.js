@@ -92,12 +92,7 @@ function testeCompleto() {
  * Teste rápido da API
  */
 async function testeRapidoAPI() {
-    if (!temChaveAPI()) {
-        console.error('❌ Chave não definida!');
-        return;
-    }
-    
-    console.log('⏳ Testando API do Gemini...');
+    console.log('⏳ Testando API do Groq...');
     const inicio = Date.now();
     
     const resposta = await lhama1API.obterResposta('Qual é o significado da vida?');
