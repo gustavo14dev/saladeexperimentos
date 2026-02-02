@@ -15,7 +15,7 @@
  * }
  * 
  * Depois edite api-init.js para chamar:
- * const config = await fetch('/api/config.json');
+ * const config = await fetch('/api/config'); // Nota: prefira usar um proxy server-side (/api/gemini-proxy) para evitar expor a chave diretamente ao cliente
  * 
  * 
  * SOLUÇÃO 2: HTML Inline - MAIS SIMPLES

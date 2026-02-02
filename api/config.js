@@ -12,8 +12,9 @@ export default (req, res) => {
         return res.status(405).json({ erro: 'Method not allowed' });
     }
 
-    // Retorna a chave de forma segura
+    // Retorna a chave SOMENTE se a variável EXPOSE_GEMINI_KEY estiver explícita (melhora segurança em produção)
+    // Caso contrário, retornamos null para evitar expor a chave no frontend.
     res.status(200).json({
-        GEMINI_API_KEY: process.env.GEMINI_API_KEY || null
+        GEMINI_API_KEY: process.env.EXPOSE_GEMINI_KEY === 'true' ? (process.env.GEMINI_API_KEY || null) : null
     });
 };

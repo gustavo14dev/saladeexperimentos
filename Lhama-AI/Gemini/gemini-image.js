@@ -64,10 +64,12 @@ class GeminiImageAPI {
         this.estaProcessando = true;
 
         try {
-            const chave = GEMINI_CONFIG.API_KEY();
-            
-            // Usar endpoint de geração de imagens
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modeloImagem}:generateContent?key=${chave}`;
+            // Usar proxy server-side para não expor a chave no cliente
+            const url = '/api/gemini-proxy';
+            const proxyBody = {
+                model: this.modeloImagem,
+                payload
+            }; 
 
             // Adicionar marca d'água na descrição (discretamente)
             const descricaoComMarca = `${descricao}\n\n[Com marca d'água de "Lhama AI 1" pequena no canto inferior direito]`;
@@ -93,7 +95,7 @@ class GeminiImageAPI {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(proxyBody),
                 signal: controller.signal
             });
 
