@@ -84,7 +84,7 @@ class Lhama1GroqAPI {
 }
 
 // Instância global da nova API
-const lhama1API = new Lhama1GroqAPI();
+window.lhama1API = new Lhama1GroqAPI();
             const url = construirURLAPI(chave);
 
             // Preparar histórico para context
