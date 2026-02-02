@@ -1,4 +1,12 @@
 {
+  "name": "saladeexperimentos",
+  "version": "1.0.0",
+  "description": "Workspace root package.json",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"No tests configured\" && exit 0"
+  },
   "dependencies": {
     "express": "^5.2.1",
     "multer": "^2.0.2",
