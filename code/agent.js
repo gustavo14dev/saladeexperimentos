@@ -605,14 +605,11 @@ export class Agent {
     // ==================== APIS ====================
     // Gemini API methods removed (attachments/Gemini integration disabled)
 
-    async callGroqAPI(model, customMessages = null) {
-<<<<<<< HEAD
-=======
-        // Not required to have a client-side Groq API key when using server-side proxy
-        // The proxy will use GROQ_API_KEY from environment variables on Vercel
-        
->>>>>>> v2.0-oficial
-        // System prompts diferenciados por modelo
+async callGroqAPI(model, customMessages = null) {
+    // Not required to have a client-side Groq API key when using server-side proxy
+    // The proxy will use GROQ_API_KEY from environment variables on Vercel
+    
+    // System prompts diferenciados por modelo
         let systemPrompt;
         if (this.currentModel === 'rapido') {
             systemPrompt = {
@@ -669,12 +666,11 @@ export class Agent {
                 if (status === 401) {
                     throw new Error('Invalid API Key: Verifique sua chave no Vercel para GROQ_API_KEY.');
                 }
-                throw new Error(text || `Erro HTTP ${status}`);
->>>>>>> v2.0-oficial
-            }
+        throw new Error(text || `Erro HTTP ${status}`);
+    }
 
-            return data.content;
-        } catch (error) {
+    return data.content;
+} catch (error) {
             if (error.name === 'AbortError') {
                 console.log('⚠️ Requisição foi abortada pelo usuário');
                 throw new Error('ABORTED');
