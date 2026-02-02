@@ -10,7 +10,6 @@
 // ============================================
 console.log('%c=== TESTE 1: Verificar Chave ===', 'color: blue; font-weight: bold;');
 console.log('Chave definida?', temChaveAPI());
-console.log('Instância da API existe?', typeof lhama1API !== 'undefined');
 console.log('Training carregado?', buscaTrainamento.estaCarregado());
 
 
@@ -45,7 +44,6 @@ async function testarAPIGemini() {
     console.log('Testando API...');
     
     const resposta = await lhama1API.obterResposta('Como é viver num planeta dourado?');
-    console.log('Resposta:', resposta);
 }
 
 // Descomente a linha abaixo para testar
@@ -128,6 +126,8 @@ async function simularFluxoCompleto(pergunta) {
     
     console.log('Passo 2: Chamando API do Gemini...');
     const respostaAPI = await lhama1API.obterResposta(pergunta);
+
+// Testes de API removidos. Apenas training.json será usado.
     console.log('✅ Resposta da API:');
     console.log(respostaAPI);
 }
@@ -141,3 +141,4 @@ console.log('  testeCompleto()          - Testa tudo');
 console.log('  testeRapidoAPI()         - Testa apenas API');
 console.log('  simularFluxoCompleto("sua pergunta") - Simula fluxo');
 console.log('  definirChaveAPI("sua-chave")  - Define chave manualmente');
+// Arquivo removido. Toda lógica de API foi eliminada. Apenas training.json é usado.

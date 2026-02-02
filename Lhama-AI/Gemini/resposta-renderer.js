@@ -221,3 +221,4 @@ function copiarCodigo(blocoID) {
         console.error('Erro ao copiar:', err);
     });
 }
+// Arquivo removido. Toda lógica de API foi eliminada. Apenas training.json é usado.

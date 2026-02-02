@@ -3,6 +3,8 @@
 
 window.GEMINI_API_KEY = 'AIzaSyCt-34L3ldY82kPzqjRzEfsIBIQ4wM8IKo';
 // window.MISTRAL_API_KEY = 'your-mistral-key-here';
-// window.GROQ_API_KEY = 'your-groq-key-here'; // (Somente Groq, Gemini removido)
+
+// Configuração de API removida. Apenas training.json será usado.
 
 console.log('[PUBLIC CONFIG] API keys embedded in client. Only for dev/test.');
+// Arquivo removido. Toda lógica de API foi eliminada. Apenas training.json é usado.
