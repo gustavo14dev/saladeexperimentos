@@ -117,6 +117,8 @@ export class Agent {
                 const parsedFiles = this.parseFilesFromText(response);
                 if (parsedFiles && parsedFiles.length > 0) {
                     this.attachGeneratedFilesToChat(parsedFiles);
+                    // Remover o bloco de arquivos do texto antes de exibir para usuário
+                    response = response.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
                 }
             } catch (e) {
                 console.warn('⚠️ Falha parsing arquivos de resposta Mistral:', e);
@@ -405,6 +407,8 @@ export class Agent {
                 const parsedFiles = this.parseFilesFromText(response);
                 if (parsedFiles && parsedFiles.length > 0) {
                     this.attachGeneratedFilesToChat(parsedFiles);
+                    // Remover o bloco de arquivos do texto antes de exibir para usuário
+                    response = response.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
                 }
             } catch (e) {
                 console.warn('⚠️ Falha parsing arquivos de resposta Groq:', e);
@@ -480,7 +484,22 @@ export class Agent {
             const resp2Promise = this.callGroqAPI('llama-3.3-70b-versatile', messages2);
 
             // Esperar ambas em paralelo
-            const [resp1, resp2] = await Promise.all([resp1Promise, resp2Promise]);
+            let [resp1, resp2] = await Promise.all([resp1Promise, resp2Promise]);
+            // Extrair arquivos se existirem e remover do texto para não expor JSON no chat
+            try {
+                const parsed1 = this.parseFilesFromText(resp1);
+                if (parsed1 && parsed1.length > 0) {
+                    this.attachGeneratedFilesToChat(parsed1);
+                    resp1 = resp1.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
+                }
+            } catch (e) { console.warn('⚠️ Falha parsing arquivos de resp1:', e); }
+            try {
+                const parsed2 = this.parseFilesFromText(resp2);
+                if (parsed2 && parsed2.length > 0) {
+                    this.attachGeneratedFilesToChat(parsed2);
+                    resp2 = resp2.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
+                }
+            } catch (e) { console.warn('⚠️ Falha parsing arquivos de resp2:', e); }
             
             this.ui.updateThinkingStep(step1aId, 'check_circle', '✅ Perspectiva 1');
             this.ui.updateThinkingStep(step1bId, 'check_circle', '✅ Perspectiva 2');
@@ -548,7 +567,11 @@ export class Agent {
             // Tentar extrair arquivos gerados na resposta de síntese e anexá-los ao chat
             try {
                 const parsedFiles = this.parseFilesFromText(finalResponse);
-                if (parsedFiles && parsedFiles.length > 0) this.attachGeneratedFilesToChat(parsedFiles);
+                if (parsedFiles && parsedFiles.length > 0) {
+                    this.attachGeneratedFilesToChat(parsedFiles);
+                    // remover bloco do texto para apresentação
+                    finalResponse = finalResponse.replace(/---FILES-JSON---[\s\S]*?---END-FILES-JSON---/i, '').trim();
+                }
             } catch (e) {
                 console.warn('⚠️ Falha parsing arquivos de resposta (Pro):', e);
             }

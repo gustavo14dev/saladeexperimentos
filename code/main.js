@@ -732,7 +732,76 @@ class UI {
 
 
     viewFileModal(file) {
-        // Visualizador de arquivos removido (anexos excluídos)
+        if (!file) return;
+        const lang = (file.name.split('.').pop() || 'txt').toLowerCase();
+        const languageMap = { 'html': 'html', 'htm':'html', 'css':'css', 'js':'javascript', 'json':'json', 'py':'python', 'md':'markdown', 'txt':'plaintext' };
+        const language = languageMap[lang] || 'plaintext';
+
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-[500] flex items-center justify-center animate-fadeIn';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+        const safeContent = this.escapeHtml(file.content || '');
+        let highlighted = safeContent;
+        try {
+            if (window.hljs && language !== 'plaintext') {
+                highlighted = hljs.highlight(safeContent, { language: language, ignoreIllegals: true }).value;
+            }
+        } catch (e) {
+            highlighted = safeContent;
+        }
+
+        modal.innerHTML = `
+            <div class="bg-gray-950 dark:bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-[95%] max-w-3xl max-h-[80vh] overflow-hidden animate-scaleIn flex flex-col">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+                    <div class="flex items-center gap-3">
+                        <span class="material-icons-outlined text-sm text-gray-300">${this.getFileIcon(file.name)}</span>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-gray-300">${this.escapeHtml(file.name)}</span>
+                            <span class="text-xs text-gray-400">${(file.truncated ? 'Conteúdo truncado' : '')}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-xs text-gray-200" id="downloadFileBtn">Baixar</button>
+                        <button class="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white text-xs rounded" id="copyFileBtn">Copiar</button>
+                        <button onclick="this.closest('[class*=&quot;fixed inset-0&quot;]').remove()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-xs text-gray-200">Fechar</button>
+                    </div>
+                </div>
+                <div class="overflow-auto flex-1 p-5 bg-gray-900">
+                    <pre class="m-0"><code class="hljs language-${language} text-sm font-mono text-gray-100 leading-relaxed">${highlighted}</code></pre>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Download handler
+        const dlBtn = modal.querySelector('#downloadFileBtn');
+        dlBtn.addEventListener('click', () => {
+            const blob = new Blob([file.content || ''], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+
+        // Copy handler
+        const copyBtn = modal.querySelector('#copyFileBtn');
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(file.content || '');
+                copyBtn.textContent = 'Copiado!';
+                setTimeout(() => copyBtn.textContent = 'Copiar', 1500);
+            } catch (e) {
+                console.warn('Falha ao copiar:', e);
+                copyBtn.textContent = 'Erro';
+                setTimeout(() => copyBtn.textContent = 'Copiar', 1500);
+            }
+        });
     }
 
 
@@ -770,6 +839,12 @@ class UI {
                     <span class="material-icons-outlined text-primary text-base">${this.getFileIcon(f.name)}</span>
                     <span class="font-medium text-gray-700 dark:text-gray-200 truncate max-w-[140px]">${this.escapeHtml(f.name)}</span>
                 `;
+                // Tornar clicável para visualizar o arquivo
+                fileCard.style.cursor = 'pointer';
+                fileCard.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    try { this.viewFileModal(f); } catch (err) { console.warn('Erro abrindo arquivo:', err); }
+                });
                 inner.appendChild(fileCard);
             });
             filesWrap.appendChild(inner);
@@ -836,6 +911,12 @@ class UI {
                                 <span class="material-icons-outlined text-primary text-base">${this.getFileIcon(f.name)}</span>
                                 <span class="font-medium text-gray-700 dark:text-gray-200 truncate max-w-[160px]">${this.escapeHtml(f.name)}</span>
                             `;
+                            // Tornar o card clicável para abrir visualizador de arquivo
+                            fileCard.style.cursor = 'pointer';
+                            fileCard.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                try { this.viewFileModal(f); } catch (err) { console.warn('Erro abrindo arquivo:', err); }
+                            });
                             inner.appendChild(fileCard);
                         });
                         attachWrap.appendChild(inner);
