@@ -3,11 +3,19 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
-    const GROQ_API_URL = process.env.GROQ_API_URL || 'https://api.groq.com/openai/v1/chat/completions';
+    // Optional local config fallback (for easy local dev): copy api/local-config.example.js → api/local-config.js and fill your keys. This file MUST be gitignored for security.
+    let LOCAL_CONFIG = {};
+    try {
+        LOCAL_CONFIG = (await import('./local-config.js')).default || {};
+    } catch (e) {
+        // local config not present — that's fine
+    }
+
+    const GROQ_API_KEY = process.env.GROQ_API_KEY || LOCAL_CONFIG.GROQ_API_KEY;
+    const GROQ_API_URL = process.env.GROQ_API_URL || LOCAL_CONFIG.GROQ_API_URL || 'https://api.groq.com/openai/v1/chat/completions';
 
     if (!GROQ_API_KEY) {
-        return res.status(500).json({ error: 'GROQ_API_KEY not configured. Set GROQ_API_KEY in your environment variables.' });
+        return res.status(500).json({ error: 'GROQ_API_KEY not configured. Set GROQ_API_KEY in your environment variables or create api/local-config.js (local dev).' });
     }
 
     try {

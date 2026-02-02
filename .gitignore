@@ -1,0 +1,7 @@
+# Ignore local API keys for development
+api/local-config.js
+
+# Node artifacts
+node_modules/
+.DS_Store
+.env
