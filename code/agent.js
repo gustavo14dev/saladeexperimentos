@@ -654,7 +654,28 @@ async callGroqAPI(model, customMessages = null) {
             }
 
             const data = await response.json().catch(() => ({}));
-            return data.content;
+
+            // Normalizar formatos comuns de resposta de proxies/LLMs
+            let content = null;
+            if (typeof data.content === 'string') {
+                content = data.content;
+            } else if (data.choices && Array.isArray(data.choices) && data.choices[0]) {
+                const choice = data.choices[0];
+                if (choice.message && typeof choice.message.content === 'string') {
+                    content = choice.message.content;
+                } else if (typeof choice.text === 'string') {
+                    content = choice.text;
+                }
+            } else if (typeof data === 'string') {
+                content = data;
+            }
+
+            if (!content || typeof content !== 'string' || content.trim().length === 0) {
+                console.error('[callGroqAPI] resposta inesperada do proxy:', data);
+                throw new Error('Resposta vazia ou formato inesperado do proxy Groq');
+            }
+
+            return content;
 
             if (!response.ok) {
                 const status = response.status;

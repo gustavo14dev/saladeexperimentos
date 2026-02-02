@@ -1098,19 +1098,33 @@ class UI {
             responseDiv.innerHTML = '';
             responseDiv.style.minHeight = '20px';
             
+            // Forçar texto seguro (string) e mensagem amigável para respostas vazias
+            let safeText = (text == null || String(text).trim().length === 0) ? '[Erro: resposta vazia do servidor. Verifique /api/status e suas Environment Variables.]' : String(text);
+
             // Executar typewriter effect com o texto bruto ANTES de formatar
-            this.typewriterEffect(text, responseDiv);
+            this.typewriterEffect(safeText, responseDiv);
         }
         this.scrollToBottom();
     }
 
     async typewriterEffect(text, element) {
+        // Garantir que temos string
+        text = (text == null) ? '' : String(text);
+
         // Ocultar blocos de código durante a digitação, mostrando "Gerando código..."
         const hasCode = /```[\s\S]*?```/.test(text);
         
         let displayText = text;
         if (hasCode) {
             displayText = text.replace(/```[\s\S]*?```/g, '\n📝 Gerando código...\n');
+        }
+
+        if (!displayText || displayText.length === 0) {
+            // Sem animação; renderizar direto
+            const formattedHtml = this.formatResponse(text);
+            element.innerHTML = formattedHtml;
+            setTimeout(() => this.scrollToBottom(), 100);
+            return;
         }
         
         let displayedText = '';
