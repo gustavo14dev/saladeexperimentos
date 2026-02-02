@@ -1533,24 +1533,10 @@ const session = {
         console.log('🗑️ API Key Groq removida');
     },
     status: async () => {
-        const banner = document.getElementById('apiStatusBanner');
-        function showBanner(html, type = 'warn') {
-            if (!banner) return;
-            banner.innerHTML = html + '<button id="apiStatusBannerClose" class="ml-4 px-2 py-1 rounded bg-white/10 hover:bg-white/20">Fechar</button>';
-            banner.classList.remove('hidden','opacity-0');
-            banner.classList.add('animate-slideIn');
-            banner.dataset.type = type;
-            const close = document.getElementById('apiStatusBannerClose');
-            if (close) close.onclick = () => banner.classList.add('hidden');
-        }
-        function hideBanner() {
-            if (!banner) return;
-            banner.classList.add('hidden');
-        }
+        // Consultar /api/status para logs internos, mas NÃO exibir banner para usuários finais
         try {
             const res = await fetch('/api/status');
             if (!res.ok) {
-                showBanner('<strong>Falha ao consultar /api/status</strong>: resposta inválida do servidor. Verifique deploy.', 'error');
                 console.error('Falha /api/status:', res.status);
                 return;
             }
@@ -1558,19 +1544,9 @@ const session = {
             console.log('📊 Status do servidor:');
             console.log(`- Groq (ENV): ${data.groq ? '✅ configurada' : '❌ NÃO configurada'}`);
             console.log(`- Mistral (ENV): ${data.mistral ? '✅ configurada' : '❌ NÃO configurada'}`);
-            if (!data.groq || !data.mistral) {
-                const missing = [];
-                if (!data.groq) missing.push('GROQ_API_KEY');
-                if (!data.mistral) missing.push('MISTRAL_API_KEY');
-                showBanner(`<strong>APIs ausentes:</strong> Variáveis não configuradas: ${missing.join(', ')}. Configure estas ENV no Vercel e redeploy.`, 'warn');
-            } else {
-                hideBanner();
-                showBanner('<strong>APIs configuradas</strong> ✅', 'ok');
-                setTimeout(hideBanner, 3000);
-            }
+            // Intencional: não mostrar banners/avisos na UI para usuários finais
         } catch (e) {
             console.error('Falha ao consultar /api/status:', e);
-            showBanner('<strong>Erro</strong> ao acessar /api/status. Verifique conexão e deploy.', 'error');
         }
     }
 };
