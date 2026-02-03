@@ -460,33 +460,42 @@ function alternarModoCorrecao() {
     }
 }
 
-// ===== ENVIO E PROCESSAMENTO =====
+let modoImagemAtivo = false;
+
+function alternarModoImagem() {
+    const input = document.getElementById('input-mensagem');
+    const btnImagem = document.getElementById('btn-imagem');
+    const placeholderAtivo = "Descreva a imagem que você quer criar...";
+    const placeholderInativo = "Olá! Pergunte-me qualquer coisa...";
+    
+    if (modoImagemAtivo) {
+        modoImagemAtivo = false;
+        if (btnImagem) btnImagem.classList.remove('active');
+        input.placeholder = placeholderInativo;
+        input.value = '';
+    } else {
+        modoImagemAtivo = true;
+        if (btnImagem) btnImagem.classList.add('active');
+        input.placeholder = placeholderAtivo;
+        input.value = '';
+        input.focus();
+    }
+}
 
 function enviarMensagem() {
     const input = document.getElementById('input-mensagem');
     const btnEnviar = document.getElementById('btn-send');
-    const btnRedacao = document.getElementById('btn-redacao');
-    const btnResumo = document.getElementById('btn-resumo');
-    const btnCorrecao = document.getElementById('btn-correcao');
     const inputAreaContainer = document.querySelector('.input-area-container');
 
     let mensagem = input.value.trim();
-    const isModoResumoAtivo = modoResumoAtivo;
-    const isModoCorrecaoAtivo = modoCorrecaoAtivo;
-    const isModoImage2Ativo = modoImage2Ativo;
-    // Captura estado
-    const tipoImage2Atual = modoImage2Tipo; // Captura tipo
+    const isModoImagemAtivo = modoImagemAtivo;
 
     if (!mensagem) return;
 
     // Inicia animação de onda colorida
     if (inputAreaContainer) {
-        // efeito sutil de destaque ao enviar (pode ser removido)
         inputAreaContainer.classList.add('wave-animation');
         setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
-    }
-    if (isModoResumoAtivo && !mensagem.toLowerCase().startsWith("resumir: ")) {
-        mensagem = "resumir: " + mensagem;
     }
 
     input.disabled = true;
@@ -494,21 +503,13 @@ function enviarMensagem() {
         btnEnviar.disabled = true;
         btnEnviar.classList.add('sending');
     }
-    // Desativa modos de "um uso só" (Redação, Resumo, Correção)
-    // O Image 2 NÃO é desativado aqui para permitir uso contínuo
-    if (modoRedacaoAtivo) {
-        modoRedacaoAtivo = false;
-        btnRedacao.classList.remove('active');
-    }
-    if (modoResumoAtivo) {
-        modoResumoAtivo = false;
-        btnResumo.classList.remove('active');
-        input.placeholder = "Envie uma mensagem para Dora AI...";
-    }
-    if (modoCorrecaoAtivo) {
-        modoCorrecaoAtivo = false;
-        btnCorrecao.classList.remove('active');
-        input.placeholder = "Envie uma mensagem para Dora AI...";
+
+    // Desativa modo imagem após envio
+    if (modoImagemAtivo) {
+        modoImagemAtivo = false;
+        const btnImagem = document.getElementById('btn-imagem');
+        if (btnImagem) btnImagem.classList.remove('active');
+        input.placeholder = "Olá! Pergunte-me qualquer coisa...";
     }
 
     historicoConversa.push({ tipo: 'usuario', texto: mensagem });
@@ -520,55 +521,30 @@ function enviarMensagem() {
     atualizarBotaoAudioEnviar();
 
     mostrarDigitando(true);
-    // 🆕 NOVO: Usa async/await para lidar com gerarResposta async
-    mostrarDigitando(true);  // MANTÉM o indicador
     
     // Fazer requisição sem setTimeout para evitar delay visual
     (async () => {
-        const resposta = isModoCorrecaoAtivo ? gerarCorrecao(mensagem) : await gerarResposta(mensagem, historicoConversa);
+        let resposta;
+        let imagemGerada = null;
         
-        mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
+        if (isModoImagemAtivo) {
+            // Modo imagem: gerar imagem com FLUX.1 [flex]
+            imagemGerada = await gerarImagem(mensagem);
+            resposta = `Imagem gerada com base em: "${mensagem}"`;
+        } else {
+            // Modo normal: usar API Groq
+            resposta = await gerarResposta(mensagem, historicoConversa);
+        }
         
-        let imagemAssociada = null;
+        mostrarDigitando(false);
         
-        // 1. Lógica IMAGE 2 (Prioridade)
-        if (isModoImage2Ativo) {
-            if (tipoImage2Atual === 'simples') {
-                imagemAssociada = buscarImagemPorNome(mensagem);
-                if (!imagemAssociada) {
-                    adicionarMensagem('Não foi possível gerar essa imagem. Tente gerar outra coisa.', 'bot', null);
-                    input.disabled = false;
-                    
-                    if (btnEnviar) btnEnviar.disabled = false;
-                    input.focus();
-                    return;
-                }
-                // Envia apenas a imagem no modo simples
-                adicionarMensagem('', 'bot', imagemAssociada);
-            } 
-            else if (tipoImage2Atual === 'pessoa') {
-                processarImage2Pessoa(mensagem);
-                // processarImage2Pessoa já adiciona a mensagem, então retornamos
-                input.disabled = false;
-                if (btnEnviar) btnEnviar.disabled = false;
-                input.focus();
-                return;
-            }
-        } 
-        // 2. Lógica de Resumo
-        else if (isModoResumoAtivo) {
-            const textoResumido = resposta.replace(/<[^>]*>/g, '');
-            imagemAssociada = encontrarImagem(textoResumido);
+        if (isModoImagemAtivo && imagemGerada) {
+            // Adicionar mensagem com imagem gerada
+            adicionarMensagem(resposta, 'bot', imagemGerada);
+        } else {
+            // Adicionar mensagem normal
             historicoConversa.push({ tipo: 'bot', texto: resposta });
-            adicionarMensagem(resposta, 'bot', imagemAssociada);
-        } 
-        // 3. Lógica Padrão (busca imagem automática se não for correção)
-        else {
-            if (!isModoCorrecaoAtivo && !modoImage2DesativadoManualmente) {
-                imagemAssociada = encontrarImagem(mensagem);
-            }
-            historicoConversa.push({ tipo: 'bot', texto: resposta });
-            adicionarMensagem(resposta, 'bot', imagemAssociada);
+            adicionarMensagem(resposta, 'bot', null);
         }
 
         input.disabled = false;
@@ -578,6 +554,69 @@ function enviarMensagem() {
             btnEnviar.classList.remove('sending');
         }
     })();
+}
+
+async function gerarImagem(prompt) {
+    console.log('[IMAGEM] Gerando imagem com FLUX.1 [flex]...');
+    console.log('[IMAGEM] Prompt:', prompt);
+    
+    try {
+        const response = await fetch('/api/flux2flex-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: prompt
+            })
+        });
+
+        console.log('[IMAGEM] Resposta do proxy FLUX:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[IMAGEM] Erro na API:', response.status, errorText);
+            
+            if (response.status === 401) {
+                return null;
+            } else if (response.status === 429) {
+                return null;
+            } else if (response.status === 500) {
+                return null;
+            } else {
+                return null;
+            }
+        }
+
+        const data = await response.json();
+        console.log('[IMAGEM] Dados recebidos:', data);
+        
+        // Verificar se a resposta contém a imagem
+        if (!data.choices || data.choices.length === 0) {
+            console.error('[IMAGEM] Nenhuma imagem gerada');
+            return null;
+        }
+
+        const imageData = data.choices[0]?.message?.content;
+        
+        if (!imageData) {
+            console.error('[IMAGEM] Imagem vazia');
+            return null;
+        }
+
+        console.log('[IMAGEM] Imagem gerada com sucesso!');
+        
+        // Retornar objeto com dados da imagem
+        return {
+            type: 'generated',
+            url: imageData,
+            prompt: prompt
+        };
+
+    } catch (erro) {
+        console.error('[IMAGEM] Erro ao gerar imagem:', erro);
+        return null;
+    }
 }
 
 // ===== LÓGICA DE GERAÇÃO (RESPOSTAS, RESUMOS, CORREÇÕES) =====

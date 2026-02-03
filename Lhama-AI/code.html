@@ -138,23 +138,10 @@
 <textarea class="w-full px-6 py-3 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
 <div class="flex flex-wrap items-center gap-2">
-<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600">
-<span class="material-icons-outlined text-sm">article</span>
-                                Redação
-                                <span class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-[9px] font-bold uppercase tracking-wider ml-1">Beta</span>
-</button>
-<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600">
-<span class="material-icons-outlined text-sm">description</span>
-                                Resumo
-                            </button>
-<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600">
-<span class="material-icons-outlined text-sm">edit</span>
-                                Correção
-                            </button>
-<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" id="btn-imagem">
 <span class="material-icons-outlined text-sm">image</span>
-                                Image 2
-                                <span class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-[9px] font-bold uppercase tracking-wider ml-1">Beta</span>
+                                Imagem
+                                <span class="px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-[9px] font-bold uppercase tracking-wider ml-1">IA</span>
 </button>
 </div>
 <div class="flex items-center gap-3 ml-auto">
@@ -223,5 +210,23 @@ console.log('[HTML] Carregando conversa.js...');
 <script>
 console.log('[HTML] Todos os scripts carregados');
 console.log('[HTML] Verificação final - window.lhamaGroqAPI:', !!window.lhamaGroqAPI);
+
+// Adicionar event listener para o botão de imagem
+document.addEventListener('DOMContentLoaded', function() {
+    const btnImagem = document.getElementById('btn-imagem');
+    if (btnImagem) {
+        btnImagem.addEventListener('click', function() {
+            console.log('[HTML] Botão Imagem clicado');
+            if (typeof alternarModoImagem === 'function') {
+                alternarModoImagem();
+            } else {
+                console.error('[HTML] Função alternarModoImagem não encontrada');
+            }
+        });
+        console.log('[HTML] Event listener do botão Imagem adicionado');
+    } else {
+        console.error('[HTML] Botão Imagem não encontrado');
+    }
+});
 </script>
 </body></html>
