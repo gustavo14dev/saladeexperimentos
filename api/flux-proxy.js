@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
         // Preparar payload para a API OpenRouter com modelo FLUX válido
         const fluxPayload = {
-            model: "black-forest-labs/flux-1.1-pro",
+            model: "black-forest-labs/flux.2-flex",
             messages: [
                 {
                     role: "user",
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
             max_tokens: 1000
         };
 
-        console.log('[FLUX PROXY] Enviando requisição para FLUX 1.1 Pro...');
+        console.log('[FLUX PROXY] Enviando requisição para FLUX.2 Flex...');
 
         // Fazer requisição para a API OpenRouter
         const controller = new AbortController();
