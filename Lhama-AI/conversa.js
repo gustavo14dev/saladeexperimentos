@@ -138,221 +138,45 @@ function alternarModoImagem() {
     }
 }
 
-async function gerarImagem(prompt) {
-    console.log('[IMAGEM] Gerando imagem com Pollinations AI:', prompt);
+function mostrarGerandoImagem() {
+    const chatBox = document.getElementById('chat-box');
+    const divMensagem = document.createElement('div');
+    divMensagem.className = 'mensagem bot';
+    divMensagem.id = 'gerando-imagem-msg';
     
-    try {
-        const response = await fetch('/api/flux-proxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt: prompt
-            })
-        });
-
-        console.log('[IMAGEM] Resposta do proxy FLUX:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[IMAGEM] Erro na API FLUX:', response.status, errorText);
-            
-            if (response.status === 401) {
-                return " Erro de autenticação com Pollinations AI.";
-            } else if (response.status === 429) {
-                return " Muitas requisições. Tente novamente em alguns segundos.";
-            } else if (response.status === 500) {
-                return " Servidor Pollinations AI indisponível. Tente novamente.";
-            } else {
-                return `Erro na API Pollinations: ${errorText || response.statusText}`;
-            }
-        }
-
-        const data = await response.json();
-        console.log('[IMAGEM] Dados recebidos:', data);
-        
-        if (data.data && data.data.length > 0 && data.data[0].url) {
-            const imageUrl = data.data[0].url;
-            console.log('[IMAGEM] Imagem gerada com sucesso!');
-            
-            // Retornar HTML da imagem
-            return `<div class="imagem-gerada-container">
-                <img src="${imageUrl}" alt="Imagem gerada por Pollinations AI" class="imagem-gerada" />
-                <div class="imagem-info">
-                    <small>🎨 Gerado por Pollinations AI</small>
-                </div>
-            </div>`;
-        } else {
-            console.error('[IMAGEM] Estrutura de resposta inválida');
-            return "Desculpe, não consegui gerar a imagem. Tente novamente.";
-        }
-
-    } catch (erro) {
-        console.error('[IMAGEM] Erro ao chamar API FLUX:', erro);
-        return "❌ Erro na API FLUX: " + erro.message + ". Tente novamente.";
+    divMensagem.innerHTML = `
+        <div class="message-content">
+            <div class="gerando-imagem-card">
+                <div class="gerando-imagem-icon">🎨</div>
+                <div class="gerando-imagem-texto">Gerando Imagem<span class="pontos">...</span></div>
+            </div>
+        </div>
+    `;
+    
+    chatBox.appendChild(divMensagem);
+    
+    // Animação dos pontos
+    const pontos = divMensagem.querySelector('.pontos');
+    let contador = 0;
+    const animacao = setInterval(() => {
+        contador = (contador + 1) % 4;
+        pontos.textContent = '.'.repeat(contador || 1);
+    }, 500);
+    // Salvar referência da animação para parar depois
+    divMensagem.animacaoInterval = animacao;
+    
+    // Scroll para a mensagem
+    const container = document.getElementById('chat-box-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
     }
 }
 
-// ===== ENVIO E PROCESSAMENTO =====
-
-function enviarMensagem() {
-    const input = document.getElementById('input-mensagem');
-    const btnEnviar = document.getElementById('btn-send');
-    const inputAreaContainer = document.querySelector('.input-area-container');
-
-    let mensagem = input.value.trim();
-
-    if (!mensagem) return;
-
-    // Inicia animação de onda colorida
-    if (inputAreaContainer) {
-        // efeito sutil de destaque ao enviar (pode ser removido)
-        inputAreaContainer.classList.add('wave-animation');
-        setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
-    }
-
-    input.disabled = true;
-    if (btnEnviar) {
-        btnEnviar.disabled = true;
-        btnEnviar.classList.add('sending');
-    }
-
-    historicoConversa.push({ tipo: 'usuario', texto: mensagem });
-    adicionarMensagem(mensagem, 'usuario');
-    
-    input.value = '';
-    input.style.height = '';
-    input.classList.remove('scrolling');
-    atualizarBotaoAudioEnviar();
-
-    mostrarDigitando(true);
-    // 🆕 NOVO: Usa async/await para lidar com gerarResposta async
-    mostrarDigitando(true);  // MANTÉM o indicador
-    
-    // Fazer requisição sem setTimeout para evitar delay visual
-    (async () => {
-        let resposta;
-        
-        // Se está em modo de imagem, gera imagem
-        if (modoImagemAtivo) {
-            resposta = await gerarImagem(mensagem);
-            mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
-            
-            // Adiciona a imagem gerada
-            historicoConversa.push({ tipo: 'bot', texto: 'Imagem gerada por Pollinations AI' });
-            adicionarMensagem(resposta, 'bot', null);
-        } else {
-            // Senão, usa resposta normal da API
-            resposta = await gerarResposta(mensagem, historicoConversa);
-            
-            mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
-            
-            let imagemAssociada = null;
-            
-            // imagemAssociada = encontrarImagem(mensagem); // Função removida
-            imagemAssociada = null;
-            historicoConversa.push({ tipo: 'bot', texto: resposta });
-            adicionarMensagem(resposta, 'bot', imagemAssociada);
-        }
-
-        input.disabled = false;
-        input.focus();
-        if (btnEnviar) {
-            btnEnviar.disabled = false;
-            btnEnviar.classList.remove('sending');
-        }
-    })();
-}
-
-// ===== LÓGICA DE GERAÇÃO (RESPOSTAS, RESUMOS, CORREÇÕES) =====
-
-async function gerarResposta(mensagemUsuario, historicoConversa = []) {
-    const mensagemOriginal = mensagemUsuario;
-    mensagemUsuario = mensagemUsuario.toLowerCase();
-    const sentimento = detectarSentimento(mensagemUsuario);
-    const palavrasUsuario = mensagemUsuario.split(/\W+/).filter(Boolean);
-
-    let melhorResposta = null;
-
-    // Forçar chamada direta à API Groq sem dependência da classe
-    console.log('[DEBUG] Forçando chamada direta à API Groq...');
-    
-    try {
-        const response = await fetch('/api/lhama-groq-api-proxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`
-                    },
-                    ...historicoConversa.map(msg => ({
-                        role: msg.tipo === 'usuario' ? 'user' : 'assistant',
-                        content: msg.texto
-                    })),
-                    {
-                        role: 'user',
-                        content: mensagemOriginal
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 8192,
-                top_p: 1,
-                stream: false
-            })
-        });
-
-        console.log('[DEBUG] Resposta do proxy:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[DEBUG] Erro na API:', response.status, errorText);
-            
-            if (response.status === 401) {
-                return formatarResposta("🔐 Chave API não configurada. Verifique a variável LHAMA_GROQ_API_PROXY na Vercel.");
-            } else if (response.status === 403) {
-                return formatarResposta("❌ Sem permissão para usar a API. Verifique a variável LHAMA_GROQ_API_PROXY.");
-            } else if (response.status === 429) {
-                return formatarResposta("⏱️ Muitas requisições. Tente novamente em alguns segundos.");
-            } else if (response.status === 500) {
-                return formatarResposta("🔧 Servidor da API indisponível. Tente novamente.");
-            } else {
-                return formatarResposta(`Erro na API: ${errorText || response.statusText}`);
-            }
-        }
-
-        const data = await response.json();
-        console.log('[DEBUG] Dados recebidos:', data);
-        
-        if (!data.choices || data.choices.length === 0) {
-            console.error('[DEBUG] Estrutura de resposta inválida');
-            return formatarResposta("Desculpe, não consegui gerar uma resposta. Tente novamente.");
-        }
-
-        const conteudoResposta = data.choices[0]?.message?.content;
-        
-        if (!conteudoResposta) {
-            console.error('[DEBUG] Resposta vazia');
-            return formatarResposta("Desculpe, a resposta veio vazia. Tente novamente.");
-        }
-
-        console.log('[DEBUG] Resposta da API obtida com sucesso!');
-        return formatarResposta(conteudoResposta);
-
-    } catch (erro) {
-        console.error('[DEBUG] Erro ao chamar API diretamente:', erro);
-        return formatarResposta("❌ Erro na API Groq: " + erro.message + ". Tente novamente.");
-    }
-}
-
-// ===== UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
-
-function detectarSentimento(mensagem) {
+function removerGerandoImagem() {
+    const msg = document.getElementById('gerando-imagem-msg');
+    if (msg) {
+        if (msg.animacaoInterval) {
+            clearInterval(msg.animacaoInterval);
     const tristes = ['triste', 'chateado', 'deprimido', 'mal', 'sozinho', 'cansado', 'chorar'];
     const felizes = ['feliz', 'contente', 'animado', 'bem', 'ótimo', 'maravilhoso', 'alegre'];
     for (let p of tristes) if (mensagem.includes(p)) return 'triste';

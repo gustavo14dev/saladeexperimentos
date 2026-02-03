@@ -439,6 +439,56 @@
             background-color: #1A1A1A !important;
             color: white !important;
         }
+
+        /* Card de carregamento de imagem */
+        .gerando-imagem-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            animation: brilho-pulsante 2s ease-in-out infinite;
+            max-width: fit-content;
+        }
+
+        .gerando-imagem-icon {
+            font-size: 24px;
+            animation: girar 2s linear infinite;
+        }
+
+        .gerando-imagem-texto {
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .pontos {
+            display: inline-block;
+            min-width: 20px;
+            text-align: left;
+        }
+
+        @keyframes brilho-pulsante {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes girar {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
         .mobile-blocker-content {
             text-align: center;
             color: white;
