@@ -372,21 +372,6 @@ export class Agent {
             await this.ui.sleep(300);
         }
 
-        // Mostrar checks gerados
-        for (let i = 0; i < thinkingChecks.length; i++) {
-            const stepId = `step_${timestamp}_${i}`;
-            const checkText = thinkingChecks[i].step;
-            
-            this.ui.addThinkingStep('schedule', checkText, stepId, messageContainer.stepsId);
-            
-            // Delay variável entre checks para parecer mais natural
-            const delay = 1500 + Math.random() * 1500;
-            await this.ui.sleep(delay);
-            
-            this.ui.updateThinkingStep(stepId, 'check_circle', checkText);
-            await this.ui.sleep(300);
-        }
-
         this.addToHistory('user', userMessage);
 
         try {
@@ -676,22 +661,7 @@ async callGroqAPI(model, customMessages = null) {
             }
 
             return content;
-
-            if (!response.ok) {
-                const status = response.status;
-                const text = await response.text().catch(() => null);
-                // Mensagens amigáveis para erros comuns
-                if (status === 500 && text && text.includes('GROQ_API_KEY is not configured')) {
-                    throw new Error('GROQ API Key não está configurada no servidor. Adicione GROQ_API_KEY nas Environment Variables do Vercel.');
-                }
-                if (status === 401) {
-                    throw new Error('Invalid API Key: Verifique sua chave no Vercel para GROQ_API_KEY.');
-                }
-        throw new Error(text || `Erro HTTP ${status}`);
-    }
-
-    return data.content;
-} catch (error) {
+        } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('⚠️ Requisição foi abortada pelo usuário');
                 throw new Error('ABORTED');
