@@ -625,53 +625,78 @@ Aqui estão alguns tópicos e ideias para você começar sua redação sobre **$
         }
     }
 
-    // Primeiro tenta buscar no training.json com tolerância 0 (match exato)
-    // TEMPORARIAMENTE DESABILITADO PARA FORÇAR API
-    console.log('[DEBUG] Pulando busca no training.json para forçar API');
-
-    // Se não encontrou no training, usa a API Groq
-    console.log('[DEBUG] Tentando chamar API Groq...');
-    console.log('[DEBUG] window.lhamaGroqAPI disponível:', !!window.lhamaGroqAPI);
+    // Forçar chamada direta à API Groq sem dependência da classe
+    console.log('[DEBUG] Forçando chamada direta à API Groq...');
     
     try {
-        if (window.lhamaGroqAPI && window.lhamaGroqAPI.estaDisponivel()) {
-            console.log('[DEBUG] Chamando obterResposta da API Groq...');
-            const respostaAPI = await window.lhamaGroqAPI.obterResposta(mensagemOriginal, historicoConversa);
-            console.log('[DEBUG] Resposta da API Groq:', respostaAPI);
+        const response = await fetch('/api/lhama-groq-api-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`
+                    },
+                    ...historicoConversa.map(msg => ({
+                        role: msg.tipo === 'usuario' ? 'user' : 'assistant',
+                        content: msg.texto
+                    })),
+                    {
+                        role: 'user',
+                        content: mensagemOriginal
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 8192,
+                top_p: 1,
+                stream: false
+            })
+        });
+
+        console.log('[DEBUG] Resposta do proxy:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[DEBUG] Erro na API:', response.status, errorText);
             
-            if (respostaAPI && !respostaAPI.includes('Erro') && !respostaAPI.includes('⏱️') && !respostaAPI.includes('🔐') && !respostaAPI.includes('❌')) {
-                console.log('[DEBUG] Usando resposta da API Groq');
-                return formatarResposta(respostaAPI);
+            if (response.status === 401) {
+                return formatarResposta("🔐 Chave API não configurada. Verifique a variável LHAMA_GROQ_API_PROXY na Vercel.");
+            } else if (response.status === 403) {
+                return formatarResposta("❌ Sem permissão para usar a API. Verifique a variável LHAMA_GROQ_API_PROXY.");
+            } else if (response.status === 429) {
+                return formatarResposta("⏱️ Muitas requisições. Tente novamente em alguns segundos.");
+            } else if (response.status === 500) {
+                return formatarResposta("🔧 Servidor da API indisponível. Tente novamente.");
             } else {
-                console.log('[DEBUG] Resposta da API contém erro, usando fallback');
+                return formatarResposta(`Erro na API: ${errorText || response.statusText}`);
             }
-        } else {
-            console.log('[DEBUG] API Groq não está disponível');
         }
+
+        const data = await response.json();
+        console.log('[DEBUG] Dados recebidos:', data);
+        
+        if (!data.choices || data.choices.length === 0) {
+            console.error('[DEBUG] Estrutura de resposta inválida');
+            return formatarResposta("Desculpe, não consegui gerar uma resposta. Tente novamente.");
+        }
+
+        const conteudoResposta = data.choices[0]?.message?.content;
+        
+        if (!conteudoResposta) {
+            console.error('[DEBUG] Resposta vazia');
+            return formatarResposta("Desculpe, a resposta veio vazia. Tente novamente.");
+        }
+
+        console.log('[DEBUG] Resposta da API obtida com sucesso!');
+        return formatarResposta(conteudoResposta);
+
     } catch (erro) {
-        console.error('[DEBUG] Erro ao chamar API Groq, usando fallback:', erro);
-    }
-
-    // Fallback: volta ao método antigo (busca por palavras-chave)
-    let maiorNumeroDePalavrasComuns = 0;
-    treinamentos.forEach(t => {
-        const palavrasTreinamento = t.pergunta.toLowerCase().split(/\W+/).filter(Boolean);
-        const palavrasComuns = palavrasUsuario.filter(p => palavrasTreinamento.includes(p)).length;
-
-        if (palavrasComuns > maiorNumeroDePalavrasComuns) {
-            maiorNumeroDePalavrasComuns = palavrasComuns;
-            melhorResposta = t.resposta;
-        }
-    });
-    
-    if (melhorResposta) {
-        // Personalidade simples
-        let personalidadeAtual = 'alegre';
-        // Fixo ou variável global
-        if (personalidadeAtual === 'alegre' && sentimento === 'triste') melhorResposta += ' 😊 Vai ficar tudo bem!';
-        return formatarResposta(melhorResposta);
-    } else {
-        return formatarResposta(`Desculpe, ainda não fui treinada para isso 😬 Atualmente conheço mais de **${treinamentos.length}** tópicos. Tente me perguntar de outra forma!`);
+        console.error('[DEBUG] Erro ao chamar API diretamente:', erro);
+        return formatarResposta("❌ Erro na API Groq: " + erro.message + ". Tente novamente.");
     }
 }
 
