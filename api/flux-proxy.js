@@ -29,18 +29,26 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing prompt in request body' });
         }
 
-        // Construir URL da API OpenRouter
-        const url = 'https://openrouter.ai/api/v1/images/generations';
+        // Construir URL da API OpenRouter para geração de imagens
+        const url = 'https://openrouter.ai/api/v1/chat/completions';
         console.log('[FLUX PROXY] URL da API OpenRouter:', url);
 
-        // Preparar payload para a API OpenRouter com FLUX 2 FLEX
+        // Preparar payload para a API OpenRouter com FLUX 2 FLEX via chat completion
         const fluxPayload = {
             model: "black-forest-labs/flux-2-flex",
-            prompt: prompt,
-            response_format: "url",
-            num_images: 1,
-            width: 1024,
-            height: 1024
+            messages: [
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            response_format: {
+                type: "image_url",
+                image_url: {
+                    detail: "auto"
+                }
+            },
+            max_tokens: 1000
         };
 
         console.log('[FLUX PROXY] Enviando requisição para FLUX 2 FLEX...');
@@ -78,13 +86,34 @@ export default async function handler(req, res) {
 
         // Extrair e retornar os dados
         const data = await response.json();
-        console.log('[FLUX PROXY] Imagem gerada com sucesso!');
+        console.log('[FLUX PROXY] Resposta recebida da OpenRouter:', JSON.stringify(data, null, 2));
         
-        // Log para diagnóstico
-        console.log('[FLUX PROXY] Status:', response.status, 'Model: FLUX 2 FLEX');
+        // Verificar se temos uma resposta válida
+        if (data.choices && data.choices.length > 0) {
+            const choice = data.choices[0];
+            
+            // Verificar se o conteúdo da mensagem contém uma imagem
+            if (choice.message && choice.message.content) {
+                console.log('[FLUX PROXY] Imagem gerada com sucesso via chat completion!');
+                
+                // Procurar por URL de imagem no conteúdo
+                const imageMatch = choice.message.content.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)/i);
+                if (imageMatch) {
+                    // Retornar no formato esperado pelo frontend
+                    return res.status(200).json({
+                        data: [{
+                            url: imageMatch[0]
+                        }]
+                    });
+                }
+            }
+        }
         
-        // Retornar a URL da imagem gerada
-        return res.status(200).json(data);
+        console.error('[FLUX PROXY] Formato de resposta inesperado:', data);
+        return res.status(500).json({ 
+            error: 'Unexpected response format from OpenRouter',
+            details: 'No image URL found in response'
+        });
 
     } catch (error) {
         console.error('[FLUX PROXY] Erro interno:', error);
