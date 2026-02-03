@@ -46,14 +46,20 @@ class LhamaGroqAPI {
      * @returns {Promise<string>} - Resposta da API
      */
     async obterResposta(pergunta, historicoConversa = []) {
+        console.log('[GROQ API] Iniciando obterResposta...');
+        console.log('[GROQ API] Pergunta:', pergunta);
+        
         if (this.estaProcessando) {
+            console.log('[GROQ API] Já está processando outra solicitação');
             return "⏳ Processando outra solicitação. Aguarde um momento...";
         }
 
         this.estaProcessando = true;
+        console.log('[GROQ API] Iniciando processamento...');
 
         try {
             const url = this.construirURLAPI();
+            console.log('[GROQ API] URL construída:', url);
 
             // Preparar mensagens para o contexto
             let messages = [];
@@ -125,12 +131,16 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
                 content: pergunta
             });
 
+            console.log('[GROQ API] Mensagens preparadas:', messages.length);
+
             // Preparar o payload
             const payload = {
                 model: LHAMA1_GROQ_CONFIG.MODEL,
                 messages: messages,
                 ...LHAMA1_GROQ_CONFIG.REQUEST_CONFIG
             };
+
+            console.log('[GROQ API] Enviando requisição...');
 
             // Criar AbortController para timeout
             const controller = new AbortController();
@@ -148,9 +158,12 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
 
             clearTimeout(timeoutId);
 
+            console.log('[GROQ API] Resposta recebida - Status:', resposta.status);
+
             // Tratamento de erros HTTP
             if (!resposta.ok) {
                 const erro = await resposta.text().catch(() => '');
+                console.error('[GROQ API] Erro HTTP:', resposta.status, erro);
                 
                 if (resposta.status === 401) {
                     return "🔐 Chave API inválida ou não configurada no servidor.";
@@ -167,17 +180,22 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
 
             // Extrair resposta
             const dados = await resposta.json();
+            console.log('[GROQ API] Dados recebidos:', dados);
             
             // Validar estrutura da resposta
             if (!dados.choices || dados.choices.length === 0) {
+                console.error('[GROQ API] Estrutura de resposta inválida');
                 return "Desculpe, não consegui gerar uma resposta. Tente novamente.";
             }
 
             const conteudoResposta = dados.choices[0]?.message?.content;
             
             if (!conteudoResposta) {
+                console.error('[GROQ API] Resposta vazia');
                 return "Desculpe, a resposta veio vazia. Tente novamente.";
             }
+
+            console.log('[GROQ API] Resposta extraída com sucesso!');
 
             // Armazenar no histórico
             this.historico.push({
@@ -192,7 +210,7 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
             return conteudoResposta;
 
         } catch (erro) {
-            console.error('Erro ao chamar API Groq:', erro);
+            console.error('[GROQ API] Erro ao chamar API:', erro);
 
             if (erro.name === 'AbortError') {
                 return "⏱️ Requisição expirou. A API demorou muito para responder.";
@@ -206,6 +224,7 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
 
         } finally {
             this.estaProcessando = false;
+            console.log('[GROQ API] Processamento finalizado');
         }
     }
 
@@ -231,3 +250,5 @@ window.definirChaveGroqAPI = (chave) => {
 window.LHAMA1_GROQ_CONFIG = LHAMA1_GROQ_CONFIG;
 
 console.log('[GROQ API] Configuração carregada com sucesso!');
+console.log('[GROQ API] Instância disponível:', !!window.lhamaGroqAPI);
+console.log('[GROQ API] Proxy URL:', LHAMA1_GROQ_CONFIG.PROXY_URL);

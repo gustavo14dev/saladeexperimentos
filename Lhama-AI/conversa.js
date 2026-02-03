@@ -4,6 +4,18 @@ let redacoesData = [];
 let correcoesData = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
+// Debug: Verificar se a API Groq está disponível
+console.log('[CONVERSA] Inicializando conversa.js...');
+console.log('[CONVERSA] window.lhamaGroqAPI disponível:', !!window.lhamaGroqAPI);
+
+// Aguardar um pouco para garantir que a API foi carregada
+setTimeout(() => {
+    console.log('[CONVERSA] Verificação tardia - window.lhamaGroqAPI:', !!window.lhamaGroqAPI);
+    if (window.lhamaGroqAPI) {
+        console.log('[CONVERSA] API está disponível:', window.lhamaGroqAPI.estaDisponivel());
+    }
+}, 100);
+
 // ===== SISTEMA DE SCROLL INTELIGENTE =====
 let isUserScrolling = false;
 let _scrollTimeout = null;
@@ -614,34 +626,30 @@ Aqui estão alguns tópicos e ideias para você começar sua redação sobre **$
     }
 
     // Primeiro tenta buscar no training.json com tolerância 0 (match exato)
-    if (buscaTrainamento && buscaTrainamento.estaCarregado()) {
-        melhorResposta = buscaTrainamento.buscarExato(mensagemUsuario);
-        
-        if (melhorResposta) {
-            // Encontrou resposta exata no training
-            if (sentimento === 'triste') melhorResposta += ' 😊 Vai ficar tudo bem!';
-            return formatarResposta(melhorResposta);
-        }
-        
-        // Se não achou match exato, tenta com variação mínima (remove pontuação)
-        melhorResposta = buscaTrainamento.buscarComVariacaoMinima(mensagemUsuario);
-        
-        if (melhorResposta) {
-            if (sentimento === 'triste') melhorResposta += ' 😊 Vai ficar tudo bem!';
-            return formatarResposta(melhorResposta);
-        }
-    }
+    // TEMPORARIAMENTE DESABILITADO PARA FORÇAR API
+    console.log('[DEBUG] Pulando busca no training.json para forçar API');
 
     // Se não encontrou no training, usa a API Groq
+    console.log('[DEBUG] Tentando chamar API Groq...');
+    console.log('[DEBUG] window.lhamaGroqAPI disponível:', !!window.lhamaGroqAPI);
+    
     try {
         if (window.lhamaGroqAPI && window.lhamaGroqAPI.estaDisponivel()) {
+            console.log('[DEBUG] Chamando obterResposta da API Groq...');
             const respostaAPI = await window.lhamaGroqAPI.obterResposta(mensagemOriginal, historicoConversa);
+            console.log('[DEBUG] Resposta da API Groq:', respostaAPI);
+            
             if (respostaAPI && !respostaAPI.includes('Erro') && !respostaAPI.includes('⏱️') && !respostaAPI.includes('🔐') && !respostaAPI.includes('❌')) {
+                console.log('[DEBUG] Usando resposta da API Groq');
                 return formatarResposta(respostaAPI);
+            } else {
+                console.log('[DEBUG] Resposta da API contém erro, usando fallback');
             }
+        } else {
+            console.log('[DEBUG] API Groq não está disponível');
         }
     } catch (erro) {
-        console.warn('Erro ao chamar API Groq, usando fallback:', erro);
+        console.error('[DEBUG] Erro ao chamar API Groq, usando fallback:', erro);
     }
 
     // Fallback: volta ao método antigo (busca por palavras-chave)
