@@ -565,7 +565,7 @@ function enviarMensagem() {
             btnEnviar.disabled = false;
             btnEnviar.classList.remove('sending');
         }
-    })();  // Fecha o async IIFE (sem setTimeout)
+    })();
 }
 
 // ===== LÓGICA DE GERAÇÃO (RESPOSTAS, RESUMOS, CORREÇÕES) =====
@@ -578,7 +578,6 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
 
     let melhorResposta = null;
     const textoPrefixoRedacao = "pode me ajudar a escrever uma redação sobre ";
-    // Todas as lógicas de API removidas. Só responde pelo training.json.
     
     if (mensagemUsuario.startsWith("resumir: ")) {
         const textoParaResumir = mensagemOriginal.substring("resumir: ".length).trim();
@@ -614,7 +613,7 @@ Aqui estão alguns tópicos e ideias para você começar sua redação sobre **$
         }
     }
 
-    // 🆕 NOVO: Primeiro tenta buscar no training.json com tolerância 0 (match exato)
+    // Primeiro tenta buscar no training.json com tolerância 0 (match exato)
     if (buscaTrainamento && buscaTrainamento.estaCarregado()) {
         melhorResposta = buscaTrainamento.buscarExato(mensagemUsuario);
         
@@ -633,7 +632,17 @@ Aqui estão alguns tópicos e ideias para você começar sua redação sobre **$
         }
     }
 
-    // Todas as lógicas de API removidas. Só responde pelo training.json.
+    // Se não encontrou no training, usa a API Groq
+    try {
+        if (window.lhamaGroqAPI && window.lhamaGroqAPI.estaDisponivel()) {
+            const respostaAPI = await window.lhamaGroqAPI.obterResposta(mensagemOriginal, historicoConversa);
+            if (respostaAPI && !respostaAPI.includes('Erro') && !respostaAPI.includes('⏱️') && !respostaAPI.includes('🔐') && !respostaAPI.includes('❌')) {
+                return formatarResposta(respostaAPI);
+            }
+        }
+    } catch (erro) {
+        console.warn('Erro ao chamar API Groq, usando fallback:', erro);
+    }
 
     // Fallback: volta ao método antigo (busca por palavras-chave)
     let maiorNumeroDePalavrasComuns = 0;
