@@ -207,6 +207,21 @@ setTimeout(() => {
     console.log('[HTML] Botão de teste adicionado');
 }, 1000);
 </script>
+
+<!-- Carregar scripts na ordem correta -->
+<script>
+console.log('[HTML] Carregando groq-api.js...');
+</script>
 <script src="Gemini/groq-api.js"></script>
+
+<script>
+console.log('[HTML] groq-api.js carregado. Verificando window.lhamaGroqAPI:', !!window.lhamaGroqAPI);
+console.log('[HTML] Carregando conversa.js...');
+</script>
 <script src="conversa.js"></script>
+
+<script>
+console.log('[HTML] Todos os scripts carregados');
+console.log('[HTML] Verificação final - window.lhamaGroqAPI:', !!window.lhamaGroqAPI);
+</script>
 </body></html>

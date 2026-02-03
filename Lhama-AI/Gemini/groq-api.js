@@ -26,10 +26,15 @@ const LHAMA1_GROQ_CONFIG = {
 /**
  * Classe para gerenciar a API Groq
  */
+// DEBUG: Log imediato para verificar carregamento
+console.log('[GROQ-API] Arquivo groq-api.js carregado!');
+console.log('[GROQ-API] Criando classe LhamaGroqAPI...');
+
 class LhamaGroqAPI {
     constructor() {
-        this.estaProcessando = false;
+        console.log('[GROQ-API] Construtor LhamaGroqAPI chamado');
         this.historico = [];
+        this.estaProcessando = false;
     }
 
     /**
@@ -238,7 +243,9 @@ LEMBRE-SE: Você é EXTREMAMENTE INTELIGENTE, CRIATIVA e MUITO ÚTIL!`
 }
 
 // Instância global da API
+console.log('[GROQ-API] Criando instância global window.lhamaGroqAPI...');
 window.lhamaGroqAPI = new LhamaGroqAPI();
+console.log('[GROQ-API] Instância criada. window.lhamaGroqAPI disponível:', !!window.lhamaGroqAPI);
 
 // Funções auxiliares globais
 window.temChaveGroqAPI = () => true; // Assume que o proxy está configurado
