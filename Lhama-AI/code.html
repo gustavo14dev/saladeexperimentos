@@ -153,7 +153,7 @@
                 </button>
 </div>
 </header>
-<div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 flex flex-col items-center justify-center pb-32">
+<div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 flex flex-col items-center justify-center pb-32" id="chat-box-container">
 <div class="w-full max-w-2xl mt-8 animate-fade-in-up flex flex-col items-center text-center">
 <div class="mb-4">
 <span class="material-icons-round text-4xl text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">auto_awesome</span>
@@ -166,13 +166,32 @@
             </p>
 </div>
 <div class="h-24"></div>
+<div id="chat-box" class="w-full max-w-2xl space-y-4"></div>
+<div id="digitando" class="hidden w-full max-w-2xl">
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="material-icons-round text-sm">smart_toy</span>
+<span class="text-sm">Digitando...</span>
+</div>
+</div>
 </div>
 <div class="w-full px-4 absolute bottom-0 left-0 right-0 z-20">
 <div class="max-w-3xl mx-auto relative group">
 <div class="relative bg-white dark:bg-surface-dark rounded-t-3xl rounded-b-none shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-black/20 border-x border-t border-slate-200 dark:border-zinc-700 overflow-hidden transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary pb-4">
-<textarea class="w-full px-6 py-3 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
+<textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); enviarMensagem(); }"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
 <div class="flex flex-wrap items-center gap-2">
+<button id="btn-redacao" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoRedacao()">
+<span class="material-icons-outlined text-sm">edit_note</span>
+                                Redação
+                            </button>
+<button id="btn-resumo" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoResumo()">
+<span class="material-icons-outlined text-sm">summarize</span>
+                                Resumo
+                            </button>
+<button id="btn-correcao" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoCorrecao()">
+<span class="material-icons-outlined text-sm">spellcheck</span>
+                                Correção
+                            </button>
 <button id="btn-imagem" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoImagem()">
 <span class="material-icons-outlined text-sm">image</span>
                                 Imagem
@@ -183,7 +202,7 @@
 <button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
 <span class="material-icons-round">mic</span>
 </button>
-<button class="w-8 h-8 flex items-center justify-center rounded-full bg-primary hover:bg-primary_hover text-white transition-all shadow-md shadow-primary/20">
+<button id="btn-send" class="w-8 h-8 flex items-center justify-center rounded-full bg-primary hover:bg-primary_hover text-white transition-all shadow-md shadow-primary/20" onclick="enviarMensagem()">
 <span class="material-icons-round text-base">arrow_upward</span>
 </button>
 </div>

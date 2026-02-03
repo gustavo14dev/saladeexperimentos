@@ -4,8 +4,16 @@ let redacoesData = [];
 let correcoesData = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
-// Modo de geração de imagem
+// Modos de funcionalidade
 let modoImagemAtivo = false;
+let modoRedacaoAtivo = false;
+let modoResumoAtivo = false;
+let modoCorrecaoAtivo = false;
+// Estados do Image 2
+let modoImage2Ativo = false;
+let modoImage2DesativadoManualmente = false;
+let modoImage2Tipo = null; // 'simples' ou 'pessoa'
+let modoImage2AtivadoManualmente = false;
 
 // Debug: Verificar se a API Groq está disponível
 console.log('[CONVERSA] Inicializando conversa.js...');
