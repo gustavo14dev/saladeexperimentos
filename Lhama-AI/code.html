@@ -170,7 +170,43 @@
 </div>
 </div>
 </div>
+</div>
 </main>
+<script>
+// Debug: Verificar carregamento dos scripts
+console.log('[HTML] Script principal carregado');
+console.log('[HTML] Verificando window.lhamaGroqAPI:', !!window.lhamaGroqAPI);
+
+// Função de teste para forçar chamada da API
+window.testarAPI = async function() {
+    console.log('[TESTE] Iniciando teste da API...');
+    console.log('[TESTE] window.lhamaGroqAPI disponível:', !!window.lhamaGroqAPI);
+    
+    if (window.lhamaGroqAPI) {
+        try {
+            const resposta = await window.lhamaGroqAPI.obterResposta('Olá, teste da API', []);
+            console.log('[TESTE] Resposta da API:', resposta);
+            alert('Resposta da API: ' + resposta);
+        } catch (erro) {
+            console.error('[TESTE] Erro:', erro);
+            alert('Erro: ' + erro.message);
+        }
+    } else {
+        console.error('[TESTE] API não disponível');
+        alert('API não disponível');
+    }
+};
+
+// Adicionar botão de teste na página
+setTimeout(() => {
+    const btn = document.createElement('button');
+    btn.textContent = 'TESTAR API';
+    btn.onclick = window.testarAPI;
+    btn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:red;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
+    document.body.appendChild(btn);
+    console.log('[HTML] Botão de teste adicionado');
+}, 1000);
+</script>
 <script src="Gemini/groq-api.js"></script>
 <script src="conversa.js"></script>
 </body></html>
