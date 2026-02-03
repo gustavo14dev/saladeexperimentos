@@ -33,9 +33,9 @@ export default async function handler(req, res) {
         const url = 'https://openrouter.ai/api/v1/chat/completions';
         console.log('[FLUX PROXY] URL da API OpenRouter:', url);
 
-        // Preparar payload para a API OpenRouter com FLUX 2 FLEX via chat completion
+        // Preparar payload para a API OpenRouter com modelo FLUX válido
         const fluxPayload = {
-            model: "black-forest-labs/flux-2-flex",
+            model: "black-forest-labs/flux-1.1-pro",
             messages: [
                 {
                     role: "user",
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
             max_tokens: 1000
         };
 
-        console.log('[FLUX PROXY] Enviando requisição para FLUX 2 FLEX...');
+        console.log('[FLUX PROXY] Enviando requisição para FLUX 1.1 Pro...');
 
         // Fazer requisição para a API OpenRouter
         const controller = new AbortController();

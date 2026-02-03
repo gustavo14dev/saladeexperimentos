@@ -139,7 +139,7 @@ function alternarModoImagem() {
 }
 
 async function gerarImagem(prompt) {
-    console.log('[IMAGEM] Gerando imagem com FLUX 2 FLEX:', prompt);
+    console.log('[IMAGEM] Gerando imagem com FLUX 1.1 Pro:', prompt);
     
     try {
         const response = await fetch('/api/flux-proxy', {
@@ -180,7 +180,7 @@ async function gerarImagem(prompt) {
             return `<div class="imagem-gerada-container">
                 <img src="${imageUrl}" alt="Imagem gerada por FLUX 2 FLEX" class="imagem-gerada" />
                 <div class="imagem-info">
-                    <small>🎨 Gerado por FLUX 2 FLEX</small>
+                    <small> Gerado por FLUX 2 FLEX</small>
                 </div>
             </div>`;
         } else {
