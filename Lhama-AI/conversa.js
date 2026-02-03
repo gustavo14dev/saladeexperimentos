@@ -250,7 +250,8 @@ function enviarMensagem() {
             
             let imagemAssociada = null;
             
-            imagemAssociada = encontrarImagem(mensagem);
+            // imagemAssociada = encontrarImagem(mensagem); // Função removida
+            imagemAssociada = null;
             historicoConversa.push({ tipo: 'bot', texto: resposta });
             adicionarMensagem(resposta, 'bot', imagemAssociada);
         }
