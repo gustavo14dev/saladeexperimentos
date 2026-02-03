@@ -55,6 +55,41 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+        
+        /* Estilos para imagens geradas */
+        .imagem-gerada-container {
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .imagem-gerada {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .imagem-gerada:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .imagem-info {
+            margin-top: 8px;
+            opacity: 0.7;
+            font-size: 12px;
+        }
+        
+        /* Botão de imagem ativo */
+        #btn-imagem.active {
+            background-color: rgb(147, 51, 234);
+            color: white;
+        }
+        
+        #btn-imagem.active:hover {
+            background-color: rgb(126, 34, 206);
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white">
@@ -138,11 +173,11 @@
 <textarea class="w-full px-6 py-3 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
 <div class="flex flex-wrap items-center gap-2">
-<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" id="btn-imagem">
+<button id="btn-imagem" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-zinc-600" onclick="alternarModoImagem()">
 <span class="material-icons-outlined text-sm">image</span>
                                 Imagem
-                                <span class="px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-[9px] font-bold uppercase tracking-wider ml-1">IA</span>
-</button>
+                                <span class="px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-[9px] font-bold uppercase tracking-wider ml-1">FLUX 2 FLEX</span>
+                            </button>
 </div>
 <div class="flex items-center gap-3 ml-auto">
 <button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
@@ -210,23 +245,5 @@ console.log('[HTML] Carregando conversa.js...');
 <script>
 console.log('[HTML] Todos os scripts carregados');
 console.log('[HTML] Verificação final - window.lhamaGroqAPI:', !!window.lhamaGroqAPI);
-
-// Adicionar event listener para o botão de imagem
-document.addEventListener('DOMContentLoaded', function() {
-    const btnImagem = document.getElementById('btn-imagem');
-    if (btnImagem) {
-        btnImagem.addEventListener('click', function() {
-            console.log('[HTML] Botão Imagem clicado');
-            if (typeof alternarModoImagem === 'function') {
-                alternarModoImagem();
-            } else {
-                console.error('[HTML] Função alternarModoImagem não encontrada');
-            }
-        });
-        console.log('[HTML] Event listener do botão Imagem adicionado');
-    } else {
-        console.error('[HTML] Botão Imagem não encontrado');
-    }
-});
 </script>
 </body></html>

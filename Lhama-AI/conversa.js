@@ -4,9 +4,12 @@ let redacoesData = [];
 let correcoesData = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
+// Modo de geração de imagem
+let modoImagemAtivo = false;
+
 // Debug: Verificar se a API Groq está disponível
 console.log('[CONVERSA] Inicializando conversa.js...');
-console.log('[CONVERSA] window.lhamaGroqAPI disponível:', !!window.lhamaGroqAPI);
+console.log('[CONVERSA] Modo imagem:', modoImagemAtivo);
 
 // Aguardar um pouco para garantir que a API foi carregada
 setTimeout(() => {
@@ -60,22 +63,10 @@ function checkScrollButtonVisibility() {
     const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
     if (distance > SCROLL_DISTANCE_THRESHOLD) {
         btn.style.display = 'flex';
-        btn.style.alignItems = 'center';
-        btn.style.justifyContent = 'center';
     } else {
         btn.style.display = 'none';
     }
 }
-
-// Estados dos Modos
-let modoRedacaoAtivo = false;
-let modoResumoAtivo = false;
-let modoCorrecaoAtivo = false;
-// Estados do Image 2
-let modoImage2Ativo = false;
-let modoImage2DesativadoManualmente = false;
-let modoImage2Tipo = null; // 'simples' ou 'pessoa'
-let modoImage2AtivadoManualmente = false;
 
 // ===== ANÚNCIO =====
 function mostrarAnuncio() {
@@ -133,7 +124,79 @@ function closeToolsMenuMobile() {
     }
 }
 
-// ===== FUNÇÕES IMAGE 2 =====
+// ===== FUNÇÕES DE IMAGEM =====
+function alternarModoImagem() {
+    const btnImagem = document.getElementById('btn-imagem');
+    const input = document.getElementById('input-mensagem');
+    
+    if (modoImagemAtivo) {
+        modoImagemAtivo = false;
+        if (btnImagem) btnImagem.classList.remove('active');
+        input.placeholder = 'Olá! Pergunte-me qualquer coisa...';
+    } else {
+        modoImagemAtivo = true;
+        if (btnImagem) btnImagem.classList.add('active');
+        input.placeholder = 'Descreva a imagem que você quer gerar...';
+        input.value = '';
+        input.focus();
+    }
+}
+
+async function gerarImagem(prompt) {
+    console.log('[IMAGEM] Gerando imagem com FLUX 2 FLEX:', prompt);
+    
+    try {
+        const response = await fetch('/api/flux-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: prompt
+            })
+        });
+
+        console.log('[IMAGEM] Resposta do proxy FLUX:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[IMAGEM] Erro na API FLUX:', response.status, errorText);
+            
+            if (response.status === 401) {
+                return "🔐 Chave API FLUX não configurada. Verifique a variável OPENROUTER_API_KEY na Vercel.";
+            } else if (response.status === 429) {
+                return "⏱️ Muitas requisições. Tente novamente em alguns segundos.";
+            } else if (response.status === 500) {
+                return "🔧 Servidor FLUX indisponível. Tente novamente.";
+            } else {
+                return `Erro na API FLUX: ${errorText || response.statusText}`;
+            }
+        }
+
+        const data = await response.json();
+        console.log('[IMAGEM] Dados recebidos:', data);
+        
+        if (data.data && data.data.length > 0 && data.data[0].url) {
+            const imageUrl = data.data[0].url;
+            console.log('[IMAGEM] Imagem gerada com sucesso!');
+            
+            // Retornar HTML da imagem
+            return `<div class="imagem-gerada-container">
+                <img src="${imageUrl}" alt="Imagem gerada por FLUX 2 FLEX" class="imagem-gerada" />
+                <div class="imagem-info">
+                    <small>🎨 Gerado por FLUX 2 FLEX</small>
+                </div>
+            </div>`;
+        } else {
+            console.error('[IMAGEM] Estrutura de resposta inválida');
+            return "Desculpe, não consegui gerar a imagem. Tente novamente.";
+        }
+
+    } catch (erro) {
+        console.error('[IMAGEM] Erro ao chamar API FLUX:', erro);
+        return "❌ Erro na API FLUX: " + erro.message + ". Tente novamente.";
+    }
+}
 function toggleModoImage2() {
     if (modoImage2Ativo) {
         desativarModoImage2();
@@ -460,42 +523,33 @@ function alternarModoCorrecao() {
     }
 }
 
-let modoImagemAtivo = false;
-
-function alternarModoImagem() {
-    const input = document.getElementById('input-mensagem');
-    const btnImagem = document.getElementById('btn-imagem');
-    const placeholderAtivo = "Descreva a imagem que você quer criar...";
-    const placeholderInativo = "Olá! Pergunte-me qualquer coisa...";
-    
-    if (modoImagemAtivo) {
-        modoImagemAtivo = false;
-        if (btnImagem) btnImagem.classList.remove('active');
-        input.placeholder = placeholderInativo;
-        input.value = '';
-    } else {
-        modoImagemAtivo = true;
-        if (btnImagem) btnImagem.classList.add('active');
-        input.placeholder = placeholderAtivo;
-        input.value = '';
-        input.focus();
-    }
-}
+// ===== ENVIO E PROCESSAMENTO =====
 
 function enviarMensagem() {
     const input = document.getElementById('input-mensagem');
     const btnEnviar = document.getElementById('btn-send');
+    const btnRedacao = document.getElementById('btn-redacao');
+    const btnResumo = document.getElementById('btn-resumo');
+    const btnCorrecao = document.getElementById('btn-correcao');
     const inputAreaContainer = document.querySelector('.input-area-container');
 
     let mensagem = input.value.trim();
-    const isModoImagemAtivo = modoImagemAtivo;
+    const isModoResumoAtivo = modoResumoAtivo;
+    const isModoCorrecaoAtivo = modoCorrecaoAtivo;
+    const isModoImage2Ativo = modoImage2Ativo;
+    // Captura estado
+    const tipoImage2Atual = modoImage2Tipo; // Captura tipo
 
     if (!mensagem) return;
 
     // Inicia animação de onda colorida
     if (inputAreaContainer) {
+        // efeito sutil de destaque ao enviar (pode ser removido)
         inputAreaContainer.classList.add('wave-animation');
         setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
+    }
+    if (isModoResumoAtivo && !mensagem.toLowerCase().startsWith("resumir: ")) {
+        mensagem = "resumir: " + mensagem;
     }
 
     input.disabled = true;
@@ -503,13 +557,21 @@ function enviarMensagem() {
         btnEnviar.disabled = true;
         btnEnviar.classList.add('sending');
     }
-
-    // Desativa modo imagem após envio
-    if (modoImagemAtivo) {
-        modoImagemAtivo = false;
-        const btnImagem = document.getElementById('btn-imagem');
-        if (btnImagem) btnImagem.classList.remove('active');
-        input.placeholder = "Olá! Pergunte-me qualquer coisa...";
+    // Desativa modos de "um uso só" (Redação, Resumo, Correção)
+    // O Image 2 NÃO é desativado aqui para permitir uso contínuo
+    if (modoRedacaoAtivo) {
+        modoRedacaoAtivo = false;
+        btnRedacao.classList.remove('active');
+    }
+    if (modoResumoAtivo) {
+        modoResumoAtivo = false;
+        btnResumo.classList.remove('active');
+        input.placeholder = "Envie uma mensagem para Dora AI...";
+    }
+    if (modoCorrecaoAtivo) {
+        modoCorrecaoAtivo = false;
+        btnCorrecao.classList.remove('active');
+        input.placeholder = "Envie uma mensagem para Dora AI...";
     }
 
     historicoConversa.push({ tipo: 'usuario', texto: mensagem });
@@ -521,30 +583,35 @@ function enviarMensagem() {
     atualizarBotaoAudioEnviar();
 
     mostrarDigitando(true);
+    // 🆕 NOVO: Usa async/await para lidar com gerarResposta async
+    mostrarDigitando(true);  // MANTÉM o indicador
     
     // Fazer requisição sem setTimeout para evitar delay visual
     (async () => {
         let resposta;
-        let imagemGerada = null;
         
-        if (isModoImagemAtivo) {
-            // Modo imagem: gerar imagem com FLUX.1 [flex]
-            imagemGerada = await gerarImagem(mensagem);
-            resposta = `Imagem gerada com base em: "${mensagem}"`;
-        } else {
-            // Modo normal: usar API Groq
-            resposta = await gerarResposta(mensagem, historicoConversa);
-        }
-        
-        mostrarDigitando(false);
-        
-        if (isModoImagemAtivo && imagemGerada) {
-            // Adicionar mensagem com imagem gerada
-            adicionarMensagem(resposta, 'bot', imagemGerada);
-        } else {
-            // Adicionar mensagem normal
-            historicoConversa.push({ tipo: 'bot', texto: resposta });
+        // Se está em modo de imagem, gera imagem
+        if (modoImagemAtivo) {
+            resposta = await gerarImagem(mensagem);
+            mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
+            
+            // Adiciona a imagem gerada
+            historicoConversa.push({ tipo: 'bot', texto: 'Imagem gerada por FLUX 2 FLEX' });
             adicionarMensagem(resposta, 'bot', null);
+        } else {
+            // Senão, usa resposta normal da API
+            resposta = isModoCorrecaoAtivo ? gerarCorrecao(mensagem) : await gerarResposta(mensagem, historicoConversa);
+            
+            mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
+            
+            let imagemAssociada = null;
+            
+            // Lógica normal para outros modos
+            if (!isModoCorrecaoAtivo) {
+                imagemAssociada = encontrarImagem(mensagem);
+            }
+            historicoConversa.push({ tipo: 'bot', texto: resposta });
+            adicionarMensagem(resposta, 'bot', imagemAssociada);
         }
 
         input.disabled = false;
@@ -554,69 +621,6 @@ function enviarMensagem() {
             btnEnviar.classList.remove('sending');
         }
     })();
-}
-
-async function gerarImagem(prompt) {
-    console.log('[IMAGEM] Gerando imagem com FLUX.1 [flex]...');
-    console.log('[IMAGEM] Prompt:', prompt);
-    
-    try {
-        const response = await fetch('/api/flux2flex-proxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt: prompt
-            })
-        });
-
-        console.log('[IMAGEM] Resposta do proxy FLUX:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[IMAGEM] Erro na API:', response.status, errorText);
-            
-            if (response.status === 401) {
-                return null;
-            } else if (response.status === 429) {
-                return null;
-            } else if (response.status === 500) {
-                return null;
-            } else {
-                return null;
-            }
-        }
-
-        const data = await response.json();
-        console.log('[IMAGEM] Dados recebidos:', data);
-        
-        // Verificar se a resposta contém a imagem
-        if (!data.choices || data.choices.length === 0) {
-            console.error('[IMAGEM] Nenhuma imagem gerada');
-            return null;
-        }
-
-        const imageData = data.choices[0]?.message?.content;
-        
-        if (!imageData) {
-            console.error('[IMAGEM] Imagem vazia');
-            return null;
-        }
-
-        console.log('[IMAGEM] Imagem gerada com sucesso!');
-        
-        // Retornar objeto com dados da imagem
-        return {
-            type: 'generated',
-            url: imageData,
-            prompt: prompt
-        };
-
-    } catch (erro) {
-        console.error('[IMAGEM] Erro ao gerar imagem:', erro);
-        return null;
-    }
 }
 
 // ===== LÓGICA DE GERAÇÃO (RESPOSTAS, RESUMOS, CORREÇÕES) =====

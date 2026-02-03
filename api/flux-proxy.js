@@ -30,25 +30,20 @@ export default async function handler(req, res) {
         }
 
         // Construir URL da API OpenRouter
-        const url = 'https://openrouter.ai/api/v1/chat/completions';
+        const url = 'https://openrouter.ai/api/v1/images/generations';
         console.log('[FLUX PROXY] URL da API OpenRouter:', url);
 
-        // Preparar payload para a API OpenRouter com FLUX.1 [flex]
+        // Preparar payload para a API OpenRouter com FLUX 2 FLEX
         const fluxPayload = {
-            model: "black-forest-labs/flux-1.1-flex",
-            messages: [
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-            response_format: {
-                type: "image",
-                quality: "high"
-            }
+            model: "black-forest-labs/flux-2-flex",
+            prompt: prompt,
+            response_format: "url",
+            num_images: 1,
+            width: 1024,
+            height: 1024
         };
 
-        console.log('[FLUX PROXY] Enviando requisição para FLUX.1 [flex]...');
+        console.log('[FLUX PROXY] Enviando requisição para FLUX 2 FLEX...');
 
         // Fazer requisição para a API OpenRouter
         const controller = new AbortController();
@@ -83,24 +78,12 @@ export default async function handler(req, res) {
 
         // Extrair e retornar os dados
         const data = await response.json();
-        console.log('[FLUX PROXY] Resposta da API OpenRouter recebida com sucesso');
-        
-        // Verificar se a resposta contém a imagem
-        if (!data.choices || data.choices.length === 0) {
-            console.error('[FLUX PROXY] Nenhuma imagem gerada');
-            return res.status(500).json({ error: 'No image generated' });
-        }
-
-        const imageData = data.choices[0]?.message?.content;
-        
-        if (!imageData) {
-            console.error('[FLUX PROXY] Imagem vazia');
-            return res.status(500).json({ error: 'Empty image response' });
-        }
-
         console.log('[FLUX PROXY] Imagem gerada com sucesso!');
         
-        // Repassar a resposta diretamente
+        // Log para diagnóstico
+        console.log('[FLUX PROXY] Status:', response.status, 'Model: FLUX 2 FLEX');
+        
+        // Retornar a URL da imagem gerada
         return res.status(200).json(data);
 
     } catch (error) {
