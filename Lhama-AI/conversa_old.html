@@ -549,48 +549,6 @@
             font-family: 'Courier New', monospace;
             font-size: 13px;
         }
-        .message-content h1 {
-            font-size: 22px;
-            margin-top: 16px;
-            margin-bottom: 8px;
-        }
-        .message-content h2 {
-            font-size: 18px;
-            margin-top: 14px;
-            margin-bottom: 8px;
-        }
-        .message-content h3 {
-            font-size: 16px;
-            margin-top: 12px;
-            margin-bottom: 8px;
-        }
-        .message-content ul,
-        .message-content ol {
-            margin-left: 20px;
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-        .message-content li {
-            margin: 4px 0;
-        }
-</style>
-</head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white">
-    <!-- Mobile Blocker -->
-    <div id="mobile-blocker">
-        <div class="mobile-blocker-content">
-            <div style="font-size: 48px;">📱</div>
-            <h1>Indisponível em Celulares</h1>
-            <p>Por motivo de design, o Lhama AI 1 está indisponível para celulares.</p>
-            <p style="font-size: 14px;">Por favor, dirija-se a um computador ou tablet para poder usar o Lhama AI 1.</p>
-            <p style="font-size: 12px; margin-top: 20px; opacity: 0.9;">Desculpa pelo transtorno! 😔</p>
-            <button class="mobile-blocker-btn" onclick="history.back()">Voltar</button>
-        </div>
-    </div>
-
-<aside class="w-[280px] hidden md:flex flex-col border-r border-slate-200 dark:border-zinc-800 bg-surface-light dark:bg-surface-dark flex-shrink-0 transition-colors duration-300 relative" id="sidebar">
-<button class="sidebar-toggle-btn" onclick="toggleSidebar()">
-    <span class="material-icons-outlined" style="font-size: 16px;">menu</span>
 </button>
 <div class="sidebar-content">
 <div class="p-5 flex items-center gap-3">
@@ -667,6 +625,9 @@
 <textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
 <div class="flex flex-wrap items-center gap-2">
+<button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" id="btn-imagem" onclick="alternarModoImagem()" title="Gerar Imagem">
+<span class="material-icons-round">image</span>
+</button>
 </div>
 <div class="flex items-center gap-3 ml-auto">
 <button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" id="btn-mic" onclick="gravarAudio()">

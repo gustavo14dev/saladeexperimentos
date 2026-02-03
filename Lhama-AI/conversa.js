@@ -1,19 +1,9 @@
 let treinamentos = [];
 let historicoConversa = [];
-let redacoesData = [];
-let correcoesData = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
 // Modos de funcionalidade
 let modoImagemAtivo = false;
-let modoRedacaoAtivo = false;
-let modoResumoAtivo = false;
-let modoCorrecaoAtivo = false;
-// Estados do Image 2
-let modoImage2Ativo = false;
-let modoImage2DesativadoManualmente = false;
-let modoImage2Tipo = null; // 'simples' ou 'pessoa'
-let modoImage2AtivadoManualmente = false;
 
 // Debug: Verificar se a API Groq está disponível
 console.log('[CONVERSA] Inicializando conversa.js...');
@@ -92,8 +82,6 @@ function mostrarAnuncio() {
                     <li>30.000 novos treinamentos</li>
                     <li>Design premium e mais suave</li>
                     <li>Interface aprimorada estilo moderno</li>
-                    <li>Correção de erros de resposta</li>
-                    <li>Image 2, o novo recurso de geração de imagens aprimorado</li>
                     <li>Ficando cada vez mais profissional</li>
                 </ul>
             </div>
@@ -205,348 +193,15 @@ async function gerarImagem(prompt) {
         return "❌ Erro na API FLUX: " + erro.message + ". Tente novamente.";
     }
 }
-function toggleModoImage2() {
-    if (modoImage2Ativo) {
-        desativarModoImage2();
-    } else {
-        abrirModalImage2();
-    }
-}
-
-function abrirModalImage2() {
-    const modal = document.getElementById('modal-image2');
-    if (modal) {
-        modal.classList.add('active');
-        // Listener para fechar ao clicar fora (backdrop)
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                fecharModalImage2();
-            }
-        });
-    }
-}
-
-function fecharModalImage2() {
-    const modal = document.getElementById('modal-image2');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-function ativarModoImage2Simples() {
-    modoImage2Tipo = 'simples';
-    modoImage2Ativo = true;
-    modoImage2AtivadoManualmente = true;
-    modoImage2DesativadoManualmente = false;
-    
-    // Desliga outros modos se estiverem ativos
-    if (modoRedacaoAtivo) alternarModoRedacao();
-    if (modoResumoAtivo) alternarModoResumo();
-    if (modoCorrecaoAtivo) alternarModoCorrecao();
-    
-    const btnImage2 = document.getElementById('btn-image2');
-    const btnImage2Mobile = document.getElementById('btn-image2-mobile');
-    const input = document.getElementById('input-mensagem');
-    if (btnImage2) btnImage2.classList.add('active');
-    if (btnImage2Mobile) btnImage2Mobile.classList.add('active');
-    
-    fecharModalImage2();
-    closeToolsMenuMobile();
-    
-    input.placeholder = 'Gere uma imagem:';
-    input.value = '';
-    input.focus();
-    // Remove listener anterior para garantir não duplicar
-    input.removeEventListener('input', atualizarAutocompleteImage2);
-    input.removeEventListener('input', atualizarAutocompleteImage2Pessoa);
-    // Adiciona listener correto
-    input.addEventListener('input', atualizarAutocompleteImage2);
-}
-
-function ativarModoImage2Pessoa() {
-    modoImage2Tipo = 'pessoa';
-    modoImage2Ativo = true;
-    modoImage2AtivadoManualmente = true;
-    modoImage2DesativadoManualmente = false;
-
-    // Desliga outros modos se estiverem ativos
-    if (modoRedacaoAtivo) alternarModoRedacao();
-    if (modoResumoAtivo) alternarModoResumo();
-    if (modoCorrecaoAtivo) alternarModoCorrecao();
-    
-    const btnImage2 = document.getElementById('btn-image2');
-    const btnImage2Mobile = document.getElementById('btn-image2-mobile');
-    const input = document.getElementById('input-mensagem');
-    if (btnImage2) btnImage2.classList.add('active');
-    if (btnImage2Mobile) btnImage2Mobile.classList.add('active');
-    
-    fecharModalImage2();
-    closeToolsMenuMobile();
-    
-    input.placeholder = 'Ex: uma pessoa em pé na praia';
-    input.value = '';
-    input.focus();
-    
-    // Remove listener anterior
-    input.removeEventListener('input', atualizarAutocompleteImage2);
-    input.removeEventListener('input', atualizarAutocompleteImage2Pessoa);
-    // Adiciona listener correto
-    input.addEventListener('input', atualizarAutocompleteImage2Pessoa);
-}
-
-function desativarModoImage2() {
-    modoImage2Ativo = false;
-    modoImage2AtivadoManualmente = false;
-    modoImage2DesativadoManualmente = true;
-    modoImage2Tipo = null;
-    
-    const btnImage2 = document.getElementById('btn-image2');
-    const btnImage2Mobile = document.getElementById('btn-image2-mobile');
-    const input = document.getElementById('input-mensagem');
-    
-    if (btnImage2) btnImage2.classList.remove('active');
-    if (btnImage2Mobile) btnImage2Mobile.classList.remove('active');
-    
-    input.placeholder = 'Envie uma mensagem para Dora AI...';
-    input.value = '';
-    
-    // Remove listeners de autocomplete
-    input.removeEventListener('input', atualizarAutocompleteImage2);
-    input.removeEventListener('input', atualizarAutocompleteImage2Pessoa);
-    
-    const cardAutocomplete = document.getElementById('card-image2-autocomplete');
-    if (cardAutocomplete) {
-        cardAutocomplete.classList.remove('active');
-    }
-}
-
-// Autocomplete Image 2 Simples
-function atualizarAutocompleteImage2(e) {
-    const input = e.target;
-    const valor = input.value.toLowerCase().trim();
-    const cardAutocomplete = document.getElementById('card-image2-autocomplete');
-    const cardContent = document.getElementById('card-image2-content');
-    
-    if (!modoImage2Ativo || !modoImage2AtivadoManualmente) {
-        cardAutocomplete.classList.remove('active');
-        return;
-    }
-    
-    if (!valor) {
-        cardAutocomplete.classList.remove('active');
-        return;
-    }
-    
-    const imagensEncontradas = [];
-    for (const imagem in bancoImagens) {
-        const tags = bancoImagens[imagem];
-        for (const tag of tags) {
-            if (tag.includes(valor)) {
-                imagensEncontradas.push(tag);
-                break;
-            }
-        }
-    }
-    
-    if (imagensEncontradas.length === 0) {
-        cardContent.innerHTML = '<div class="image2-no-result">Não é possível gerar essa imagem</div>';
-        cardAutocomplete.classList.add('active');
-    } else {
-        cardContent.innerHTML = imagensEncontradas
-            .map(img => `<div class="image2-item" onclick="inserirTagImage2('${img}')">${img}</div>`)
-            .join('');
-        cardAutocomplete.classList.add('active');
-    }
-}
-
-function inserirTagImage2(tag) {
-    const input = document.getElementById('input-mensagem');
-    input.value = tag;
-    
-    const cardAutocomplete = document.getElementById('card-image2-autocomplete');
-    if (cardAutocomplete) {
-        cardAutocomplete.classList.remove('active');
-    }
-    input.focus();
-}
-
-// Autocomplete Image 2 Pessoa
-function atualizarAutocompleteImage2Pessoa(e) {
-    const input = e.target;
-    const valor = input.value.toLowerCase().trim();
-    const cardAutocomplete = document.getElementById('card-image2-autocomplete');
-    const cardContent = document.getElementById('card-image2-content');
-
-    if (!modoImage2Ativo || !modoImage2AtivadoManualmente) {
-        cardAutocomplete.classList.remove('active');
-        return;
-    }
-
-    if (!valor) {
-        cardAutocomplete.classList.remove('active');
-        return;
-    }
-
-    const imagensEncontradas = [];
-    for (const imagem in bancoImagens) {
-        const tags = bancoImagens[imagem];
-        for (const tag of tags) {
-            if (tag.includes(valor) || valor.includes(tag)) {
-                imagensEncontradas.push({
-                    nome: tag,
-                    arquivo: imagem
-                });
-                break;
-            }
-        }
-    }
-
-    if (imagensEncontradas.length === 0) {
-        cardContent.innerHTML = '<div class="image2-no-result">Nenhum fundo disponível para esta descrição</div>';
-        cardAutocomplete.classList.add('active');
-    } else {
-        cardContent.innerHTML = '<div class="image2-section-title" style="font-size:11px; color:#666; margin-bottom:5px;">Fundos Disponíveis:</div>' + 
-            imagensEncontradas
-            .map(img => `<div class="image2-item" onclick="inserirTagImage2Pessoa('${img.nome}', '${img.arquivo}')">${img.nome}</div>`)
-            .join('');
-        cardAutocomplete.classList.add('active');
-    }
-}
-
-function inserirTagImage2Pessoa(nomeFundo, arquivoFundo) {
-    const input = document.getElementById('input-mensagem');
-    const partes = input.value.split('em');
-    const descricaoAtual = partes.length > 0 ? partes[0].trim() : 'uma pessoa';
-    // Atualiza o input com o formato esperado para processamento
-    input.value = `${descricaoAtual} em ${nomeFundo}|${arquivoFundo}`;
-    const cardAutocomplete = document.getElementById('card-image2-autocomplete');
-    if (cardAutocomplete) {
-        cardAutocomplete.classList.remove('active');
-    }
-
-    input.focus();
-}
-
-// Fechar autocomplete ao clicar fora
-document.addEventListener('click', (e) => {
-    const cardAutocomplete = document.getElementById('card-image2-autocomplete');
-    const input = document.getElementById('input-mensagem');
-    
-    if (cardAutocomplete && input && !cardAutocomplete.contains(e.target) && !input.contains(e.target)) {
-        cardAutocomplete.classList.remove('active');
-    }
-});
-// ===== MODOS DE TEXTO (REDAÇÃO, RESUMO, CORREÇÃO) =====
-
-function alternarModoRedacao() {
-    const input = document.getElementById('input-mensagem');
-    const btnRedacao = document.getElementById('btn-redacao');
-    const btnRedacaoMobile = document.getElementById('btn-redacao-mobile');
-    const textoPrefixo = "Pode me ajudar a escrever uma redação sobre ";
-    // Desliga outros modos (Correção, Resumo, IMAGE 2)
-    if (modoResumoAtivo) alternarModoResumo();
-    if (modoCorrecaoAtivo) alternarModoCorrecao();
-    if (modoImage2Ativo) desativarModoImage2();
-    // Importante: desliga Image 2 explicitamente
-
-    if (modoRedacaoAtivo) {
-        modoRedacaoAtivo = false;
-        if (btnRedacao) btnRedacao.classList.remove('active');
-        if (btnRedacaoMobile) btnRedacaoMobile.classList.remove('active');
-
-        if (input.value.startsWith(textoPrefixo)) {
-            input.value = input.value.replace(textoPrefixo, '');
-        }
-    } else {
-        modoRedacaoAtivo = true;
-        if (btnRedacao) btnRedacao.classList.add('active');
-        if (btnRedacaoMobile) btnRedacaoMobile.classList.add('active');
-        
-        if (!input.value.startsWith(textoPrefixo)) {
-            input.value = textoPrefixo + input.value;
-        }
-        
-        input.focus();
-        closeToolsMenuMobile();
-    }
-}
-
-function alternarModoResumo() {
-    const input = document.getElementById('input-mensagem');
-    const btnResumo = document.getElementById('btn-resumo');
-    const btnResumoMobile = document.getElementById('btn-resumo-mobile');
-    const placeholderAtivo = "Cole o texto que você deseja resumir aqui...";
-    const placeholderInativo = "Envie uma mensagem para Dora AI...";
-    // Desliga outros modos
-    if (modoRedacaoAtivo) alternarModoRedacao();
-    if (modoCorrecaoAtivo) alternarModoCorrecao();
-    if (modoImage2Ativo) desativarModoImage2();
-    // Importante
-
-    if (modoResumoAtivo) {
-        modoResumoAtivo = false;
-        if (btnResumo) btnResumo.classList.remove('active');
-        if (btnResumoMobile) btnResumoMobile.classList.remove('active');
-        input.placeholder = placeholderInativo;
-        if (input.value.startsWith("resumir: ")) {
-            input.value = '';
-        }
-    } else {
-        modoResumoAtivo = true;
-        if (btnResumo) btnResumo.classList.add('active');
-        if (btnResumoMobile) btnResumoMobile.classList.add('active');
-        input.placeholder = placeholderAtivo;
-        input.value = 'resumir: ';
-        input.focus();
-        closeToolsMenuMobile();
-    }
-}
-
-function alternarModoCorrecao() {
-    const input = document.getElementById('input-mensagem');
-    const btnCorrecao = document.getElementById('btn-correcao');
-    const btnCorrecaoMobile = document.getElementById('btn-correcao-mobile');
-    const placeholderAtivo = "Cole o texto que você deseja corrigir aqui...";
-    const placeholderInativo = "Envie uma mensagem para Dora AI...";
-    // Desliga outros modos
-    if (modoRedacaoAtivo) alternarModoRedacao();
-    if (modoResumoAtivo) alternarModoResumo();
-    if (modoImage2Ativo) desativarModoImage2();
-    // Importante
-
-    if (modoCorrecaoAtivo) {
-        modoCorrecaoAtivo = false;
-        if (btnCorrecao) btnCorrecao.classList.remove('active');
-        if (btnCorrecaoMobile) btnCorrecaoMobile.classList.remove('active');
-        input.placeholder = placeholderInativo;
-        input.value = '';
-    } else {
-        modoCorrecaoAtivo = true;
-        if (btnCorrecao) btnCorrecao.classList.add('active');
-        if (btnCorrecaoMobile) btnCorrecaoMobile.classList.add('active');
-        input.placeholder = placeholderAtivo;
-        input.value = '';
-        input.focus();
-        closeToolsMenuMobile();
-    }
-}
 
 // ===== ENVIO E PROCESSAMENTO =====
 
 function enviarMensagem() {
     const input = document.getElementById('input-mensagem');
     const btnEnviar = document.getElementById('btn-send');
-    const btnRedacao = document.getElementById('btn-redacao');
-    const btnResumo = document.getElementById('btn-resumo');
-    const btnCorrecao = document.getElementById('btn-correcao');
     const inputAreaContainer = document.querySelector('.input-area-container');
 
     let mensagem = input.value.trim();
-    const isModoResumoAtivo = modoResumoAtivo;
-    const isModoCorrecaoAtivo = modoCorrecaoAtivo;
-    const isModoImage2Ativo = modoImage2Ativo;
-    // Captura estado
-    const tipoImage2Atual = modoImage2Tipo; // Captura tipo
 
     if (!mensagem) return;
 
@@ -556,30 +211,11 @@ function enviarMensagem() {
         inputAreaContainer.classList.add('wave-animation');
         setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
     }
-    if (isModoResumoAtivo && !mensagem.toLowerCase().startsWith("resumir: ")) {
-        mensagem = "resumir: " + mensagem;
-    }
 
     input.disabled = true;
     if (btnEnviar) {
         btnEnviar.disabled = true;
         btnEnviar.classList.add('sending');
-    }
-    // Desativa modos de "um uso só" (Redação, Resumo, Correção)
-    // O Image 2 NÃO é desativado aqui para permitir uso contínuo
-    if (modoRedacaoAtivo) {
-        modoRedacaoAtivo = false;
-        btnRedacao.classList.remove('active');
-    }
-    if (modoResumoAtivo) {
-        modoResumoAtivo = false;
-        btnResumo.classList.remove('active');
-        input.placeholder = "Envie uma mensagem para Dora AI...";
-    }
-    if (modoCorrecaoAtivo) {
-        modoCorrecaoAtivo = false;
-        btnCorrecao.classList.remove('active');
-        input.placeholder = "Envie uma mensagem para Dora AI...";
     }
 
     historicoConversa.push({ tipo: 'usuario', texto: mensagem });
@@ -608,16 +244,13 @@ function enviarMensagem() {
             adicionarMensagem(resposta, 'bot', null);
         } else {
             // Senão, usa resposta normal da API
-            resposta = isModoCorrecaoAtivo ? gerarCorrecao(mensagem) : await gerarResposta(mensagem, historicoConversa);
+            resposta = await gerarResposta(mensagem, historicoConversa);
             
             mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
             
             let imagemAssociada = null;
             
-            // Lógica normal para outros modos
-            if (!isModoCorrecaoAtivo) {
-                imagemAssociada = encontrarImagem(mensagem);
-            }
+            imagemAssociada = encontrarImagem(mensagem);
             historicoConversa.push({ tipo: 'bot', texto: resposta });
             adicionarMensagem(resposta, 'bot', imagemAssociada);
         }
@@ -640,41 +273,6 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
     const palavrasUsuario = mensagemUsuario.split(/\W+/).filter(Boolean);
 
     let melhorResposta = null;
-    const textoPrefixoRedacao = "pode me ajudar a escrever uma redação sobre ";
-    
-    if (mensagemUsuario.startsWith("resumir: ")) {
-        const textoParaResumir = mensagemOriginal.substring("resumir: ".length).trim();
-        if (textoParaResumir.length < 50) { 
-            return "Por favor, forneça um texto um pouco maior para que eu possa criar um resumo de qualidade! 😉";
-        }
-        return gerarResumo(textoParaResumir);
-    }
-    
-    if (modoRedacaoAtivo || mensagemUsuario.startsWith(textoPrefixoRedacao)) {
-        const temaSolicitado = mensagemUsuario.startsWith(textoPrefixoRedacao)
-            ? mensagemUsuario.substring(textoPrefixoRedacao.length).trim()
-            : mensagemUsuario.trim();
-        const redacaoEncontrada = redacoesData.find(r => r.tema.toLowerCase() === temaSolicitado.toLowerCase());
-
-        if (redacaoEncontrada) {
-            let respostaRedacao = `Com certeza!
-Aqui estão alguns tópicos e ideias para você começar sua redação sobre **${redacaoEncontrada.tema.toUpperCase()}**:\n\n`;
-            
-            respostaRedacao += `**Sugestões para a Introdução:**\n`;
-            redacaoEncontrada.topicos.introducao.forEach(topico => { respostaRedacao += `• ${topico}\n`; });
-            
-            respostaRedacao += `\n**Sugestões para o Desenvolvimento:**\n`;
-            redacaoEncontrada.topicos.desenvolvimento.forEach(topico => { respostaRedacao += `• ${topico}\n`; });
-            
-            respostaRedacao += `\n**Sugestões para a Conclusão:**\n`;
-            redacaoEncontrada.topicos.conclusao.forEach(topico => { respostaRedacao += `• ${topico}\n`; });
-            
-            return formatarResposta(respostaRedacao);
-        } else {
-            const temasDisponiveis = redacoesData.map(r => r.tema).join(', ');
-            return formatarResposta(`Desculpe, não encontrei tópicos sobre **${temaSolicitado}**. Os temas que eu conheço são: ${temasDisponiveis}.`);
-        }
-    }
 
     // Forçar chamada direta à API Groq sem dependência da classe
     console.log('[DEBUG] Forçando chamada direta à API Groq...');
@@ -749,163 +347,6 @@ Aqui estão alguns tópicos e ideias para você começar sua redação sobre **$
         console.error('[DEBUG] Erro ao chamar API diretamente:', erro);
         return formatarResposta("❌ Erro na API Groq: " + erro.message + ". Tente novamente.");
     }
-}
-
-function gerarCorrecao(texto) {
-    if (!correcoesData || !correcoesData.regras) {
-        return "Desculpe, o módulo de correção não está carregado.";
-    }
-
-    let textoCorrigido = texto;
-    let correcoesFeitas = 0;
-    for (const regra of correcoesData.regras) {
-        const regex = new RegExp(`\\b${regra.errado}\\b`, 'gi');
-        if (regex.test(textoCorrigido)) {
-            textoCorrigido = textoCorrigido.replace(regex, (match) => {
-                correcoesFeitas++;
-                return `<mark>${regra.correto}</mark>`;
-            });
-        }
-    }
-
-    if (correcoesFeitas === 0) {
-        return "Não encontrei nenhum erro para corrigir. Parece que seu texto está ótimo! 👍";
-    }
-
-    let respostaFormatada = '<div class="resumo-card">';
-    respostaFormatada += '<h3><span class="material-symbols-rounded">edit_note</span> Texto Corrigido</h3>';
-    // Substitui quebras de linha por <br> dentro do cartão
-    textoCorrigido = textoCorrigido.replace(/\n/g, '<br>');
-    respostaFormatada += `<p>${textoCorrigido}</p>`;
-    respostaFormatada += '</div>';
-
-    return respostaFormatada;
-}
-
-function gerarResumo(texto) {
-    // Stopwords simplificadas para o exemplo
-    const stopWords = new Set(['de', 'a', 'o', 'que', 'e', 'do', 'da', 'em', 'um', 'para', 'é', 'com', 'não', 'uma', 'os', 'no', 'se', 'na', 'por', 'mais', 'as', 'dos', 'como', 'mas', 'foi', 'ao', 'ele', 'das', 'tem', 'à', 'seu', 'sua', 'ou', 'ser']);
-    const sentencas = texto.match(/[^.!?]+[.!?]+/g) || [];
-    
-    if (sentencas.length < 2) return formatarResposta("Texto muito curto para resumir.");
-
-    const frequenciaPalavras = {};
-    const palavras = texto.toLowerCase().split(/[\s,.]+/).filter(Boolean);
-    palavras.forEach(palavra => {
-        if (!stopWords.has(palavra) && palavra.length > 2) {
-            frequenciaPalavras[palavra] = (frequenciaPalavras[palavra] || 0) + 1;
-        }
-    });
-    const pontuacaoSentencas = sentencas.map((sentenca, index) => {
-        let pontuacao = 0;
-        const palavrasSentenca = sentenca.toLowerCase().split(/[\s,.]+/).filter(Boolean);
-        palavrasSentenca.forEach(palavra => {
-            if (frequenciaPalavras[palavra]) pontuacao += frequenciaPalavras[palavra];
-        });
-        return { sentenca, pontuacao: pontuacao / (palavrasSentenca.length || 1), index };
-    });
-    pontuacaoSentencas.sort((a, b) => b.pontuacao - a.pontuacao);
-    const numeroSentencas = Math.max(3, Math.floor(sentencas.length / 3));
-    const melhoresSentencas = pontuacaoSentencas.slice(0, numeroSentencas).sort((a, b) => a.index - b.index);
-
-    let respostaFormatada = '<div class="resumo-card">';
-    respostaFormatada += '<h3><span class="material-symbols-rounded">insights</span> Pontos Principais</h3>';
-    respostaFormatada += '<ul>';
-    melhoresSentencas.forEach(item => {
-        respostaFormatada += `<li>${item.sentenca.trim()}</li>`;
-    });
-    respostaFormatada += '</ul></div>';
-    return respostaFormatada;
-}
-
-// ===== FUNÇÕES AUXILIARES DE IMAGEM =====
-
-function encontrarImagem(mensagemUsuario) {
-    // 🆕 DESABILIDADO: Imagens agora vêm da API Gemini, não do imagem.json
-    // Mantém função para compatibilidade, mas retorna null
-    return null;
-}
-
-function buscarImagemPorNome(nomeBuscado) {
-    // 🆕 DESABILIDADO: Imagens agora vêm da API Gemini, não do imagem.json
-    // Mantém função para compatibilidade, mas retorna null
-    return null;
-}
-
-// Nova função separada para processar Image 2 Pessoa
-function processarImage2Pessoa(entrada) {
-    // Formato esperado: "descrição pessoa|arquivo_fundo" ou "descrição pessoa em fundo"
-    let descricaoPessoa = entrada;
-    let imagemFundo = null;
-
-    if (entrada.includes('|')) {
-        const partes = entrada.split('|');
-        descricaoPessoa = partes[0].trim();
-        imagemFundo = partes[1].trim();
-    } else {
-        // Busca por "em" para encontrar o fundo
-        const palavras = entrada.toLowerCase().split(/\s+/);
-        for (const imagem in bancoImagens) {
-            const tags = bancoImagens[imagem];
-            for (const tag of tags) {
-                if (palavras.some(p => tag.includes(p) || p.includes(tag))) {
-                    imagemFundo = imagem;
-                    descricaoPessoa = entrada.split(tag)[0].trim();
-                    break;
-                }
-            }
-            if (imagemFundo) break;
-        }
-    }
-
-    if (!imagemFundo) {
-        adicionarMensagem('Nenhum fundo disponível para esta descrição. Tente novamente.', 'bot', null);
-        return;
-    }
-
-    if (!descricaoPessoa || descricaoPessoa.length < 3) {
-        adicionarMensagem('Descreva como a pessoa deve ser (ex: uma menina morena, um homem idoso).', 'bot', null);
-        return;
-    }
-
-    const htmlComposicao = gerarComposicaoVisual(descricaoPessoa, imagemFundo);
-    adicionarMensagem('', 'bot', null);
-    
-    const mensagensBot = document.querySelectorAll('.mensagem.bot');
-    const ultimaMensagem = mensagensBot[mensagensBot.length - 1];
-    if (ultimaMensagem) {
-        const divContent = ultimaMensagem.querySelector('.message-content');
-        if (divContent) divContent.innerHTML = htmlComposicao;
-    }
-}
-
-function gerarComposicaoVisual(descricaoPessoa, imagemFundo) {
-    const desc = descricaoPessoa.toLowerCase();
-    let emoji = '👤';
-    if (desc.includes('menina') || desc.includes('rapariga') || desc.includes('mulher')) emoji = '👧';
-    if (desc.includes('menino') || desc.includes('rapaz') || desc.includes('homem')) emoji = '👦';
-    if (desc.includes('idoso') || desc.includes('velho') || desc.includes('avó') || desc.includes('avô')) emoji = '👴';
-    if (desc.includes('bebê') || desc.includes('criança')) emoji = '👶';
-    if (desc.includes('morena') || desc.includes('negro')) emoji = '🧑‍🦱';
-    if (desc.includes('loura') || desc.includes('loiro')) emoji = '👱';
-    return `
-        <div class="image2-composicao-container">
-            <div class="image2-composicao-titulo">Composição Visual</div>
-            <div class="image2-composicao-main">
-                <div class="image2-composicao-fundo">
-                    <img src="img-IA/${imagemFundo}" alt="Fundo" class="image2-composicao-img">
-                    <div class="image2-composicao-pessoa">
-                        <div class="image2-composicao-emoji">${emoji}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="image2-composicao-desc">
-                <strong>Pessoa:</strong> ${descricaoPessoa}<br>
-                <strong>Fundo:</strong> ${imagemFundo.replace('.png', '').replace('_', ' ')}
-            </div>
-            <div class="image2-composicao-nota">💡 Composição gerada por IA</div>
-        </div>
-    `;
 }
 
 // ===== UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
@@ -1135,8 +576,8 @@ function lerTextoEmVoz(txt) {
     // Tentar encontrar pela ordem de preferência
     for (const pref of preferenciaNomes) {
         const encontrada = voices.find(v => {
-            const nameLower = (v.name || '').toLowerCase();
-            const langLower = (v.lang || '').toLowerCase();
+            const nameLower = (v.name||'').toLowerCase();
+            const langLower = (v.lang||'').toLowerCase();
             return nameLower.includes(pref) || langLower.includes(pref);
         });
         if (encontrada) {
@@ -1183,11 +624,6 @@ function iniciarNovaConversa() {
 Sou a Dora AI. Como posso te ajudar hoje? ✨</div>
         </div>
     `;
-    if (modoRedacaoAtivo) alternarModoRedacao();
-    if (modoResumoAtivo) alternarModoResumo();
-    if (modoCorrecaoAtivo) alternarModoCorrecao();
-    if (modoImage2Ativo) desativarModoImage2();
-
     const input = document.getElementById('input-mensagem');
     input.value = '';
     input.placeholder = "Converse com a Dora AI...";
@@ -1315,8 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carregamento dos dados
     fetch('training.json').then(r => r.json()).then(d => treinamentos = d).catch(e => console.log(e));
-    fetch('redacoes.json').then(r => r.json()).then(d => redacoesData = d).catch(e => console.log(e));
-    fetch('correcoes.json').then(r => r.json()).then(d => correcoesData = d).catch(e => console.log(e));
     
     // NOVO: Carregar o banco de imagens do arquivo JSON externo
     fetch('imagem.json')
