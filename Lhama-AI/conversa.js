@@ -139,7 +139,7 @@ function alternarModoImagem() {
 }
 
 async function gerarImagem(prompt) {
-    console.log('[IMAGEM] Gerando imagem com FLUX.2 Flex:', prompt);
+    console.log('[IMAGEM] Gerando imagem com Pollinations AI:', prompt);
     
     try {
         const response = await fetch('/api/flux-proxy', {
@@ -159,13 +159,13 @@ async function gerarImagem(prompt) {
             console.error('[IMAGEM] Erro na API FLUX:', response.status, errorText);
             
             if (response.status === 401) {
-                return "🔐 Chave API FLUX não configurada. Verifique a variável OPENROUTER_API_KEY na Vercel.";
+                return " Erro de autenticação com Pollinations AI.";
             } else if (response.status === 429) {
-                return "⏱️ Muitas requisições. Tente novamente em alguns segundos.";
+                return " Muitas requisições. Tente novamente em alguns segundos.";
             } else if (response.status === 500) {
-                return "🔧 Servidor FLUX indisponível. Tente novamente.";
+                return " Servidor Pollinations AI indisponível. Tente novamente.";
             } else {
-                return `Erro na API FLUX: ${errorText || response.statusText}`;
+                return `Erro na API Pollinations: ${errorText || response.statusText}`;
             }
         }
 
@@ -178,9 +178,9 @@ async function gerarImagem(prompt) {
             
             // Retornar HTML da imagem
             return `<div class="imagem-gerada-container">
-                <img src="${imageUrl}" alt="Imagem gerada por FLUX.2 Flex" class="imagem-gerada" />
+                <img src="${imageUrl}" alt="Imagem gerada por Pollinations AI" class="imagem-gerada" />
                 <div class="imagem-info">
-                    <small> Gerado por FLUX.2 Flex</small>
+                    <small>🎨 Gerado por Pollinations AI</small>
                 </div>
             </div>`;
         } else {
@@ -240,7 +240,7 @@ function enviarMensagem() {
             mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
             
             // Adiciona a imagem gerada
-            historicoConversa.push({ tipo: 'bot', texto: 'Imagem gerada por FLUX.2 Flex' });
+            historicoConversa.push({ tipo: 'bot', texto: 'Imagem gerada por Pollinations AI' });
             adicionarMensagem(resposta, 'bot', null);
         } else {
             // Senão, usa resposta normal da API
