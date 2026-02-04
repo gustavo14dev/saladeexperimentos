@@ -57,8 +57,10 @@ export default async function handler(req, res) {
                     });
                 }
 
-                // A resposta é a imagem diretamente
-                const imageUrl = url;
+                // A resposta é a imagem diretamente - buscar como arraybuffer
+                const imageBuffer = await response.arrayBuffer();
+                const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+                const imageUrl = `data:image/png;base64,${imageBase64}`;
                 console.log('[POLLINATIONS] Imagem gerada com sucesso!');
 
                 // Retornar no formato esperado pelo frontend
