@@ -196,64 +196,41 @@ function enviarMensagem() {
     if (inputAreaContainer) {
         inputAreaContainer.classList.add('wave-animation');
         setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
-    // 1. Substitui negrito **texto** por <strong>$1</strong>
-    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // Se o texto já contém um cartão de resumo/correção ou formatação de lista
-    // complexa, apenas substitui newlines por <br> para manter o formato original
-    // (A formatação de parágrafo é ignorada para estes casos).
-    if (texto.includes('resumo-card')) {
-        return texto;
     }
-    
-    // 2. Lógica para transformar quebras de linha em parágrafos (<p>)
-    
-    // Divide o texto em blocos de parágrafos usando duas ou mais quebras de linha.
-    const paragrafos = texto.trim().split(/\n{2,}/);
 
-    let textoFormatado = paragrafos.map(paragrafo => {
-        if (paragrafo.trim() === '') return ''; // Ignora blocos vazios
+    // Limpar input
+    input.value = '';
+    input.style.height = '';
 
-        // Dentro de um parágrafo, quebras de linha simples viram <br>
-        let conteudo = paragrafo.replace(/\n/g, '<br>');
+    // Adicionar mensagem do usuário ao chat
+    adicionarMensagem(mensagem, 'usuario');
+
+    // Gerar resposta da IA
+    gerarResposta(mensagem, historicoConversa).then(resposta => {
+        // Adicionar resposta da IA ao chat
+        adicionarMensagem(resposta, 'bot');
         
-        // Se o conteúdo já parece ser uma lista simples gerada pelo JS (com '•'),
-        // não envolver em <p> para evitar margens desnecessárias.
-        if (conteudo.startsWith('•')) {
-            return conteudo; 
+        // Reabilitar botão
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
         }
-
-        // Envolve o texto em <p> para ganhar espaçamento de parágrafo.
-        return `<p>${conteudo}</p>`;
-    }).join('');
-    
-    return textoFormatado;
-}
-
-function adicionarMarcaDagua(imgElement, caminhoMarca = 'img-IA/logo.png') {
-    if (imgElement.dataset.comMarca === 'true') return;
-    imgElement.dataset.comMarca = 'true';
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    canvas.width = imgElement.width;
-    canvas.height = imgElement.height;
-    ctx.drawImage(imgElement, 0, 0);
-    const marca = new Image();
-    marca.src = caminhoMarca;
-    marca.crossOrigin = 'Anonymous';
-    marca.onload = () => {
-        const larguraMarca = Math.min(120, canvas.width * 0.15);
-        const alturaMarca = larguraMarca * (marca.height / marca.width);
-        const padding = 12;
-        const x = canvas.width - larguraMarca - padding;
-        const y = canvas.height - alturaMarca - padding;
         
-        ctx.globalAlpha = 0.7;
-        ctx.drawImage(marca, x, y, larguraMarca, alturaMarca);
-        ctx.globalAlpha = 1;
-        imgElement.src = canvas.toDataURL('image/png');
-    };
+        // Scroll para baixo
+        const container = document.getElementById('chat-box-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }).catch(erro => {
+        console.error('[ERRO] Falha ao gerar resposta:', erro);
+        adicionarMensagem('Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.', 'bot');
+        
+        // Reabilitar botão
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+        }
+    });
 }
 
 function adicionarMensagem(texto, tipo, imagemNome = null) {
