@@ -3,11 +3,9 @@ let historicoConversa = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
 // Modos de funcionalidade
-let modoImagemAtivo = false;
 
 // Debug: Verificar se a API Groq está disponível
 console.log('[CONVERSA] Inicializando conversa.js...');
-console.log('[CONVERSA] Modo imagem:', modoImagemAtivo);
 
 // Aguardar um pouco para garantir que a API foi carregada
 setTimeout(() => {
@@ -120,153 +118,8 @@ function closeToolsMenuMobile() {
     }
 }
 
-// ===== FUNÇÕES DE IMAGEM =====
-function alternarModoImagem() {
-    const btnImagem = document.getElementById('btn-imagem');
-    const input = document.getElementById('input-mensagem');
-    
-    if (modoImagemAtivo) {
-        modoImagemAtivo = false;
-        if (btnImagem) {
-            btnImagem.classList.remove('active');
-            btnImagem.innerHTML = '<span class="material-icons-outlined">image</span>';
-        }
-        input.placeholder = 'Olá! Pergunte-me qualquer coisa...';
-    } else {
-        modoImagemAtivo = true;
-        if (btnImagem) {
-            btnImagem.classList.add('active');
-            btnImagem.innerHTML = '<span class="material-icons-outlined">close</span>';
-        }
-        input.placeholder = 'Descreva a imagem que você quer gerar...';
-        input.value = '';
-        input.focus();
-    }
-}
 
-function mostrarGerandoImagem() {
-    const chatBox = document.getElementById('chat-box');
-    const divMensagem = document.createElement('div');
-    divMensagem.className = 'mensagem bot';
-    divMensagem.id = 'gerando-imagem-msg';
-    
-    divMensagem.innerHTML = `
-        <div class="message-content">
-            <div class="gerando-imagem-card">
-                <div class="gerando-imagem-container">
-                    <div class="gerando-imagem-icon">
-                        <div class="icon-spinner">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" 
-                                      stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4">
-                                    <animate attributeName="stroke-dashoffset" values="0;8" dur="1s" repeatCount="indefinite"/>
-                                </path>
-                                <defs>
-                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="gerando-imagem-content">
-                        <div class="gerando-imagem-titulo">Gerando Imagem</div>
-                        <div class="gerando-imagem-texto">
-                            Criando sua imagem<span class="pontos">...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    chatBox.appendChild(divMensagem);
-    
-    // Animação dos pontos
-    const pontos = divMensagem.querySelector('.pontos');
-    let contador = 0;
-    const animacao = setInterval(() => {
-        contador = (contador + 1) % 4;
-        pontos.textContent = '.'.repeat(contador || 1);
-    }, 500);
-    // Salvar referência da animação para parar depois
-    divMensagem.animacaoInterval = animacao;
-    
-    // Scroll para a mensagem
-    const container = document.getElementById('chat-box-container');
-    if (container) {
-        container.scrollTop = container.scrollHeight;
-    }
-}
-
-function removerGerandoImagem() {
-    const msg = document.getElementById('gerando-imagem-msg');
-    if (msg) {
-        if (msg.animacaoInterval) {
-            clearInterval(msg.animacaoInterval);
-        }
-        msg.remove();
-    }
-}
-
-async function gerarImagem(prompt) {
-    console.log('[IMAGEM] Gerando imagem com Pollinations AI:', prompt);
-    
-    try {
-        const response = await fetch('/api/flux-proxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt: prompt
-            })
-        });
-
-        console.log('[IMAGEM] Resposta do proxy FLUX:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[IMAGEM] Erro na API FLUX:', response.status, errorText);
-            
-            if (response.status === 401) {
-                return "🔐 Erro de autenticação com Pollinations AI.";
-            } else if (response.status === 429) {
-                return "⏱️ Muitas requisições. Tente novamente em alguns segundos.";
-            } else if (response.status === 500) {
-                return "🔧 Servidor Pollinations AI indisponível. Tente novamente.";
-            } else {
-                return `Erro na API Pollinations: ${errorText || response.statusText}`;
-            }
-        }
-
-        const data = await response.json();
-        console.log('[IMAGEM] Dados recebidos:', data);
-        
-        if (data.data && data.data.length > 0 && data.data[0].url) {
-            const imageUrl = data.data[0].url;
-            console.log('[IMAGEM] Imagem gerada com sucesso! URL:', imageUrl);
-            
-            // Adicionar timestamp para evitar cache
-            const timestampedImageUrl = `${imageUrl}?t=${Date.now()}`;
-            console.log('[IMAGEM] URL com timestamp:', timestampedImageUrl);
-            
-            // Retornar HTML da imagem com fallback melhorado
-            return `<div class="imagem-gerada-container">
-                <img src="${timestampedImageUrl}" alt="Imagem gerada por Pollinations AI" class="imagem-gerada" 
-                     onerror="console.error('Erro ao carregar imagem:', this.src); this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y3ZjdmMiIgZmlsbC1ydWxlPSJub256ZXJvIj48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNjY2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkVycm8gYW8gY2FycmVnYXIgaW1hZ2VtPC90ZXh0Pjwvc3ZnPg=='" />
-            </div>`;
-        } else {
-            console.error('[IMAGEM] Estrutura de resposta inválida');
-            return "Desculpe, não consegui gerar a imagem. Tente novamente.";
-        }
-
-    } catch (erro) {
-        console.error('[IMAGEM] Erro ao chamar API FLUX:', erro);
-        return "❌ Erro na API FLUX: " + erro.message + ". Tente novamente.";
-    }
-}
+// ===== FUNÇÕES DE UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
 
 function enviarMensagem() {
     const input = document.getElementById('input-mensagem');
@@ -279,75 +132,8 @@ function enviarMensagem() {
 
     // Inicia animação de onda colorida
     if (inputAreaContainer) {
-        // efeito sutil de destaque ao enviar (pode ser removido)
         inputAreaContainer.classList.add('wave-animation');
         setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
-    }
-
-    input.disabled = true;
-    if (btnEnviar) {
-        btnEnviar.disabled = true;
-        btnEnviar.classList.add('sending');
-    }
-
-    historicoConversa.push({ tipo: 'usuario', texto: mensagem });
-    adicionarMensagem(mensagem, 'usuario');
-    
-    input.value = '';
-    input.style.height = '';
-    input.classList.remove('scrolling');
-    atualizarBotaoAudioEnviar();
-
-    // Fazer requisição sem setTimeout para evitar delay visual
-    (async () => {
-        let resposta;
-        
-        // Se está em modo de imagem, gera imagem
-        if (modoImagemAtivo) {
-            mostrarGerandoImagem(); // Mostrar card de carregamento
-            resposta = await gerarImagem(mensagem);
-            removerGerandoImagem(); // Remover card de carregamento
-            
-            // Adiciona a imagem gerada
-            historicoConversa.push({ tipo: 'bot', texto: 'Imagem gerada' });
-            adicionarMensagem(resposta, 'bot', null);
-        } else {
-            mostrarDigitando(true);  // MANTÉM o indicador
-            // Senão, usa resposta normal da API
-            resposta = await gerarResposta(mensagem, historicoConversa);
-            mostrarDigitando(false);  // REMOVE o indicador quando resposta chegar
-            
-            let imagemAssociada = null;
-            
-            // imagemAssociada = encontrarImagem(mensagem); // Função removida
-            imagemAssociada = null;
-            historicoConversa.push({ tipo: 'bot', texto: resposta });
-            adicionarMensagem(resposta, 'bot', imagemAssociada);
-        }
-
-        input.disabled = false;
-        input.focus();
-        if (btnEnviar) {
-            btnEnviar.disabled = false;
-            btnEnviar.classList.remove('sending');
-        }
-    })();
-}
-
-// ===== UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
-
-function detectarSentimento(mensagem) {
-    const tristes = ['triste', 'chateado', 'deprimido', 'mal', 'sozinho', 'cansado', 'chorar'];
-    const felizes = ['feliz', 'contente', 'animado', 'bem', 'ótimo', 'maravilhoso', 'alegre'];
-    for (let p of tristes) if (mensagem.includes(p)) return 'triste';
-    for (let p of felizes) if (mensagem.includes(p)) return 'feliz';
-    return 'neutro';
-}
-
-/**
- * FUNÇÃO CORRIGIDA PARA TRATAR ESPAÇAMENTO DE PARÁGRAFOS
- */
-function formatarResposta(texto) {
     // 1. Substitui negrito **texto** por <strong>$1</strong>
     texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
