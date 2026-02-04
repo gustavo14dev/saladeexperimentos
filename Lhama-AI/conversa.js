@@ -313,26 +313,26 @@ function gerarHTMLImagens() {
         
         .imagens-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
         }
         
         .imagem-card {
             position: relative;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             background: rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
         }
         
         .imagem-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
         }
         
         .imagem-card img {
             width: 100%;
-            height: 150px;
+            height: 200px;
             object-fit: cover;
             display: block;
         }
@@ -619,9 +619,39 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
     divContent.className = 'message-content';
     
     if (tipo === 'bot') {
-        // Verificar se é uma imagem gerada (contém HTML de imagem)
-        if (texto.includes('imagem-gerada-container')) {
-            // Adicionar mensagem de imagem diretamente sem animação
+        // Verificar se é uma resposta de imagens (contém o container de imagens)
+        if (texto.includes('imagens-resposta-container')) {
+            // Adicionar HTML de imagens diretamente
+            divContent.innerHTML = texto;
+            divMensagem.appendChild(divContent);
+            chatBox.appendChild(divMensagem);
+            
+            // Adicionar botões de ação para a resposta de imagens
+            const actionsContainer = document.createElement('div');
+            actionsContainer.className = 'message-actions-container';
+            
+            const btnCopy = document.createElement('button');
+            btnCopy.className = 'action-icon-btn';
+            btnCopy.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">content_copy</span> <span>Copiar resultado</span>';
+            btnCopy.onclick = () => {
+                const textoLimpo = texto.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                navigator.clipboard.writeText(textoLimpo);
+            };
+            actionsContainer.appendChild(btnCopy);
+            
+            const btnAudio = document.createElement('button');
+            btnAudio.className = 'action-icon-btn audio-btn';
+            btnAudio.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">volume_up</span> <span>Ouvir</span>';
+            btnAudio.onclick = () => {
+                const textoLimpo = texto.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                lerTextoEmVoz(textoLimpo);
+            };
+            actionsContainer.appendChild(btnAudio);
+            
+            divMensagem.appendChild(actionsContainer);
+            
+        } else if (texto.includes('imagem-gerada-container')) {
+            // Adicionar mensagem de imagem gerada diretamente sem animação
             divContent.innerHTML = texto;
             divMensagem.appendChild(divContent);
             chatBox.appendChild(divMensagem);
