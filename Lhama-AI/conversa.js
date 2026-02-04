@@ -127,11 +127,17 @@ function alternarModoImagem() {
     
     if (modoImagemAtivo) {
         modoImagemAtivo = false;
-        if (btnImagem) btnImagem.classList.remove('active');
+        if (btnImagem) {
+            btnImagem.classList.remove('active');
+            btnImagem.innerHTML = '<span class="material-icons-outlined">image</span>';
+        }
         input.placeholder = 'Olá! Pergunte-me qualquer coisa...';
     } else {
         modoImagemAtivo = true;
-        if (btnImagem) btnImagem.classList.add('active');
+        if (btnImagem) {
+            btnImagem.classList.add('active');
+            btnImagem.innerHTML = '<span class="material-icons-outlined">close</span>';
+        }
         input.placeholder = 'Descreva a imagem que você quer gerar...';
         input.value = '';
         input.focus();
@@ -598,13 +604,13 @@ async function gerarImagemComRetry(prompt) {
             if (data.data && data.data.length > 0 && data.data[0].url) {
                 const imageUrl = data.data[0].url;
                 console.log('[IMAGEM] Imagem gerada com sucesso!');
-                
+
                 // Adicionar timestamp para evitar cache
                 const timestampedImageUrl = `${imageUrl}?t=${Date.now()}`;
-                
+
                 return `<div class="imagem-gerada-container">
                     <img src="${timestampedImageUrl}" alt="Imagem gerada por Pollinations AI" class="imagem-gerada" 
-                         onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Erro+ao+carregar+imagem'" />
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2NjY2NjYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjY2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkVycm8gYW8gY2FycmVnYXIgaW1hZ2VtPC90ZXh0Pjwvc3ZnPg=='" />
                 </div>`;
             } else {
                 console.error('[IMAGEM] Estrutura de resposta inválida');
