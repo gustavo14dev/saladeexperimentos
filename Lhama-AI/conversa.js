@@ -147,8 +147,30 @@ function mostrarGerandoImagem() {
     divMensagem.innerHTML = `
         <div class="message-content">
             <div class="gerando-imagem-card">
-                <div class="gerando-imagem-icon">🎨</div>
-                <div class="gerando-imagem-texto">Gerando Imagem<span class="pontos">...</span></div>
+                <div class="gerando-imagem-container">
+                    <div class="gerando-imagem-icon">
+                        <div class="icon-spinner">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" 
+                                      stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4">
+                                    <animate attributeName="stroke-dashoffset" values="0;8" dur="1s" repeatCount="indefinite"/>
+                                </path>
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="gerando-imagem-content">
+                        <div class="gerando-imagem-titulo">Gerando Imagem</div>
+                        <div class="gerando-imagem-texto">
+                            Criando sua imagem<span class="pontos">...</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -386,74 +408,111 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
     divMensagem.className = `mensagem ${tipo}`;
     const divContent = document.createElement('div');
     divContent.className = 'message-content';
+    
     if (tipo === 'bot') {
-        // Processar o texto com o renderizador se disponível
-        let textoProcessado = texto;
-        if (typeof RespostaRenderer !== 'undefined' && RespostaRenderer && RespostaRenderer.processar) {
-            textoProcessado = RespostaRenderer.processar(texto);
-        }
-        
-        const textoSemHTML = texto.replace(/<[^>]*>/g, '');
-        // Animação de digitação letra por letra
-        let i = 0;
-        divContent.innerHTML = '';
-        divMensagem.appendChild(divContent); // Corrige bug: adiciona conteúdo antes da animação
-        chatBox.appendChild(divMensagem);
-        function escreverLetra() {
-            if (i <= textoProcessado.length) {
-                divContent.innerHTML = textoProcessado.slice(0, i);
-                scrollParaBaixo();
-                i++;
-                setTimeout(escreverLetra, 8 + Math.random() * 18);
-            } else {
-                divContent.innerHTML = textoProcessado;
-                // ...ações e imagem...
-                if (imagemNome) {
-                    const imgContainer = document.createElement('div');
-                    imgContainer.className = 'imagem-container-premium';
-                    imgContainer.innerHTML = '<div class="skeleton-loader"></div>';
-                    divContent.appendChild(imgContainer);
-                    const img = new Image();
-                    img.src = `img-IA/${imagemNome}`;
-                    img.className = 'imagem-resposta-premium';
-                    img.alt = "Imagem gerada por IA";
-                    img.crossOrigin = 'Anonymous';
-                    img.onload = () => {
-                        setTimeout(() => {
-                            adicionarMarcaDagua(img);
-                            imgContainer.innerHTML = '';
-                            imgContainer.appendChild(img);
-                            scrollParaBaixo();
-                        }, 1000);
-                    };
-                    img.onerror = () => {
-                        imgContainer.innerHTML = '<span style="font-size:12px; color:#999;">Erro ao gerar imagem.</span>';
-                    };
+        // Verificar se é uma imagem gerada (contém HTML de imagem)
+        if (texto.includes('imagem-gerada-container')) {
+            // Adicionar mensagem de imagem diretamente sem animação
+            divContent.innerHTML = texto;
+            divMensagem.appendChild(divContent);
+            chatBox.appendChild(divMensagem);
+            
+            // Adicionar botões de ação para imagem
+            const actionsContainer = document.createElement('div');
+            actionsContainer.className = 'message-actions-container';
+            
+            const btnCopy = document.createElement('button');
+            btnCopy.className = 'action-icon-btn';
+            btnCopy.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">content_copy</span> <span>Copiar URL</span>';
+            btnCopy.onclick = () => {
+                const imgElement = divContent.querySelector('.imagem-gerada');
+                if (imgElement) {
+                    navigator.clipboard.writeText(imgElement.src);
                 }
-                // Ações da Mensagem
-                const actionsContainer = document.createElement('div');
-                actionsContainer.className = 'message-actions-container';
-                const btnCopy = document.createElement('button');
-                btnCopy.className = 'action-icon-btn';
-                btnCopy.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">content_copy</span> <span>Copiar</span>';
-                btnCopy.onclick = () => copiarTexto(textoSemHTML);
-                actionsContainer.appendChild(btnCopy);
-                const btnAudio = document.createElement('button');
-                btnAudio.className = 'action-icon-btn audio-btn';
-                btnAudio.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">volume_up</span> <span>Ouvir</span>';
-                btnAudio.onclick = () => lerTextoEmVoz(textoSemHTML);
-                actionsContainer.appendChild(btnAudio);
-                if (imagemNome && !texto.includes('image2-composicao-container')) {
-                    const btnDownload = document.createElement('button');
-                    btnDownload.className = 'action-icon-btn';
-                    btnDownload.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">download</span> <span>Download</span>';
-                    btnDownload.onclick = () => baixarImagem(`img-IA/${imagemNome}`);
-                    actionsContainer.appendChild(btnDownload);
+            };
+            actionsContainer.appendChild(btnCopy);
+            
+            const btnDownload = document.createElement('button');
+            btnDownload.className = 'action-icon-btn';
+            btnDownload.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">download</span> <span>Download</span>';
+            btnDownload.onclick = () => {
+                const imgElement = divContent.querySelector('.imagem-gerada');
+                if (imgElement) {
+                    baixarImagem(imgElement.src);
                 }
-                divMensagem.appendChild(actionsContainer);
+            };
+            actionsContainer.appendChild(btnDownload);
+            
+            divMensagem.appendChild(actionsContainer);
+        } else {
+            // Processar o texto com o renderizador se disponível
+            let textoProcessado = texto;
+            if (typeof RespostaRenderer !== 'undefined' && RespostaRenderer && RespostaRenderer.processar) {
+                textoProcessado = RespostaRenderer.processar(texto);
             }
+            
+            const textoSemHTML = texto.replace(/<[^>]*>/g, '');
+            // Animação de digitação letra por letra
+            let i = 0;
+            divContent.innerHTML = '';
+            divMensagem.appendChild(divContent); // Corrige bug: adiciona conteúdo antes da animação
+            chatBox.appendChild(divMensagem);
+            function escreverLetra() {
+                if (i <= textoProcessado.length) {
+                    divContent.innerHTML = textoProcessado.slice(0, i);
+                    scrollParaBaixo();
+                    i++;
+                    setTimeout(escreverLetra, 8 + Math.random() * 18);
+                } else {
+                    divContent.innerHTML = textoProcessado;
+                    // ...ações e imagem...
+                    if (imagemNome) {
+                        const imgContainer = document.createElement('div');
+                        imgContainer.className = 'imagem-container-premium';
+                        imgContainer.innerHTML = '<div class="skeleton-loader"></div>';
+                        divContent.appendChild(imgContainer);
+                        const img = new Image();
+                        img.src = `img-IA/${imagemNome}`;
+                        img.className = 'imagem-resposta-premium';
+                        img.alt = "Imagem gerada por IA";
+                        img.crossOrigin = 'Anonymous';
+                        img.onload = () => {
+                            setTimeout(() => {
+                                adicionarMarcaDagua(img);
+                                imgContainer.innerHTML = '';
+                                imgContainer.appendChild(img);
+                                scrollParaBaixo();
+                            }, 1000);
+                        };
+                        img.onerror = () => {
+                            imgContainer.innerHTML = '<span style="font-size:12px; color:#999;">Erro ao gerar imagem.</span>';
+                        };
+                    }
+                    // Ações da Mensagem
+                    const actionsContainer = document.createElement('div');
+                    actionsContainer.className = 'message-actions-container';
+                    const btnCopy = document.createElement('button');
+                    btnCopy.className = 'action-icon-btn';
+                    btnCopy.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">content_copy</span> <span>Copiar</span>';
+                    btnCopy.onclick = () => copiarTexto(textoSemHTML);
+                    actionsContainer.appendChild(btnCopy);
+                    const btnAudio = document.createElement('button');
+                    btnAudio.className = 'action-icon-btn audio-btn';
+                    btnAudio.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">volume_up</span> <span>Ouvir</span>';
+                    btnAudio.onclick = () => lerTextoEmVoz(textoSemHTML);
+                    actionsContainer.appendChild(btnAudio);
+                    if (imagemNome && !texto.includes('image2-composicao-container')) {
+                        const btnDownload = document.createElement('button');
+                        btnDownload.className = 'action-icon-btn';
+                        btnDownload.innerHTML = '<span class="material-icons-outlined" style="font-size: 14px;">download</span> <span>Download</span>';
+                        btnDownload.onclick = () => baixarImagem(`img-IA/${imagemNome}`);
+                        actionsContainer.appendChild(btnDownload);
+                    }
+                    divMensagem.appendChild(actionsContainer);
+                }
+            }
+            escreverLetra();
         }
-        escreverLetra();
     } else {
         divContent.innerHTML = texto;
         divMensagem.appendChild(divContent);
