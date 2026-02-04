@@ -836,10 +836,14 @@ Código
 <span class="material-icons-round">psychology</span>
 Personalidade
 </button>
+<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="toggleImagensMenu()" title="Buscar Imagens">
+<span class="material-icons-round">image</span>
+Imagens
+</button>
 </div>
 
 <!-- Dropdown de Personalidades -->
-<div id="personalidade-dropdown" class="absolute bottom-full left-0 mb-2 w-80 bg-white dark:bg-surface-dark border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg hidden z-50">
+<div id="personalidade-dropdown" class="fixed bottom-20 left-4 w-80 bg-white dark:bg-surface-dark border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg hidden z-50 personalidade-dropdown">
 <div class="p-3 border-b border-slate-200 dark:border-zinc-700">
 <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Escolha a Personalidade</h3>
 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Como você quer que eu responda?</p>
@@ -945,6 +949,44 @@ Personalidade
 </div>
 </div>
 </div>
+
+<!-- Dropdown de Imagens -->
+<div id="imagens-dropdown" class="fixed bottom-20 left-4 w-96 bg-white dark:bg-surface-dark border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg hidden z-50 imagens-dropdown">
+<div class="p-3 border-b border-slate-200 dark:border-zinc-700">
+<h3 class="text-sm font-semibold text-slate-900 dark:text-white">Buscar Imagens</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Descreva a imagem que você procura</p>
+</div>
+<div class="p-3">
+<div class="flex gap-2 mb-3">
+<input type="text" id="imagem-search-input" class="flex-1 px-3 py-2 text-sm border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-surface-dark text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Ex: gatos, natureza, tecnologia...">
+<button onclick="buscarImagens()" class="px-3 py-2 bg-primary hover:bg-primary_hover text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+<span class="material-icons-round" style="font-size: 16px;">search</span>
+Buscar
+</button>
+</div>
+<div id="imagens-loading" class="hidden text-center py-4">
+<div class="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+<span class="material-icons-round animate-spin" style="font-size: 16px;">refresh</span>
+Buscando imagens...
+</div>
+</div>
+<div id="imagens-results" class="hidden">
+<div class="text-xs text-slate-500 dark:text-slate-400 mb-2">
+<span id="imagens-count">0</span> imagens encontradas
+</div>
+<div id="imagens-grid" class="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+<!-- Imagens serão inseridas aqui -->
+</div>
+</div>
+<div id="imagens-error" class="hidden text-center py-4">
+<div class="text-sm text-red-600 dark:text-red-400">
+<span class="material-icons-round" style="font-size: 16px;">error</span>
+<span id="imagens-error-text">Erro ao buscar imagens</span>
+</div>
+</div>
+</div>
+</div>
+
 <div class="flex items-center gap-3 ml-auto">
 <button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" id="btn-mic" onclick="gravarAudio()">
 <span class="material-icons-round">mic</span>
@@ -981,6 +1023,372 @@ Personalidade
 <!-- Fim dos scripts da API -->
 
 <script src="conversa.js"></script>
+<script>
+// ===== FUNÇÕES DE PERSONALIDADE (GARANTIR CARREGAMENTO) =====
+function togglePersonalidadeMenu() {
+    const dropdown = document.getElementById('personalidade-dropdown');
+    
+    if (!dropdown) {
+        console.error('[PERSONALIDADE] Dropdown não encontrado');
+        return;
+    }
+    
+    console.log('[PERSONALIDADE] Toggle dropdown, estado atual:', dropdown.classList.contains('hidden'));
+    
+    if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        dropdown.classList.add('personalidade-dropdown');
+        atualizarPersonalidadeSelecionada();
+        console.log('[PERSONALIDADE] Dropdown aberto');
+    } else {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('personalidade-dropdown');
+        console.log('[PERSONALIDADE] Dropdown fechado');
+    }
+}
+
+function selecionarPersonalidade(personalidade) {
+    // Definir variável global se não existir
+    if (typeof personalidadeAtual === 'undefined') {
+        window.personalidadeAtual = 'Normal';
+    }
+    
+    window.personalidadeAtual = personalidade;
+    
+    // Atualizar botão principal
+    const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+    const configuracoesPersonalidade = {
+        'Normal': { icone: 'person' },
+        'Divertida': { icone: 'mood' },
+        'Criativa': { icone: 'lightbulb' },
+        'Analítica': { icone: 'analytics' },
+        'Motivadora': { icone: 'emoji_events' },
+        'Acadêmica': { icone: 'school' },
+        'Dramática': { icone: 'theater_comedy' },
+        'Curiosa': { icone: 'psychology_alt' },
+        'Minimalista': { icone: 'minimize' },
+        'Zen': { icone: 'self_improvement' },
+        'Pirata': { icone: 'sailing' },
+        'Redatora': { icone: 'edit_note' },
+        'Executiva': { icone: 'business_center' },
+        'Empática': { icone: 'favorite' }
+    };
+    
+    const config = configuracoesPersonalidade[personalidade];
+    if (btn && config) {
+        btn.innerHTML = `
+            <span class="material-icons-round">${config.icone}</span>
+            Personalidade
+        `;
+    }
+    
+    // Fechar dropdown
+    const dropdown = document.getElementById('personalidade-dropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+    
+    // Salvar no localStorage
+    localStorage.setItem('personalidadeSelecionada', personalidade);
+    
+    // Adicionar mensagem de confirmação
+    const mensagemConfirmacao = `Personalidade alterada para **${personalidade}**! Agora vou responder como uma IA ${personalidade.toLowerCase()}.`;
+    
+    // Adicionar mensagem ao chat
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) {
+        const divMensagem = document.createElement('div');
+        divMensagem.className = 'mensagem bot';
+        divMensagem.innerHTML = `<div class="message-content">${mensagemConfirmacao}</div>`;
+        chatBox.appendChild(divMensagem);
+        
+        // Scroll para baixo
+        const container = document.getElementById('chat-box-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+    
+    console.log('[PERSONALIDADE] Alterada para:', personalidade);
+}
+
+function atualizarPersonalidadeSelecionada() {
+    // Definir variável global se não existir
+    if (typeof personalidadeAtual === 'undefined') {
+        window.personalidadeAtual = localStorage.getItem('personalidadeSelecionada') || 'Normal';
+    }
+    
+    // Remover classe active de todos os itens
+    const itens = document.querySelectorAll('.personalidade-item');
+    itens.forEach(item => item.classList.remove('active'));
+    
+    // Adicionar classe active ao item selecionado
+    const itemSelecionado = document.querySelector(`[data-personalidade="${window.personalidadeAtual}"]`);
+    if (itemSelecionado) {
+        itemSelecionado.classList.add('active');
+    }
+}
+
+// Carregar personalidade salva ao iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    const personalidadeSalva = localStorage.getItem('personalidadeSelecionada');
+    if (personalidadeSalva) {
+        window.personalidadeAtual = personalidadeSalva;
+        
+        const configuracoesPersonalidade = {
+            'Normal': { icone: 'person' },
+            'Divertida': { icone: 'mood' },
+            'Criativa': { icone: 'lightbulb' },
+            'Analítica': { icone: 'analytics' },
+            'Motivadora': { icone: 'emoji_events' },
+            'Acadêmica': { icone: 'school' },
+            'Dramática': { icone: 'theater_comedy' },
+            'Curiosa': { icone: 'psychology_alt' },
+            'Minimalista': { icone: 'minimize' },
+            'Zen': { icone: 'self_improvement' },
+            'Pirata': { icone: 'sailing' },
+            'Redatora': { icone: 'edit_note' },
+            'Executiva': { icone: 'business_center' },
+            'Empática': { icone: 'favorite' }
+        };
+        
+        const config = configuracoesPersonalidade[personalidadeSalva];
+        const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+        if (btn && config) {
+            btn.innerHTML = `
+                <span class="material-icons-round">${config.icone}</span>
+                Personalidade
+            `;
+        }
+    }
+    
+    // Adicionar event listener para fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('personalidade-dropdown');
+        const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+        
+        if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+});
+
+// Exportar funções globalmente
+window.togglePersonalidadeMenu = togglePersonalidadeMenu;
+window.selecionarPersonalidade = selecionarPersonalidade;
+window.atualizarPersonalidadeSelecionada = atualizarPersonalidadeSelecionada;
+
+// ===== FUNÇÕES DE IMAGENS (PIXELS.COM) =====
+function toggleImagensMenu() {
+    const dropdown = document.getElementById('imagens-dropdown');
+    const personalidadeDropdown = document.getElementById('personalidade-dropdown');
+    
+    // Fechar dropdown de personalidades se estiver aberto
+    if (personalidadeDropdown && !personalidadeDropdown.classList.contains('hidden')) {
+        personalidadeDropdown.classList.add('hidden');
+    }
+    
+    if (!dropdown) {
+        console.error('[IMAGENS] Dropdown não encontrado');
+        return;
+    }
+    
+    console.log('[IMAGENS] Toggle dropdown, estado atual:', dropdown.classList.contains('hidden'));
+    
+    if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        dropdown.classList.add('imagens-dropdown');
+        
+        // Focar no input de busca
+        const searchInput = document.getElementById('imagem-search-input');
+        if (searchInput) {
+            setTimeout(() => searchInput.focus(), 100);
+        }
+        
+        console.log('[IMAGENS] Dropdown aberto');
+    } else {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('imagens-dropdown');
+        console.log('[IMAGENS] Dropdown fechado');
+    }
+}
+
+async function buscarImagens() {
+    const searchInput = document.getElementById('imagem-search-input');
+    const query = searchInput?.value.trim();
+    
+    if (!query) {
+        mostrarErroImagens('Digite o que você quer buscar');
+        return;
+    }
+    
+    console.log('[IMAGENS] Buscando:', query);
+    
+    // Mostrar loading
+    mostrarLoadingImagens(true);
+    ocultarResultadosImagens();
+    ocultarErroImagens();
+    
+    try {
+        const response = await fetch(`/api/pixels-proxy?query=${encodeURIComponent(query)}&per_page=12`);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro na API');
+        }
+        
+        const data = await response.json();
+        console.log('[IMAGENS] Resultados:', data);
+        
+        if (data.success && data.photos && data.photos.length > 0) {
+            mostrarResultadosImagens(data.photos, data.total_results);
+        } else {
+            mostrarErroImagens('Nenhuma imagem encontrada para esta busca');
+        }
+        
+    } catch (error) {
+        console.error('[IMAGENS] Erro:', error);
+        mostrarErroImagens(error.message || 'Erro ao buscar imagens');
+    } finally {
+        mostrarLoadingImagens(false);
+    }
+}
+
+function mostrarLoadingImagens(mostrar) {
+    const loading = document.getElementById('imagens-loading');
+    if (loading) {
+        loading.classList.toggle('hidden', !mostrar);
+    }
+}
+
+function mostrarResultadosImagens(photos, total) {
+    const results = document.getElementById('imagens-results');
+    const grid = document.getElementById('imagens-grid');
+    const count = document.getElementById('imagens-count');
+    
+    if (!results || !grid || !count) return;
+    
+    // Atualizar contador
+    count.textContent = total;
+    
+    // Limpar grid
+    grid.innerHTML = '';
+    
+    // Adicionar imagens
+    photos.forEach(photo => {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'relative group cursor-pointer rounded-lg overflow-hidden aspect-square';
+        imgContainer.onclick = () => selecionarImagem(photo);
+        
+        imgContainer.innerHTML = `
+            <img src="${photo.src.medium}" alt="${photo.alt}" class="w-full h-full object-cover transition-transform group-hover:scale-105">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center">
+                <span class="material-icons-round text-white opacity-0 group-hover:opacity-100 transition-opacity">add</span>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                <p class="text-white text-xs truncate">${photo.photographer}</p>
+            </div>
+        `;
+        
+        grid.appendChild(imgContainer);
+    });
+    
+    // Mostrar resultados
+    results.classList.remove('hidden');
+}
+
+function selecionarImagem(photo) {
+    console.log('[IMAGENS] Imagem selecionada:', photo);
+    
+    // Fechar dropdown
+    const dropdown = document.getElementById('imagens-dropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+    
+    // Adicionar imagem ao chat
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) {
+        const divMensagem = document.createElement('div');
+        divMensagem.className = 'mensagem bot';
+        divMensagem.innerHTML = `
+            <div class="message-content">
+                <p>🖼️ Imagem selecionada: <strong>${photo.alt}</strong></p>
+                <p>Foto por: <a href="${photo.photographer_url}" target="_blank" class="text-primary hover:underline">${photo.photographer}</a></p>
+                <div class="mt-3 rounded-lg overflow-hidden max-w-sm">
+                    <img src="${photo.src.large}" alt="${photo.alt}" class="w-full h-auto">
+                </div>
+                <div class="mt-2 flex gap-2">
+                    <button onclick="copiarTexto('${photo.src.large}')" class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                        <span class="material-icons-round" style="font-size: 12px;">content_copy</span> Copiar URL
+                    </button>
+                    <button onclick="window.open('${photo.src.original}', '_blank')" class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                        <span class="material-icons-round" style="font-size: 12px;">open_in_new</span> Original
+                    </button>
+                </div>
+            </div>
+        `;
+        chatBox.appendChild(divMensagem);
+        
+        // Scroll para baixo
+        const container = document.getElementById('chat-box-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+}
+
+function ocultarResultadosImagens() {
+    const results = document.getElementById('imagens-results');
+    if (results) {
+        results.classList.add('hidden');
+    }
+}
+
+function mostrarErroImagens(mensagem) {
+    const error = document.getElementById('imagens-error');
+    const errorText = document.getElementById('imagens-error-text');
+    
+    if (error && errorText) {
+        errorText.textContent = mensagem;
+        error.classList.remove('hidden');
+    }
+}
+
+function ocultarErroImagens() {
+    const error = document.getElementById('imagens-error');
+    if (error) {
+        error.classList.add('hidden');
+    }
+}
+
+// Adicionar event listener para Enter no input de busca
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('imagem-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                buscarImagens();
+            }
+        });
+    }
+    
+    // Adicionar event listener para fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+        const imagensDropdown = document.getElementById('imagens-dropdown');
+        const imagensBtn = document.querySelector('[onclick="toggleImagensMenu()"]');
+        
+        if (imagensDropdown && imagensBtn && !imagensDropdown.contains(e.target) && !imagensBtn.contains(e.target)) {
+            imagensDropdown.classList.add('hidden');
+        }
+    });
+});
+
+// Exportar funções de imagens
+window.toggleImagensMenu = toggleImagensMenu;
+window.buscarImagens = buscarImagens;
+window.selecionarImagem = selecionarImagem;
+</script>
 <script>
 // ===== SISTEMA DE HISTÓRICO E LOCALSTORAGE INTEGRADO =====
 

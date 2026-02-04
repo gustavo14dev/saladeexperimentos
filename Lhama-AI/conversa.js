@@ -893,13 +893,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== FUNÇÕES DE PERSONALIDADE =====
 function togglePersonalidadeMenu() {
     const dropdown = document.getElementById('personalidade-dropdown');
-    const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+    
+    if (!dropdown) {
+        console.error('[PERSONALIDADE] Dropdown não encontrado');
+        return;
+    }
+    
+    console.log('[PERSONALIDADE] Toggle dropdown, estado atual:', dropdown.classList.contains('hidden'));
     
     if (dropdown.classList.contains('hidden')) {
         dropdown.classList.remove('hidden');
+        dropdown.classList.add('personalidade-dropdown');
         atualizarPersonalidadeSelecionada();
+        console.log('[PERSONALIDADE] Dropdown aberto');
     } else {
         dropdown.classList.add('hidden');
+        dropdown.classList.remove('personalidade-dropdown');
+        console.log('[PERSONALIDADE] Dropdown fechado');
     }
 }
 
