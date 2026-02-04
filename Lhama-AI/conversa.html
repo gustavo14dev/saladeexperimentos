@@ -707,6 +707,27 @@
         .message-content li {
             margin: 4px 0;
         }
+        /* Estilos para Dropdown de Personalidades */
+        .personalidade-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .personalidade-item.active .text-slate-900 {
+            color: #3b82f6;
+        }
+        .personalidade-dropdown {
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white">
@@ -785,10 +806,6 @@
 <span class="material-icons-round text-lg">arrow_back</span>
                     Voltar
                 </button>
-<button class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors hidden sm:flex items-center gap-2" onclick="window.location.href = '../code/index.html'">
-<span class="material-icons-outlined text-lg">code</span>
-                    Código
-                </button>
 </div>
 </header>
 <div id="chat-box-container" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8" style="padding-bottom: 24rem;">
@@ -811,6 +828,122 @@
 <textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
 <div class="flex flex-wrap items-center gap-2">
+<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="window.location.href = '../code/code.html'" title="Ir para Lhama Code">
+<span class="material-icons-round">code</span>
+Código
+</button>
+<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="togglePersonalidadeMenu()" title="Escolher Personalidade">
+<span class="material-icons-round">psychology</span>
+Personalidade
+</button>
+</div>
+
+<!-- Dropdown de Personalidades -->
+<div id="personalidade-dropdown" class="absolute bottom-full left-0 mb-2 w-80 bg-white dark:bg-surface-dark border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg hidden z-50">
+<div class="p-3 border-b border-slate-200 dark:border-zinc-700">
+<h3 class="text-sm font-semibold text-slate-900 dark:text-white">Escolha a Personalidade</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Como você quer que eu responda?</p>
+</div>
+<div class="max-h-64 overflow-y-auto">
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Normal" onclick="selecionarPersonalidade('Normal')">
+<span class="material-icons-outlined text-lg">person</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Normal</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Equilibrada e prestativa</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Divertida" onclick="selecionarPersonalidade('Divertida')">
+<span class="material-icons-outlined text-lg">mood</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Divertida</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Engraçada e animada</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Criativa" onclick="selecionarPersonalidade('Criativa')">
+<span class="material-icons-outlined text-lg">lightbulb</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Criativa</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Inovadora e inspiradora</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Analítica" onclick="selecionarPersonalidade('Analítica')">
+<span class="material-icons-outlined text-lg">analytics</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Analítica</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Lógica e detalhista</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Motivadora" onclick="selecionarPersonalidade('Motivadora')">
+<span class="material-icons-outlined text-lg">emoji_events</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Motivadora</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Incentivadora e positiva</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Acadêmica" onclick="selecionarPersonalidade('Acadêmica')">
+<span class="material-icons-outlined text-lg">school</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Acadêmica</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Formal e educativa</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Dramática" onclick="selecionarPersonalidade('Dramática')">
+<span class="material-icons-outlined text-lg">theater_comedy</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Dramática</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Expressiva e teatral</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Curiosa" onclick="selecionarPersonalidade('Curiosa')">
+<span class="material-icons-outlined text-lg">psychology_alt</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Curiosa</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Investigativa e perguntadora</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Minimalista" onclick="selecionarPersonalidade('Minimalista')">
+<span class="material-icons-outlined text-lg">minimize</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Minimalista</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Direta e objetiva</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Zen" onclick="selecionarPersonalidade('Zen')">
+<span class="material-icons-outlined text-lg">self_improvement</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Zen</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Calma e meditativa</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Pirata" onclick="selecionarPersonalidade('Pirata')">
+<span class="material-icons-outlined text-lg">sailing</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Pirata</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Aventureira e marítima</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Redatora" onclick="selecionarPersonalidade('Redatora')">
+<span class="material-icons-outlined text-lg">edit_note</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Redatora</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Eloquente e persuasiva</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Executiva" onclick="selecionarPersonalidade('Executiva')">
+<span class="material-icons-outlined text-lg">business_center</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Executiva</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Profissional e direta</div>
+</div>
+</div>
+<div class="personalidade-item px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors flex items-center gap-3" data-personalidade="Empática" onclick="selecionarPersonalidade('Empática')">
+<span class="material-icons-outlined text-lg">favorite</span>
+<div class="flex-1">
+<div class="text-sm font-medium text-slate-900 dark:text-white">Empática</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Compreensiva e acolhedora</div>
+</div>
+</div>
+</div>
 </div>
 <div class="flex items-center gap-3 ml-auto">
 <button class="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" id="btn-mic" onclick="gravarAudio()">

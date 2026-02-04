@@ -2,6 +2,68 @@ let treinamentos = [];
 let historicoConversa = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
+// ===== SISTEMA DE PERSONALIDADES =====
+let personalidadeAtual = 'Normal';
+
+const configuracoesPersonalidade = {
+    'Normal': {
+        icone: 'person',
+        prompt: 'Seja uma assistente equilibrada, prestativa e amigável. Responda de forma clara e útil.'
+    },
+    'Divertida': {
+        icone: 'mood',
+        prompt: 'Seja uma assistente engraçada, animada e cheia de energia! Use piadas, emojis e tom descontraído. Seja sempre positiva e divertida!'
+    },
+    'Criativa': {
+        icone: 'lightbulb',
+        prompt: 'Seja uma assistente criativa, inovadora e inspiradora. Pense fora da caixa, use metáforas e ideias originais.'
+    },
+    'Analítica': {
+        icone: 'analytics',
+        prompt: 'Seja uma assistente lógica, detalhista e analítica. Foque em dados, fatos e raciocínio estruturado. Seja precisa e objetiva.'
+    },
+    'Motivadora': {
+        icone: 'emoji_events',
+        prompt: 'Seja uma assistente motivadora e positiva! Incentive, inspire e levante o ânimo. Use palavras de encorajamento e pensamento positivo.'
+    },
+    'Acadêmica': {
+        icone: 'school',
+        prompt: 'Seja uma assistente formal e educativa. Use linguagem culta, explique conceitos com profundidade e mantenha um tom acadêmico.'
+    },
+    'Dramática': {
+        icone: 'theater_comedy',
+        prompt: 'Seja uma assistente expressiva e teatral! Use linguagem dramática, exclamações e tom emocionante. Seja como uma atriz de palco!'
+    },
+    'Curiosa': {
+        icone: 'psychology_alt',
+        prompt: 'Seja uma assistente curiosa e investigativa. Faça perguntas, explore diferentes ângulos e mostre interesse genuíno em aprender.'
+    },
+    'Minimalista': {
+        icone: 'minimize',
+        prompt: 'Seja uma assistente direta e objetiva. Vá direto ao ponto, use frases curtas e seja concisa. Sem rodeios ou excessos.'
+    },
+    'Zen': {
+        icone: 'self_improvement',
+        prompt: 'Seja uma assistente calma e meditativa. Use linguagem tranquila, fale com sabedoria interior e mantenha a paz mental.'
+    },
+    'Pirata': {
+        icone: 'sailing',
+        prompt: 'Seja uma assistente pirata! Use linguagem de marujos, fale sobre tesouros, aventuras e mares. Seja ousada e aventureira!'
+    },
+    'Redatora': {
+        icone: 'edit_note',
+        prompt: 'Seja uma assistente redatora profissional. Use linguagem eloquente, persuasiva e bem estruturada. Escreva com clareza e elegância.'
+    },
+    'Executiva': {
+        icone: 'business_center',
+        prompt: 'Seja uma assistente executiva e profissional. Seja direta, eficiente e focada em resultados. Use linguagem de negócios.'
+    },
+    'Empática': {
+        icone: 'favorite',
+        prompt: 'Seja uma assistente compreensiva e acolhedora. Demonstre empatia, ouça com atenção e ofereça apoio emocional.'
+    }
+};
+
 // Modos de funcionalidade
 
 // Debug: Verificar se a API Groq está disponível
@@ -812,4 +874,146 @@ document.addEventListener('DOMContentLoaded', () => {
         pickPreferredVoice();
         window.speechSynthesis.onvoiceschanged = pickPreferredVoice;
     }
+    
+    // ===== SISTEMA DE PERSONALIDADES =====
+    // Carregar personalidade salva
+    carregarPersonalidadeSalva();
+    
+    // Adicionar event listeners para personalidade
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('personalidade-dropdown');
+        const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+        
+        if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
 });
+
+// ===== FUNÇÕES DE PERSONALIDADE =====
+function togglePersonalidadeMenu() {
+    const dropdown = document.getElementById('personalidade-dropdown');
+    const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+    
+    if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        atualizarPersonalidadeSelecionada();
+    } else {
+        dropdown.classList.add('hidden');
+    }
+}
+
+function selecionarPersonalidade(personalidade) {
+    personalidadeAtual = personalidade;
+    
+    // Atualizar botão principal
+    const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+    const config = configuracoesPersonalidade[personalidade];
+    if (btn && config) {
+        btn.innerHTML = `
+            <span class="material-icons-round">${config.icone}</span>
+            Personalidade
+        `;
+    }
+    
+    // Fechar dropdown
+    const dropdown = document.getElementById('personalidade-dropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+    
+    // Salvar no localStorage
+    localStorage.setItem('personalidadeSelecionada', personalidade);
+    
+    // Adicionar mensagem de confirmação
+    const mensagemConfirmacao = `Personalidade alterada para **${personalidade}**! Agora vou responder como uma IA ${personalidade.toLowerCase()}.`;
+    adicionarMensagem(mensagemConfirmacao, 'bot');
+    
+    console.log('[PERSONALIDADE] Alterada para:', personalidade);
+}
+
+function atualizarPersonalidadeSelecionada() {
+    // Remover classe active de todos os itens
+    const itens = document.querySelectorAll('.personalidade-item');
+    itens.forEach(item => item.classList.remove('active'));
+    
+    // Adicionar classe active ao item selecionado
+    const itemSelecionado = document.querySelector(`[data-personalidade="${personalidadeAtual}"]`);
+    if (itemSelecionado) {
+        itemSelecionado.classList.add('active');
+    }
+}
+
+function carregarPersonalidadeSalva() {
+    const personalidadeSalva = localStorage.getItem('personalidadeSelecionada');
+    if (personalidadeSalva && configuracoesPersonalidade[personalidadeSalva]) {
+        personalidadeAtual = personalidadeSalva;
+        const config = configuracoesPersonalidade[personalidadeSalva];
+        const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
+        if (btn && config) {
+            btn.innerHTML = `
+                <span class="material-icons-round">${config.icone}</span>
+                Personalidade
+            `;
+        }
+    }
+}
+
+// Modificar função gerarResposta para incluir personalidade
+const gerarRespostaOriginal = gerarResposta;
+gerarResposta = function(mensagemUsuario, historicoConversa = []) {
+    // Adicionar prompt de personalidade
+    const promptPersonalidade = configuracoesPersonalidade[personalidadeAtual]?.prompt || '';
+    const systemMessage = promptPersonalidade ? 
+        `Você é a Lhama AI 1. ${promptPersonalidade} Responda em português brasileiro de forma completa e detalhada.` :
+        `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`;
+
+    // Modificar a chamada da API para incluir o system message
+    const chamadaOriginal = gerarRespostaOriginal;
+    return new Promise((resolve) => {
+        // Substituir o system message na chamada
+        fetch('/api/lhama-groq-api-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant',
+                messages: [
+                    {
+                        role: 'system',
+                        content: systemMessage
+                    },
+                    ...historicoConversa.map(msg => ({
+                        role: msg.tipo === 'usuario' ? 'user' : 'assistant',
+                        content: msg.texto
+                    })),
+                    {
+                        role: 'user',
+                        content: mensagemUsuario
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 8192,
+                top_p: 1,
+                stream: false
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.choices && data.choices.length > 0) {
+                resolve(data.choices[0].message.content);
+            } else {
+                resolve("Desculpe, não consegui gerar uma resposta. Tente novamente.");
+            }
+        })
+        .catch(error => {
+            console.error('[PERSONALIDADE] Erro:', error);
+            resolve("Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.");
+        });
+    });
+};
+
+// Exportar funções de personalidade
+window.togglePersonalidadeMenu = togglePersonalidadeMenu;
+window.selecionarPersonalidade = selecionarPersonalidade;
