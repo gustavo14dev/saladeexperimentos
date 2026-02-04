@@ -836,7 +836,7 @@ Código
 <span class="material-icons-round">psychology</span>
 Personalidade
 </button>
-<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="toggleImagensMenu()" title="Buscar Imagens">
+<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="toggleModoImagem()" title="Ativar/Desativar modo imagem">
 <span class="material-icons-round">image</span>
 Imagens
 </button>
@@ -1181,36 +1181,8 @@ window.atualizarPersonalidadeSelecionada = atualizarPersonalidadeSelecionada;
 // ===== FUNÇÕES DE IMAGENS (PIXELS.COM) =====
 function toggleImagensMenu() {
     const dropdown = document.getElementById('imagens-dropdown');
-    const personalidadeDropdown = document.getElementById('personalidade-dropdown');
-    
-    // Fechar dropdown de personalidades se estiver aberto
-    if (personalidadeDropdown && !personalidadeDropdown.classList.contains('hidden')) {
-        personalidadeDropdown.classList.add('hidden');
-    }
-    
-    if (!dropdown) {
-        console.error('[IMAGENS] Dropdown não encontrado');
-        return;
-    }
-    
-    console.log('[IMAGENS] Toggle dropdown, estado atual:', dropdown.classList.contains('hidden'));
-    
-    if (dropdown.classList.contains('hidden')) {
-        dropdown.classList.remove('hidden');
-        dropdown.classList.add('imagens-dropdown');
-        
-        // Focar no input de busca
-        const searchInput = document.getElementById('imagem-search-input');
-        if (searchInput) {
-            setTimeout(() => searchInput.focus(), 100);
-        }
-        
-        console.log('[IMAGENS] Dropdown aberto');
-    } else {
-        dropdown.classList.add('hidden');
-        dropdown.classList.remove('imagens-dropdown');
-        console.log('[IMAGENS] Dropdown fechado');
-    }
+    if (dropdown) dropdown.classList.add('hidden');
+    if (typeof window.toggleModoImagem === 'function') window.toggleModoImagem();
 }
 
 async function buscarImagens() {
