@@ -60,8 +60,13 @@ export default async function handler(req, res) {
                 // A resposta é a imagem diretamente - buscar como arraybuffer
                 const imageBuffer = await response.arrayBuffer();
                 const imageBase64 = Buffer.from(imageBuffer).toString('base64');
-                const imageUrl = `data:image/png;base64,${imageBase64}`;
-                console.log('[POLLINATIONS] Imagem gerada com sucesso!');
+                
+                // Detectar o tipo de imagem pela resposta
+                const contentType = response.headers.get('content-type') || 'image/png';
+                const mimeType = contentType.includes('jpeg') ? 'image/jpeg' : 'image/png';
+                
+                const imageUrl = `data:${mimeType};base64,${imageBase64}`;
+                console.log('[POLLINATIONS] Imagem gerada com sucesso! Tipo:', mimeType);
 
                 // Retornar no formato esperado pelo frontend
                 return res.status(200).json({
