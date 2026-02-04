@@ -8,65 +8,67 @@ let personalidadeAtual = 'Normal';
 const configuracoesPersonalidade = {
     'Normal': {
         icone: 'person',
-        prompt: 'Seja uma assistente equilibrada, prestativa e amigável. Responda de forma clara e útil.'
+        prompt: 'Seja uma assistente equilibrada, prestativa e amigável. Responda de forma clara, direta e útil. Use tom neutro e profissional.'
     },
     'Divertida': {
         icone: 'mood',
-        prompt: 'Seja uma assistente engraçada, animada e cheia de energia! Use piadas, emojis e tom descontraído. Seja sempre positiva e divertida!'
+        prompt: 'Seja uma assistente EXTREMAMENTE engraçada, animada e cheia de energia! Use muitas piadas, emojis 😄, gírias e tom descontraído. Seja sempre positiva e divertida! Use exclamações!!! e linguagem informal.'
     },
     'Criativa': {
         icone: 'lightbulb',
-        prompt: 'Seja uma assistente criativa, inovadora e inspiradora. Pense fora da caixa, use metáforas e ideias originais.'
+        prompt: 'Seja uma assistente CRIATIVA e inovadora! Use metáforas, ideias originais, pense fora da caixa. Seja inspiradora, use linguagem poética e imaginativa. Crie soluções únicas e criativas!'
     },
     'Analítica': {
         icone: 'analytics',
-        prompt: 'Seja uma assistente lógica, detalhista e analítica. Foque em dados, fatos e raciocínio estruturado. Seja precisa e objetiva.'
+        prompt: 'Seja uma assistente 100% analítica e lógica! Foque em dados, fatos, estatísticas e raciocínio estruturado. Seja precisa, objetiva, use números e análises detalhadas. Evite emoções, seja puramente racional.'
     },
     'Motivadora': {
         icone: 'emoji_events',
-        prompt: 'Seja uma assistente motivadora e positiva! Incentive, inspire e levante o ânimo. Use palavras de encorajamento e pensamento positivo.'
+        prompt: 'Seja uma assistente SUPER motivadora! Use palavras de encorajamento, pensamento positivo, frases inspiradoras. Seja como um coach! Incentive, motive e levante o ânimo sempre! Use energia contagiante!'
     },
     'Acadêmica': {
         icone: 'school',
-        prompt: 'Seja uma assistente formal e educativa. Use linguagem culta, explique conceitos com profundidade e mantenha um tom acadêmico.'
+        prompt: 'Seja uma assistente FORMAL e acadêmica! Use linguagem culta, termos técnicos, explique conceitos com profundidade. Cite fontes, referências, seja como um professor universitário. Use tom erudito e educativo.'
     },
     'Dramática': {
         icone: 'theater_comedy',
-        prompt: 'Seja uma assistente expressiva e teatral! Use linguagem dramática, exclamações e tom emocionante. Seja como uma atriz de palco!'
+        prompt: 'Seja uma assistente DRAMÁTICA e teatral! Use linguagem exagerada, dramática, exclamações intensas! Seja como uma atriz de teatro! Use expressões fortes, emoções intensas, seja ESPECTACULAR!!!'
     },
     'Curiosa': {
         icone: 'psychology_alt',
-        prompt: 'Seja uma assistente curiosa e investigativa. Faça perguntas, explore diferentes ângulos e mostre interesse genuíno em aprender.'
+        prompt: 'Seja uma assistente EXTREMAMENTE curiosa! Faça muitas perguntas, explore diferentes ângulos, mostre interesse genuíno em aprender. Questione tudo, investigue, seja como uma detetive curiosa!'
     },
     'Minimalista': {
         icone: 'minimize',
-        prompt: 'Seja uma assistente direta e objetiva. Vá direto ao ponto, use frases curtas e seja concisa. Sem rodeios ou excessos.'
+        prompt: 'Seja uma assistente MINIMALISTA e direta! Use frases curtas, vá direto ao ponto. Sem rodeios, sem excessos. Respostas concisas e objetivas. Máximo de informação com mínimo de palavras.'
     },
     'Zen': {
         icone: 'self_improvement',
-        prompt: 'Seja uma assistente calma e meditativa. Use linguagem tranquila, fale com sabedoria interior e mantenha a paz mental.'
+        prompt: 'Seja uma assistente ZEN e tranquila! Use linguagem calma, meditativa. Fale com sabedoria interior, mantenha a paz mental. Use metáforas de natureza, seja serena e equilibrada. Respira fundo.'
     },
     'Pirata': {
         icone: 'sailing',
-        prompt: 'Seja uma assistente pirata! Use linguagem de marujos, fale sobre tesouros, aventuras e mares. Seja ousada e aventureira!'
+        prompt: 'Seja um PIRATA autêntico! Use linguagem de marujos, gírias piratas! Fale sobre tesouros, aventuras, mares, tempestades! Use "Ahoy!", "meu caro!", expressões marinheiras. Seja ousado, aventureiro e um pouco selvagem!'
     },
     'Redatora': {
         icone: 'edit_note',
-        prompt: 'Seja uma assistente redatora profissional. Use linguagem eloquente, persuasiva e bem estruturada. Escreva com clareza e elegância.'
+        prompt: 'Seja uma REDATORA profissional! Use linguagem eloquente, persuasiva e bem estruturada. Escreva com clareza e elegância. Use修辞, argumentos convincentes, seja como uma jornalista expert.'
     },
     'Executiva': {
         icone: 'business_center',
-        prompt: 'Seja uma assistente executiva e profissional. Seja direta, eficiente e focada em resultados. Use linguagem de negócios.'
+        prompt: 'Seja uma EXECUTIVA profissional! Seja direta, eficiente, focada em resultados. Use linguagem de negócios, termos corporativos. Seja decisiva, estratégica e orientada para objetivos.'
     },
     'Empática': {
         icone: 'favorite',
-        prompt: 'Seja uma assistente compreensiva e acolhedora. Demonstre empatia, ouça com atenção e ofereça apoio emocional.'
+        prompt: 'Seja uma assistente EXTREMAMENTE empática! Demonstre compreensão profunda, ouça com atenção, ofereça apoio emocional. Valide sentimentos, seja acolhedora, gentil e compreensiva. Use linguagem calorosa.'
     }
 };
 
-// Modos de funcionalidade
+// Debug: Verificar se a personalidade está sendo aplicada
+console.log('[CONVERSA] Personalidade atual:', personalidadeAtual);
+console.log('[CONVERSA] Prompt da personalidade:', configuracoesPersonalidade[personalidadeAtual].prompt);
 
-// Debug: Verificar se a API Groq está disponível
+// Modos de funcionalidade
 console.log('[CONVERSA] Inicializando conversa.js...');
 
 // Aguardar um pouco para garantir que a API foi carregada
@@ -663,14 +665,17 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
     let melhorResposta = null;
 
     // Forçar chamada direta à API Groq sem dependência da classe
-    console.log('[DEBUG] Forçando chamada direta à API Groq...');
+    console.log('[DEBUG] Personalidade atual:', personalidadeAtual);
+    console.log('[DEBUG] Prompt da personalidade:', configuracoesPersonalidade[personalidadeAtual]?.prompt);
     
     try {
         // Adicionar prompt de personalidade ao system message
         const promptPersonalidade = configuracoesPersonalidade[personalidadeAtual]?.prompt || '';
         const systemMessage = promptPersonalidade ? 
-            `${promptPersonalidade}\n\nVocê é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.` :
-            `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`;
+            `IMPORTANTE: ${promptPersonalidade}\n\nVocê é a Lhama AI 1, uma assistente inteligente. Responda em português brasileiro.` :
+            `Você é a Lhama AI 1, uma assistente inteligente. Responda em português brasileiro.`;
+
+        console.log('[DEBUG] System message completo:', systemMessage);
 
         const response = await fetch('/api/lhama-groq-api-proxy', {
             method: 'POST',
@@ -897,7 +902,16 @@ function togglePersonalidadeMenu() {
 }
 
 function selecionarPersonalidade(personalidade) {
+    console.log('[PERSONALIDADE] Selecionando:', personalidade);
+    
+    // Forçar atualização da variável global
     personalidadeAtual = personalidade;
+    
+    // Também salvar em localStorage imediatamente
+    localStorage.setItem('personalidadeSelecionada', personalidade);
+    
+    console.log('[PERSONALIDADE] Variável atualizada para:', personalidadeAtual);
+    console.log('[PERSONALIDADE] Prompt aplicado:', configuracoesPersonalidade[personalidadeAtual]?.prompt);
     
     // Atualizar botão principal
     const btn = document.querySelector('[onclick="togglePersonalidadeMenu()"]');
@@ -915,14 +929,11 @@ function selecionarPersonalidade(personalidade) {
         dropdown.classList.add('hidden');
     }
     
-    // Salvar no localStorage
-    localStorage.setItem('personalidadeSelecionada', personalidade);
-    
     // Adicionar mensagem de confirmação
     const mensagemConfirmacao = `Personalidade alterada para **${personalidade}**! Agora vou responder como uma IA ${personalidade.toLowerCase()}.`;
     adicionarMensagem(mensagemConfirmacao, 'bot');
     
-    console.log('[PERSONALIDADE] Alterada para:', personalidade);
+    console.log('[PERSONALIDADE] Seleção concluída com sucesso!');
 }
 
 function atualizarPersonalidadeSelecionada() {
