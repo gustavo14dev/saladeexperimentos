@@ -487,9 +487,9 @@ function mostrarDigitando(mostrar) {
     }
 }
 
-// ===== FUNÇÃO MELHORADA COM RETRY AUTOMÁTICO - POLLINATIONS AI DIRETO =====
+// ===== FUNÇÃO MELHORADA COM RETRY AUTOMÁTICO - VIA PROXY OTIMIZADO =====
 async function gerarImagemComRetry(prompt) {
-    console.log('[IMAGEM] Gerando imagem com Pollinations AI (direto):', prompt);
+    console.log('[IMAGEM] Gerando imagem com Pollinations AI (via proxy):', prompt);
     
     const maxRetries = 3;
     const retryDelay = 2000; // 2 segundos entre tentativas
@@ -498,26 +498,22 @@ async function gerarImagemComRetry(prompt) {
         try {
             console.log(`[IMAGEM] Tentativa ${attempt}/${maxRetries}`);
             
-            // Construir URL direta da Pollinations AI (sem proxy)
-            const encodedPrompt = encodeURIComponent(prompt);
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
-            console.log('[IMAGEM] URL direta:', imageUrl);
-            
-            // Fazer requisição para verificar se a imagem pode ser gerada
-            const response = await fetch(imageUrl, {
-                method: 'GET',
+            // Usar proxy otimizado para evitar CORS
+            const response = await fetch('/api/flux-proxy', {
+                method: 'POST',
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Accept': 'image/*',
-                    'Cache-Control': 'no-cache'
-                }
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: prompt
+                })
             });
 
-            console.log('[IMAGEM] Status da resposta:', response.status);
+            console.log('[IMAGEM] Status do proxy:', response.status);
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('[IMAGEM] Erro na API Pollinations:', response.status, errorText);
+                console.error('[IMAGEM] Erro no proxy:', response.status, errorText);
                 
                 // Se for erro 502/503 e ainda temos tentativas, tentar novamente
                 if ((response.status === 502 || response.status === 503 || response.status === 429) && attempt < maxRetries) {
@@ -533,27 +529,35 @@ async function gerarImagemComRetry(prompt) {
                 } else if (response.status === 500 || response.status === 502 || response.status === 503) {
                     return "⚠️ Serviço Pollinations AI temporariamente indisponível. Tente novamente em alguns minutos.";
                 } else {
-                    return `Erro na API Pollinations: ${response.statusText}`;
+                    return `Erro na API Pollinations: ${errorText || response.statusText}`;
                 }
             }
 
-            // Se chegou aqui, a imagem foi gerada com sucesso
-            console.log('[IMAGEM] Imagem gerada com sucesso!');
+            const data = await response.json();
+            console.log('[IMAGEM] Dados recebidos do proxy:', data);
             
-            // Adicionar timestamp para evitar cache
-            const timestampedImageUrl = `${imageUrl}?t=${Date.now()}`;
-            
-            return `<div class="imagem-gerada-container">
-                <img src="${timestampedImageUrl}" alt="Imagem gerada por Pollinations AI" class="imagem-gerada" 
-                     onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Erro+ao+carregar+imagem'" />
-            </div>`;
+            if (data.data && data.data.length > 0 && data.data[0].url) {
+                const imageUrl = data.data[0].url;
+                console.log('[IMAGEM] Imagem gerada com sucesso!');
+                
+                // Adicionar timestamp para evitar cache
+                const timestampedImageUrl = `${imageUrl}?t=${Date.now()}`;
+                
+                return `<div class="imagem-gerada-container">
+                    <img src="${timestampedImageUrl}" alt="Imagem gerada por Pollinations AI" class="imagem-gerada" 
+                         onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Erro+ao+carregar+imagem'" />
+                </div>`;
+            } else {
+                console.error('[IMAGEM] Estrutura de resposta inválida');
+                return "Desculpe, não consegui gerar a imagem. Tente novamente.";
+            }
 
         } catch (erro) {
             console.error(`[IMAGEM] Erro na tentativa ${attempt}:`, erro);
             
             // Se for erro de rede e ainda temos tentativas, tentar novamente
-            if ((erro.message.includes('fetch') || erro.message.includes('network')) && attempt < maxRetries) {
-                console.log(`[IMAGEM] Erro de rede detectado, tentando novamente em ${retryDelay}ms...`);
+            if ((erro.message.includes('fetch') || erro.message.includes('network') || erro.message.includes('CORS')) && attempt < maxRetries) {
+                console.log(`[IMAGEM] Erro de rede/CORS detectado, tentando novamente em ${retryDelay}ms...`);
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
                 continue;
             }
