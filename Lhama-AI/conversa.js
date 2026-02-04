@@ -2,6 +2,12 @@ let treinamentos = [];
 let historicoConversa = [];
 let bancoImagens = {}; // Inicializada como objeto vazio para ser carregada via fetch.
 
+// ===== SISTEMA DE IMAGENS =====
+let modoImagemAtivo = false;
+let imagensAtuais = [];
+let paginaAtual = 1;
+let termoBuscaAtual = '';
+
 // ===== SISTEMA DE PERSONALIDADES =====
 let personalidadeAtual = 'Normal';
 
@@ -183,6 +189,342 @@ function closeToolsMenuMobile() {
 }
 
 
+// ===== FUNÇÕES DE IMAGENS =====
+
+async function buscarEMostrarImagens(termoBusca) {
+    console.log('[IMAGENS] Buscando imagens para:', termoBusca);
+    
+    // Resetar variáveis
+    termoBuscaAtual = termoBusca;
+    paginaAtual = 1;
+    imagensAtuais = [];
+    
+    try {
+        // Buscar primeira página de imagens (30 imagens)
+        const response = await fetch(`/api/pixels-proxy?query=${encodeURIComponent(termoBusca)}&per_page=30&page=1`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        imagensAtuais = data.photos || [];
+        
+        console.log('[IMAGENS] Encontradas:', imagensAtuais.length, 'imagens');
+        
+        // Gerar HTML das imagens
+        return gerarHTMLImagens();
+        
+    } catch (erro) {
+        console.error('[IMAGENS] Erro ao buscar imagens:', erro);
+        return `❌ Não consegui buscar imagens para "${termoBusca}". Tente novamente.`;
+    }
+}
+
+function gerarHTMLImagens() {
+    if (imagensAtuais.length === 0) {
+        return `📸 Não encontrei imagens para "${termoBuscaAtual}". Tente outro termo.`;
+    }
+    
+    let html = `
+        <div class="imagens-resposta-container">
+            <div class="imagens-header">
+                <span class="imagens-titulo">📸 ${imagensAtuais.length} imagens encontradas para "${termoBuscaAtual}"</span>
+                <button class="btn-mostrar-mais" onclick="mostrarMaisImagens()" id="btn-mostrar-mais">
+                    <span class="material-icons-round">add_circle</span>
+                    Mostrar mais 10
+                </button>
+            </div>
+            <div class="imagens-grid" id="imagens-grid">
+    `;
+    
+    // Adicionar as 30 primeiras imagens
+    imagensAtuais.slice(0, 30).forEach((imagem, index) => {
+        html += `
+            <div class="imagem-card" data-index="${index}">
+                <img src="${imagem.src.large}" alt="${imagem.alt}" loading="lazy" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkltYWdlbSBubyBkaXNwb25pdmVsPC90ZXh0Pjwvc3ZnPg=='" />
+                <div class="imagem-overlay">
+                    <div class="imagem-acoes">
+                        <button class="btn-acao" onclick="baixarImagem('${imagem.src.large}')" title="Baixar">
+                            <span class="material-icons-round">download</span>
+                        </button>
+                        <button class="btn-acao" onclick="copiarTexto('${imagem.src.large}')" title="Copiar URL">
+                            <span class="material-icons-round">content_copy</span>
+                        </button>
+                        <button class="btn-acao" onclick="abrirImagemNovaJanela('${imagem.src.large}')" title="Abrir em nova janela">
+                            <span class="material-icons-round">open_in_new</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="imagem-info">
+                    <span class="imagem-fotografo">📷 ${imagem.photographer}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+        
+        <style>
+        .imagens-resposta-container {
+            margin: 16px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .imagens-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .imagens-titulo {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .btn-mostrar-mais {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-mostrar-mais:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .imagens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .imagem-card {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .imagem-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .imagem-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .imagem-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: flex-end;
+            padding: 8px;
+        }
+        
+        .imagem-card:hover .imagem-overlay {
+            opacity: 1;
+        }
+        
+        .imagem-acoes {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-acao {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-acao:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+        
+        .btn-acao .material-icons-round {
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .imagem-info {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .imagem-fotografo {
+            font-size: 11px;
+            color: #ccc;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        @media (max-width: 768px) {
+            .imagens-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 8px;
+            }
+            
+            .imagem-card img {
+                height: 120px;
+            }
+        }
+        </style>
+    `;
+    
+    return html;
+}
+
+async function mostrarMaisImagens() {
+    const btn = document.getElementById('btn-mostrar-mais');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Carregando...';
+    }
+    
+    try {
+        paginaAtual++;
+        
+        const response = await fetch(`/api/pixels-proxy?query=${encodeURIComponent(termoBuscaAtual)}&per_page=10&page=${paginaAtual}`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const novasImagens = data.photos || [];
+        
+        if (novasImagens.length === 0) {
+            if (btn) {
+                btn.innerHTML = '<span class="material-icons-round">check_circle</span> Fim dos resultados';
+                btn.disabled = true;
+            }
+            return;
+        }
+        
+        // Adicionar novas imagens ao array
+        imagensAtuais.push(...novasImagens);
+        
+        // Adicionar novas imagens ao grid
+        const grid = document.getElementById('imagens-grid');
+        if (grid) {
+            novasImagens.forEach((imagem, index) => {
+                const globalIndex = imagensAtuais.length - novasImagens.length + index;
+                const cardHTML = `
+                    <div class="imagem-card" data-index="${globalIndex}">
+                        <img src="${imagem.src.large}" alt="${imagem.alt}" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkltYWdlbSBubyBkaXNwb25pdmVsPC90ZXh0Pjwvc3ZnPg=='" />
+                        <div class="imagem-overlay">
+                            <div class="imagem-acoes">
+                                <button class="btn-acao" onclick="baixarImagem('${imagem.src.large}')" title="Baixar">
+                                    <span class="material-icons-round">download</span>
+                                </button>
+                                <button class="btn-acao" onclick="copiarTexto('${imagem.src.large}')" title="Copiar URL">
+                                    <span class="material-icons-round">content_copy</span>
+                                </button>
+                                <button class="btn-acao" onclick="abrirImagemNovaJanela('${imagem.src.large}')" title="Abrir em nova janela">
+                                    <span class="material-icons-round">open_in_new</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="imagem-info">
+                            <span class="imagem-fotografo">📷 ${imagem.photographer}</span>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+        
+        // Atualizar botão
+        if (btn) {
+            btn.innerHTML = '<span class="material-icons-round">add_circle</span> Mostrar mais 10';
+            btn.disabled = false;
+        }
+        
+    } catch (erro) {
+        console.error('[IMAGENS] Erro ao carregar mais imagens:', erro);
+        if (btn) {
+            btn.innerHTML = '<span class="material-icons-round">error</span> Erro ao carregar';
+            btn.disabled = false;
+        }
+    }
+}
+
+function abrirImagemNovaJanela(url) {
+    window.open(url, '_blank');
+}
+
+function toggleModoImagem() {
+    modoImagemAtivo = !modoImagemAtivo;
+    
+    const btn = document.querySelector('[onclick="toggleModoImagem()"]');
+    const input = document.getElementById('input-mensagem');
+    
+    if (modoImagemAtivo) {
+        // Ativar modo imagem
+        if (btn) {
+            btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            btn.style.color = 'white';
+            btn.innerHTML = '<span class="material-icons-round">image</span> Imagens ON';
+        }
+        if (input) {
+            input.placeholder = '📸 Descreva as imagens que quer buscar...';
+        }
+        console.log('[IMAGENS] Modo imagem ATIVADO');
+    } else {
+        // Desativar modo imagem
+        if (btn) {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.innerHTML = '<span class="material-icons-round">image</span> Imagens';
+        }
+        if (input) {
+            input.placeholder = 'Converse com a Lhama AI...';
+        }
+        console.log('[IMAGENS] Modo imagem DESATIVADO');
+    }
+}
+
 // ===== FUNÇÕES DE UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
 
 function enviarMensagem() {
@@ -207,32 +549,61 @@ function enviarMensagem() {
     // Adicionar mensagem do usuário ao chat
     adicionarMensagem(mensagem, 'usuario');
 
-    // Gerar resposta da IA
-    gerarResposta(mensagem, historicoConversa).then(resposta => {
-        // Adicionar resposta da IA ao chat
-        adicionarMensagem(resposta, 'bot');
-        
-        // Reabilitar botão
-        if (btnEnviar) {
-            btnEnviar.disabled = false;
-            btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-        }
-        
-        // Scroll para baixo
-        const container = document.getElementById('chat-box-container');
-        if (container) {
-            container.scrollTop = container.scrollHeight;
-        }
-    }).catch(erro => {
-        console.error('[ERRO] Falha ao gerar resposta:', erro);
-        adicionarMensagem('Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.', 'bot');
-        
-        // Reabilitar botão
-        if (btnEnviar) {
-            btnEnviar.disabled = false;
-            btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-        }
-    });
+    // Verificar se está em modo imagem
+    if (modoImagemAtivo) {
+        // Buscar imagens e mostrar na resposta
+        buscarEMostrarImagens(mensagem).then(respostaImagens => {
+            adicionarMensagem(respostaImagens, 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+            
+            // Scroll para baixo
+            const container = document.getElementById('chat-box-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }).catch(erro => {
+            console.error('[ERRO] Falha ao buscar imagens:', erro);
+            adicionarMensagem('Desculpe, não consegui buscar as imagens. Tente novamente.', 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+        });
+    } else {
+        // Gerar resposta normal da IA
+        gerarResposta(mensagem, historicoConversa).then(resposta => {
+            // Adicionar resposta da IA ao chat
+            adicionarMensagem(resposta, 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+            
+            // Scroll para baixo
+            const container = document.getElementById('chat-box-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }).catch(erro => {
+            console.error('[ERRO] Falha ao gerar resposta:', erro);
+            adicionarMensagem('Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.', 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+        });
+    }
 }
 
 function adicionarMensagem(texto, tipo, imagemNome = null) {
@@ -1021,3 +1392,8 @@ gerarResposta = function(mensagemUsuario, historicoConversa = []) {
 // Exportar funções de personalidade
 window.togglePersonalidadeMenu = togglePersonalidadeMenu;
 window.selecionarPersonalidade = selecionarPersonalidade;
+
+// Exportar funções de imagem
+window.toggleModoImagem = toggleModoImagem;
+window.mostrarMaisImagens = mostrarMaisImagens;
+window.abrirImagemNovaJanela = abrirImagemNovaJanela;
