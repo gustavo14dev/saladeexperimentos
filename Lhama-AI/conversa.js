@@ -666,6 +666,12 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
     console.log('[DEBUG] Forçando chamada direta à API Groq...');
     
     try {
+        // Adicionar prompt de personalidade ao system message
+        const promptPersonalidade = configuracoesPersonalidade[personalidadeAtual]?.prompt || '';
+        const systemMessage = promptPersonalidade ? 
+            `${promptPersonalidade}\n\nVocê é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.` :
+            `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`;
+
         const response = await fetch('/api/lhama-groq-api-proxy', {
             method: 'POST',
             headers: {
@@ -676,7 +682,7 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
                 messages: [
                     {
                         role: 'system',
-                        content: `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`
+                        content: systemMessage
                     },
                     ...historicoConversa.map(msg => ({
                         role: msg.tipo === 'usuario' ? 'user' : 'assistant',
