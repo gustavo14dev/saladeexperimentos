@@ -155,15 +155,21 @@ export class Agent {
     }
 
     async callMistralAPI(model, messages) {
-        // Usa proxy server-side /api/mistral-proxy
+        // Usa unified-proxy server-side /api/unified-proxy
         this.abortController = new AbortController();
         try {
-            const response = await fetch('/api/mistral-proxy', {
+            const response = await fetch('/api/unified-proxy', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 2048 }),
+                body: JSON.stringify({
+                    service: 'mistral',
+                    model: model,
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 2048
+                }),
                 signal: this.abortController.signal
             });
 
