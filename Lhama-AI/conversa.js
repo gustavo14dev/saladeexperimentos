@@ -1201,6 +1201,126 @@ function lerTextoEmVoz(txt) {
     return u;
 }
 
+// ===== FUNÇÃO PRINCIPAL DE ENVIO DE MENSAGEM =====
+function enviarMensagem() {
+    const input = document.getElementById('input-mensagem');
+    const btnEnviar = document.getElementById('btn-send');
+    const inputAreaContainer = document.querySelector('.input-area-container');
+
+    let mensagem = input.value.trim();
+
+    if (!mensagem) return;
+
+    // Inicia animação de onda colorida
+    if (inputAreaContainer) {
+        inputAreaContainer.classList.add('wave-animation');
+        setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
+    }
+
+    // Limpar input
+    input.value = '';
+    input.style.height = '';
+
+    // Adicionar mensagem do usuário ao chat
+    adicionarMensagem(mensagem, 'usuario');
+
+    // Verificar se está em modo imagem
+    if (modoImagemAtivo) {
+        // Buscar imagens e mostrar na resposta
+        buscarEMostrarImagens(mensagem).then(respostaImagens => {
+            adicionarMensagem(respostaImagens, 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+            
+            // Scroll para baixo
+            const container = document.getElementById('chat-box-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }).catch(erro => {
+            console.error('[ERRO] Falha ao buscar imagens:', erro);
+            adicionarMensagem('Desculpe, não consegui buscar as imagens. Tente novamente.', 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+        });
+    } else if (modoBuscaWebAtivo) {
+        // Buscar na web e depois gerar resposta com base nos resultados
+        buscarNaWeb(mensagem).then(resultadosBusca => {
+            // Gerar resposta da IA usando os resultados da busca
+            const promptComBusca = `Com base nos seguintes resultados de busca na web sobre "${mensagem}":\n\n${resultadosBusca}\n\nPor favor, analise essas informações e gere uma resposta completa, detalhada e útil em português brasileiro. Use formatação markdown com negrito, listas e estrutura clara.`;
+            
+            gerarResposta(promptComBusca, historicoConversa).then(resposta => {
+                adicionarMensagem(resposta, 'bot');
+                
+                // Reabilitar botão
+                if (btnEnviar) {
+                    btnEnviar.disabled = false;
+                    btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+                }
+                
+                // Scroll para baixo
+                const container = document.getElementById('chat-box-container');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }).catch(erro => {
+                console.error('[ERRO] Falha ao gerar resposta com busca:', erro);
+                adicionarMensagem('Desculpe, não consegui processar os resultados da busca. Tente novamente.', 'bot');
+                
+                // Reabilitar botão
+                if (btnEnviar) {
+                    btnEnviar.disabled = false;
+                    btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+                }
+            });
+        }).catch(erro => {
+            console.error('[ERRO] Falha ao buscar na web:', erro);
+            adicionarMensagem('Desculpe, não consegui buscar na web. Tente novamente.', 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+        });
+    } else {
+        // Gerar resposta normal da IA
+        gerarResposta(mensagem, historicoConversa).then(resposta => {
+            // Adicionar resposta da IA ao chat
+            adicionarMensagem(resposta, 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+            
+            // Scroll para baixo
+            const container = document.getElementById('chat-box-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }).catch(erro => {
+            console.error('[ERRO] Falha ao gerar resposta:', erro);
+            adicionarMensagem('Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.', 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+        });
+    }
+}
+
 // ===== INICIALIZAÇÃO E RESETS =====
 
 function iniciarNovaConversa() {
