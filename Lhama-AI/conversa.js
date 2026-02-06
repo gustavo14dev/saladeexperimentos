@@ -564,12 +564,13 @@ async function buscarNaWeb(query) {
     console.log('[BUSCA WEB] Buscando na web:', query);
     
     try {
-        const response = await fetch('/api/tavily-search', {
+        const response = await fetch('/api/lhama-groq-api-proxy', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+                mode: 'tavily_search',
                 query: query,
                 search_depth: 'basic',
                 include_answer: true,
@@ -593,7 +594,7 @@ async function buscarNaWeb(query) {
             } else {
                 // Normalmente vem HTML tipo "The page cannot be found".
                 if (raw && raw.toLowerCase().includes('not found')) {
-                    message = 'Endpoint /api/tavily-search não encontrado (404). Verifique o deploy/configuração na Vercel.';
+                    message = 'Endpoint /api/lhama-groq-api-proxy não encontrado (404). Verifique o deploy/configuração na Vercel.';
                 }
             }
 
