@@ -1802,3 +1802,6 @@ window.abrirImagemNovaJanela = abrirImagemNovaJanela;
 window.toggleModoBuscaWeb = toggleModoBuscaWeb;
 window.buscarNaWeb = buscarNaWeb;
 window.buscarImagensPexels = buscarImagensPexels;
+
+// Exportar função principal de envio de mensagem
+window.enviarMensagem = enviarMensagem;
