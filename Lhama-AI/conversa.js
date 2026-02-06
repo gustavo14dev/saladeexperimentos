@@ -579,10 +579,33 @@ async function buscarNaWeb(query) {
         });
         
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Erro na API Tavily');
+            const contentType = response.headers.get('content-type') || '';
+            const raw = await response.text();
+            let message = `Erro na busca web (HTTP ${response.status})`;
+
+            if (contentType.includes('application/json')) {
+                try {
+                    const errorData = JSON.parse(raw);
+                    message = errorData.error || message;
+                } catch (e) {
+                    message = raw || message;
+                }
+            } else {
+                // Normalmente vem HTML tipo "The page cannot be found".
+                if (raw && raw.toLowerCase().includes('not found')) {
+                    message = 'Endpoint /api/tavily-search não encontrado (404). Verifique o deploy/configuração na Vercel.';
+                }
+            }
+
+            throw new Error(message);
         }
         
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            const raw = await response.text();
+            throw new Error('Resposta inválida do servidor (não-JSON). ' + (raw ? raw.slice(0, 120) : ''));
+        }
+
         const data = await response.json();
         console.log('[BUSCA WEB] Resultados:', data);
         
