@@ -1095,6 +1095,35 @@ Buscando imagens...
 
 <script src="conversa.js"></script>
 <script>
+// ===== GARANTIR FUNÇÕES GLOBAIS =====
+setTimeout(() => {
+    console.log('[DEBUG] Verificando funções disponíveis após 1 segundo:', {
+        toggleModoImagem: typeof window.toggleModoImagem,
+        toggleModoBuscaWeb: typeof window.toggleModoBuscaWeb,
+        enviarMensagem: typeof window.enviarMensagem
+    });
+
+    // Forçar exportação se necessário
+    if (typeof window.toggleModoImagem === 'undefined') {
+        console.error('[ERRO] toggleModoImagem não encontrada - definindo função fallback');
+        window.toggleModoImagem = function() {
+            console.log('[FALLBACK] toggleModoImagem chamado');
+        };
+    }
+    if (typeof window.toggleModoBuscaWeb === 'undefined') {
+        console.error('[ERRO] toggleModoBuscaWeb não encontrada - definindo função fallback');
+        window.toggleModoBuscaWeb = function() {
+            console.log('[FALLBACK] toggleModoBuscaWeb chamado');
+        };
+    }
+    if (typeof window.enviarMensagem === 'undefined') {
+        console.error('[ERRO] enviarMensagem não encontrada - definindo função fallback');
+        window.enviarMensagem = function() {
+            console.log('[FALLBACK] enviarMensagem chamado');
+        };
+    }
+}, 1000);
+
 // ===== FUNÇÕES DE PERSONALIDADE (GARANTIR CARREGAMENTO) =====
 function togglePersonalidadeMenu() {
     const dropdown = document.getElementById('personalidade-dropdown');
