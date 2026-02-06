@@ -547,94 +547,17 @@ function toggleModoBuscaWeb() {
         }
         if (input) {
             input.placeholder = 'Converse com a Lhama AI...';
-        
-        try {
-            paginaAtual++;
-            
-            const response = await fetch('/api/unified-proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    service: 'pixels',
-                    query: termoBuscaAtual,
-                    per_page: 10,
-                    page: paginaAtual
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Erro na API: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            const novasImagens = data.photos || [];
-            
-            if (novasImagens.length === 0) {
-                if (btn) {
-                    btn.innerHTML = '<span class="material-icons-round">check_circle</span> Fim dos resultados';
-                    btn.disabled = true;
-                }
-                return;
-            }
-            
-            // Adicionar novas imagens ao array
-            imagensAtuais.push(...novasImagens);
-            
-            // Adicionar novas imagens ao grid
-            const grid = document.getElementById('imagens-grid');
-            if (grid) {
-                novasImagens.forEach((imagem, index) => {
-                    const globalIndex = imagensAtuais.length - novasImagens.length + index;
-                    const cardHTML = `
-                        <div class="imagem-card" data-index="${globalIndex}">
-                            <img src="${imagem.src.large}" alt="${imagem.alt}" loading="lazy" 
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkltYWdlbSBubyBkaXNwb25pdmVsPC90ZXh0Pjwvc3ZnPg=='" />
-                            <div class="imagem-overlay">
-                                <div class="imagem-acoes">
-                                    <button class="btn-acao" onclick="baixarImagem('${imagem.src.large}')" title="Baixar">
-                                        <span class="material-icons-round">download</span>
-                                    </button>
-                                    <button class="btn-acao" onclick="copiarTexto('${imagem.src.large}')" title="Copiar URL">
-                                        <span class="material-icons-round">content_copy</span>
-                                    </button>
-                                    <button class="btn-acao" onclick="abrirImagemNovaJanela('${imagem.src.large}')" title="Abrir em nova janela">
-                                        <span class="material-icons-round">open_in_new</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="imagem-info">
-                                <span class="imagem-fotografo">📷 ${imagem.photographer}</span>
-                            </div>
-                        </div>
-                    `;
-                    grid.insertAdjacentHTML('beforeend', cardHTML);
-                });
-            }
-            
-            // Atualizar botão
-            if (btn) {
-                btn.innerHTML = '<span class="material-icons-round">add_circle</span> Mostrar mais 10';
-                btn.disabled = false;
-            }
-            
-        } catch (erro) {
-            console.error('[IMAGENS] Erro ao carregar mais imagens:', erro);
-            if (btn) {
-                btn.innerHTML = '<span class="material-icons-round">error</span> Erro ao carregar';
-                btn.disabled = false;
-            }
         }
+        console.log('[BUSCA WEB] Modo busca web DESATIVADO');
     }
+}
 
-    function abrirImagemNovaJanela(url) {
-        window.open(url, '_blank');
-    }
-
-    function toggleModoImagem() {
-        modoImagemAtivo = !modoImagemAtivo;
-                'Content-Type': 'application/json',
+async function buscarNaWeb(query) {
+    try {
+        const response = await fetch('/api/lhama-groq-api-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 mode: 'tavily_search',
@@ -645,7 +568,7 @@ function toggleModoBuscaWeb() {
                 max_results: 5
             })
         });
-        
+
         if (!response.ok) {
             const contentType = response.headers.get('content-type') || '';
             const raw = await response.text();
@@ -658,15 +581,13 @@ function toggleModoBuscaWeb() {
                 } catch (e) {
                     message = raw || message;
                 }
-            } else {
-                if (raw && raw.toLowerCase().includes('not found')) {
-                    message = 'Endpoint /api/lhama-groq-api-proxy não encontrado (404). Verifique o deploy/configuração na Vercel.';
-                }
+            } else if (raw && raw.toLowerCase().includes('not found')) {
+                message = 'Endpoint /api/lhama-groq-api-proxy não encontrado (404). Verifique o deploy/configuração na Vercel.';
             }
 
             throw new Error(message);
         }
-        
+
         const contentType = response.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
             const raw = await response.text();
@@ -675,45 +596,48 @@ function toggleModoBuscaWeb() {
 
         const data = await response.json();
         console.log('[BUSCA WEB] Resultados:', data);
-        
-        // Buscar imagens relacionadas do Pexels
-        const imagens = await buscarImagensPexels(query, 3);
-        
+
+        // Buscar imagens relacionadas do Pexels (se disponível)
+        let imagens = [];
+        try {
+            if (typeof buscarImagensPexels === 'function') {
+                imagens = await buscarImagensPexels(query, 3);
+            }
+        } catch (e) {
+            imagens = [];
+        }
+
         if (data.answer) {
             let resultado = data.answer;
-            
-            // Adicionar imagens no meio do texto se encontrou
+
             if (imagens.length > 0) {
-                const paragrafos = resultado.split('\n\n');
+                const paragrafos = String(resultado).split('\n\n');
                 let resultadoComImagens = '';
-                
+
                 paragrafos.forEach((paragrafo, index) => {
                     resultadoComImagens += paragrafo;
-                    
-                    // Adicionar imagem após alguns parágrafos
                     if (index === 0 && imagens[0]) {
                         resultadoComImagens += '\n\n' + criarImagemHTML(imagens[0]) + '\n\n';
                     } else if (index === Math.floor(paragrafos.length / 2) && imagens[1]) {
                         resultadoComImagens += '\n\n' + criarImagemHTML(imagens[1]) + '\n\n';
                     }
                 });
-                
-                // Adicionar última imagem se existir
+
                 if (imagens[2]) {
                     resultadoComImagens += '\n\n' + criarImagemHTML(imagens[2]);
                 }
-                
+
                 resultado = resultadoComImagens;
             }
-            
-            // Adicionar fontes no final
-            resultado += `\n\n---\n\n**📚 Fontes utilizadas:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
-            
+
+            if (Array.isArray(data.results) && data.results.length > 0) {
+                resultado += `\n\n---\n\n**📚 Fontes utilizadas:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
+            }
+
             return resultado;
-        } else {
-            return `🔍 Não encontrei resultados específicos para "${query}". Tente com outros termos.`;
         }
-        
+
+        return `🔍 Não encontrei resultados específicos para "${query}". Tente com outros termos.`;
     } catch (error) {
         console.error('[BUSCA WEB] Erro:', error);
         return `❌ Erro ao buscar na web: ${error.message}`;
@@ -721,9 +645,10 @@ function toggleModoBuscaWeb() {
 }
 
 function criarImagemHTML(imagem) {
+    if (!imagem || !imagem.src) return '';
     return `
 <div class="imagem-busca-web" style="margin: 15px 0; text-align: center;">
-    <img src="${imagem.src.medium}" alt="${imagem.alt}" style="
+    <img src="${imagem.src.medium || imagem.src.small || imagem.src.large}" alt="${imagem.alt || ''}" style="
         width: 160px;
         height: 110px;
         object-fit: cover;
@@ -732,128 +657,12 @@ function criarImagemHTML(imagem) {
         cursor: pointer;
         transition: all 0.3s ease;
         border: 2px solid #e5e7eb;
-    " onclick="window.open('${imagem.src.large}', '_blank')"
+    " onclick="window.open('${imagem.src.large || imagem.src.original || imagem.src.medium}', '_blank')"
     onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.25)'"
     onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.15)'"
     />
-    <div style="font-size: 10px; color: #6b7280; margin-top: 6px; font-style: italic;">📷 ${imagem.photographer}</div>
+    <div style="font-size: 10px; color: #6b7280; margin-top: 6px; font-style: italic;">📷 ${(imagem.photographer || '').toString()}</div>
 </div>`;
-    const input = document.getElementById('input-mensagem');
-    const btnEnviar = document.getElementById('btn-send');
-    const inputAreaContainer = document.querySelector('.input-area-container');
-
-    let mensagem = input.value.trim();
-
-    if (!mensagem) return;
-
-    // Inicia animação de onda colorida
-    if (inputAreaContainer) {
-        inputAreaContainer.classList.add('wave-animation');
-        setTimeout(() => { inputAreaContainer.classList.remove('wave-animation'); }, 600);
-    }
-
-    // Limpar input
-    input.value = '';
-    input.style.height = '';
-
-    // Adicionar mensagem do usuário ao chat
-    adicionarMensagem(mensagem, 'usuario');
-
-    // Verificar se está em modo imagem
-    if (modoImagemAtivo) {
-        // Buscar imagens e mostrar na resposta
-        buscarEMostrarImagens(mensagem).then(respostaImagens => {
-            adicionarMensagem(respostaImagens, 'bot');
-            
-            // Reabilitar botão
-            if (btnEnviar) {
-                btnEnviar.disabled = false;
-                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-            }
-            
-            // Scroll para baixo
-            const container = document.getElementById('chat-box-container');
-            if (container) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }).catch(erro => {
-            console.error('[ERRO] Falha ao buscar imagens:', erro);
-            adicionarMensagem('Desculpe, não consegui buscar as imagens. Tente novamente.', 'bot');
-            
-            // Reabilitar botão
-            if (btnEnviar) {
-                btnEnviar.disabled = false;
-                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-            }
-        });
-    } else if (modoBuscaWebAtivo) {
-        // Buscar na web e depois gerar resposta com base nos resultados
-        buscarNaWeb(mensagem).then(resultadosBusca => {
-            // Gerar resposta da IA usando os resultados da busca
-            const promptComBusca = `Com base nos seguintes resultados de busca na web sobre "${mensagem}":\n\n${resultadosBusca}\n\nPor favor, analise essas informações e gere uma resposta completa, detalhada e útil em português brasileiro. Use formatação markdown com negrito, listas e estrutura clara.`;
-            
-            gerarResposta(promptComBusca, historicoConversa).then(resposta => {
-                adicionarMensagem(resposta, 'bot');
-                
-                // Reabilitar botão
-                if (btnEnviar) {
-                    btnEnviar.disabled = false;
-                    btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-                }
-                
-                // Scroll para baixo
-                const container = document.getElementById('chat-box-container');
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
-                }
-            }).catch(erro => {
-                console.error('[ERRO] Falha ao gerar resposta com busca:', erro);
-                adicionarMensagem('Desculpe, não consegui processar os resultados da busca. Tente novamente.', 'bot');
-                
-                // Reabilitar botão
-                if (btnEnviar) {
-                    btnEnviar.disabled = false;
-                    btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-                }
-            });
-        }).catch(erro => {
-            console.error('[ERRO] Falha ao buscar na web:', erro);
-            adicionarMensagem('Desculpe, não consegui buscar na web. Tente novamente.', 'bot');
-            
-            // Reabilitar botão
-            if (btnEnviar) {
-                btnEnviar.disabled = false;
-                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-            }
-        });
-    } else {
-        // Gerar resposta normal da IA
-        gerarResposta(mensagem, historicoConversa).then(resposta => {
-            // Adicionar resposta da IA ao chat
-            adicionarMensagem(resposta, 'bot');
-            
-            // Reabilitar botão
-            if (btnEnviar) {
-                btnEnviar.disabled = false;
-                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-            }
-            
-            // Scroll para baixo
-            const container = document.getElementById('chat-box-container');
-            if (container) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }).catch(erro => {
-            console.error('[ERRO] Falha ao gerar resposta:', erro);
-            adicionarMensagem('Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.', 'bot');
-            
-            // Reabilitar botão
-            if (btnEnviar) {
-                btnEnviar.disabled = false;
-                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
-            }
-        });
-    }
 }
 
 function adicionarMensagem(texto, tipo, imagemNome = null) {
@@ -867,7 +676,7 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
     divMensagem.className = `mensagem ${tipo}`;
     const divContent = document.createElement('div');
     divContent.className = 'message-content';
-    
+
     if (tipo === 'bot') {
         // Verificar se é uma resposta de imagens (contém o container de imagens)
         if (texto.includes('imagens-resposta-container')) {
