@@ -4,6 +4,17 @@
  */
 
 export default async function handler(req, res) {
+    // Adicionar headers CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
     // Apenas permitir método POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
@@ -35,8 +46,7 @@ export default async function handler(req, res) {
         const tavilyResponse = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${TAVILY_API_KEY}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 api_key: TAVILY_API_KEY,
