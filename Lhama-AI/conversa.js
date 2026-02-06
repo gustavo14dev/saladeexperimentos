@@ -560,6 +560,22 @@ function toggleModoBuscaWeb() {
     }
 }
 
+async function buscarImagensPexels(query, maxResults = 3) {
+    try {
+        const response = await fetch(`/api/pixels-proxy?query=${encodeURIComponent(query)}&per_page=${maxResults}&page=1`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro na API Pexels: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.photos || [];
+    } catch (error) {
+        console.error('[IMAGENS PEXELS] Erro:', error);
+        return [];
+    }
+}
+
 async function buscarNaWeb(query) {
     console.log('[BUSCA WEB] Buscando na web:', query);
     
@@ -610,8 +626,49 @@ async function buscarNaWeb(query) {
         const data = await response.json();
         console.log('[BUSCA WEB] Resultados:', data);
         
+        // Buscar imagens relacionadas do Pexels
+        const imagens = await buscarImagensPexels(query, 3);
+        
         if (data.answer) {
-            return `🔍 **Resultado da busca para "${query}"**\n\n${data.answer}\n\n**Fontes:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
+            let resultado = `🔍 **Resultado da busca para "${query}"**\n\n${data.answer}`;
+            
+            // Adicionar imagens no meio do texto se encontrou
+            if (imagens.length > 0) {
+                resultado += '\n\n';
+                
+                // Adicionar imagens pequenas entre parágrafos
+                imagens.forEach((imagem, index) => {
+                    const imagemHTML = `
+<div class="imagem-busca-web" style="margin: 12px 0; text-align: center;">
+    <img src="${imagem.src.medium}" alt="${imagem.alt}" style="
+        width: 180px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    " onclick="window.open('${imagem.src.large}', '_blank')"
+    onmouseover="this.style.transform='scale(1.05)'"
+    onmouseout="this.style.transform='scale(1)'"
+    />
+    <div style="font-size: 11px; color: #666; margin-top: 4px;">📷 ${imagem.photographer}</div>
+</div>`;
+                    
+                    // Inserir imagem após cada parágrafo principal
+                    if (index === 0) {
+                        resultado += imagemHTML + '\n\n';
+                    } else if (index === 1 && data.answer.length > 300) {
+                        // Inserir segunda imagem no meio do texto se for longo
+                        const meio = Math.floor(data.answer.length / 2);
+                        resultado = resultado.slice(0, meio) + '\n\n' + imagemHTML + '\n\n' + resultado.slice(meio);
+                    }
+                });
+            }
+            
+            resultado += `\n\n**Fontes:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
+            
+            return resultado;
         } else {
             return `🔍 Não encontrei resultados específicos para "${query}". Tente com outros termos.`;
         }
@@ -838,7 +895,7 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
                     divContent.innerHTML = textoProcessado.slice(0, i);
                     scrollParaBaixo();
                     i++;
-                    setTimeout(escreverLetra, 8 + Math.random() * 18);
+                    setTimeout(escreverLetra, 2 + Math.random() * 3);
                 } else {
                     divContent.innerHTML = textoProcessado;
                     // ...ações e imagem...
@@ -1568,3 +1625,4 @@ window.abrirImagemNovaJanela = abrirImagemNovaJanela;
 // Exportar funções de busca web
 window.toggleModoBuscaWeb = toggleModoBuscaWeb;
 window.buscarNaWeb = buscarNaWeb;
+window.buscarImagensPexels = buscarImagensPexels;
