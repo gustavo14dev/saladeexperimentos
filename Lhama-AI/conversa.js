@@ -499,15 +499,13 @@ function abrirImagemNovaJanela(url) {
 function toggleModoImagem() {
     modoImagemAtivo = !modoImagemAtivo;
     
-    const btn = document.querySelector('[onclick="toggleModoImagem()"]');
+    const btn = document.getElementById('btn-modo-imagem');
     const input = document.getElementById('input-mensagem');
     
     if (modoImagemAtivo) {
         // Ativar modo imagem
         if (btn) {
-            btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            btn.style.color = 'white';
-            btn.innerHTML = '<span class="material-icons-round">image</span> Imagens ON';
+            btn.classList.add('ativo');
         }
         if (input) {
             input.placeholder = '📸 Descreva as imagens que quer buscar...';
@@ -516,9 +514,7 @@ function toggleModoImagem() {
     } else {
         // Desativar modo imagem
         if (btn) {
-            btn.style.background = '';
-            btn.style.color = '';
-            btn.innerHTML = '<span class="material-icons-round">image</span> Imagens';
+            btn.classList.remove('ativo');
         }
         if (input) {
             input.placeholder = 'Converse com a Lhama AI...';
@@ -532,15 +528,13 @@ function toggleModoImagem() {
 function toggleModoBuscaWeb() {
     modoBuscaWebAtivo = !modoBuscaWebAtivo;
     
-    const btn = document.querySelector('[onclick="toggleModoBuscaWeb()"]');
+    const btn = document.getElementById('btn-modo-busca-web');
     const input = document.getElementById('input-mensagem');
     
     if (modoBuscaWebAtivo) {
         // Ativar modo busca web
         if (btn) {
-            btn.style.background = 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)';
-            btn.style.color = 'white';
-            btn.innerHTML = '<span class="material-icons-round">search</span> Busca Web ON';
+            btn.classList.add('ativo');
         }
         if (input) {
             input.placeholder = '🔍 O que você quer pesquisar na web?';
@@ -549,9 +543,7 @@ function toggleModoBuscaWeb() {
     } else {
         // Desativar modo busca web
         if (btn) {
-            btn.style.background = '';
-            btn.style.color = '';
-            btn.innerHTML = '<span class="material-icons-round">search</span> Busca Web';
+            btn.classList.remove('ativo');
         }
         if (input) {
             input.placeholder = 'Converse com a Lhama AI...';
@@ -571,10 +563,6 @@ async function buscarImagensPexels(query, maxResults = 3) {
         const data = await response.json();
         return data.photos || [];
     } catch (error) {
-        console.error('[IMAGENS PEXELS] Erro:', error);
-        return [];
-    }
-}
 
 async function buscarNaWeb(query) {
     console.log('[BUSCA WEB] Buscando na web:', query);
@@ -608,7 +596,6 @@ async function buscarNaWeb(query) {
                     message = raw || message;
                 }
             } else {
-                // Normalmente vem HTML tipo "The page cannot be found".
                 if (raw && raw.toLowerCase().includes('not found')) {
                     message = 'Endpoint /api/lhama-groq-api-proxy não encontrado (404). Verifique o deploy/configuração na Vercel.';
                 }
@@ -630,43 +617,34 @@ async function buscarNaWeb(query) {
         const imagens = await buscarImagensPexels(query, 3);
         
         if (data.answer) {
-            let resultado = `🔍 **Resultado da busca para "${query}"**\n\n${data.answer}`;
+            let resultado = data.answer;
             
             // Adicionar imagens no meio do texto se encontrou
             if (imagens.length > 0) {
-                resultado += '\n\n';
+                const paragrafos = resultado.split('\n\n');
+                let resultadoComImagens = '';
                 
-                // Adicionar imagens pequenas entre parágrafos
-                imagens.forEach((imagem, index) => {
-                    const imagemHTML = `
-<div class="imagem-busca-web" style="margin: 12px 0; text-align: center;">
-    <img src="${imagem.src.medium}" alt="${imagem.alt}" style="
-        width: 180px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: transform 0.2s;
-    " onclick="window.open('${imagem.src.large}', '_blank')"
-    onmouseover="this.style.transform='scale(1.05)'"
-    onmouseout="this.style.transform='scale(1)'"
-    />
-    <div style="font-size: 11px; color: #666; margin-top: 4px;">📷 ${imagem.photographer}</div>
-</div>`;
+                paragrafos.forEach((paragrafo, index) => {
+                    resultadoComImagens += paragrafo;
                     
-                    // Inserir imagem após cada parágrafo principal
-                    if (index === 0) {
-                        resultado += imagemHTML + '\n\n';
-                    } else if (index === 1 && data.answer.length > 300) {
-                        // Inserir segunda imagem no meio do texto se for longo
-                        const meio = Math.floor(data.answer.length / 2);
-                        resultado = resultado.slice(0, meio) + '\n\n' + imagemHTML + '\n\n' + resultado.slice(meio);
+                    // Adicionar imagem após alguns parágrafos
+                    if (index === 0 && imagens[0]) {
+                        resultadoComImagens += '\n\n' + criarImagemHTML(imagens[0]) + '\n\n';
+                    } else if (index === Math.floor(paragrafos.length / 2) && imagens[1]) {
+                        resultadoComImagens += '\n\n' + criarImagemHTML(imagens[1]) + '\n\n';
                     }
                 });
+                
+                // Adicionar última imagem se existir
+                if (imagens[2]) {
+                    resultadoComImagens += '\n\n' + criarImagemHTML(imagens[2]);
+                }
+                
+                resultado = resultadoComImagens;
             }
             
-            resultado += `\n\n**Fontes:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
+            // Adicionar fontes no final
+            resultado += `\n\n---\n\n**📚 Fontes utilizadas:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
             
             return resultado;
         } else {
@@ -679,9 +657,24 @@ async function buscarNaWeb(query) {
     }
 }
 
-// ===== FUNÇÕES DE UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
-
-function enviarMensagem() {
+function criarImagemHTML(imagem) {
+    return `
+<div class="imagem-busca-web" style="margin: 15px 0; text-align: center;">
+    <img src="${imagem.src.medium}" alt="${imagem.alt}" style="
+        width: 160px;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #e5e7eb;
+    " onclick="window.open('${imagem.src.large}', '_blank')"
+    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.25)'"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.15)'"
+    />
+    <div style="font-size: 10px; color: #6b7280; margin-top: 6px; font-style: italic;">📷 ${imagem.photographer}</div>
+</div>`;
     const input = document.getElementById('input-mensagem');
     const btnEnviar = document.getElementById('btn-send');
     const inputAreaContainer = document.querySelector('.input-area-container');
@@ -895,7 +888,7 @@ function adicionarMensagem(texto, tipo, imagemNome = null) {
                     divContent.innerHTML = textoProcessado.slice(0, i);
                     scrollParaBaixo();
                     i++;
-                    setTimeout(escreverLetra, 2 + Math.random() * 3);
+                    setTimeout(escreverLetra, 0 + Math.random() * 1); // Ultra rápido: 0-1ms
                 } else {
                     divContent.innerHTML = textoProcessado;
                     // ...ações e imagem...

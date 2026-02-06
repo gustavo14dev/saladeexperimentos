@@ -832,17 +832,15 @@
 <span class="material-icons-round">code</span>
 Código
 </button>
-<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="togglePersonalidadeMenu()" title="Escolher Personalidade">
-<span class="material-icons-round">psychology</span>
-Personalidade
+<button class="funcao-btn" onclick="toggleModoImagem()" title="Ativar/Desativar modo imagem" id="btn-modo-imagem">
+    <span class="material-icons-round">image</span>
+    <span>Imagens</span>
+    <span class="close-btn" onclick="event.stopPropagation(); toggleModoImagem()">×</span>
 </button>
-<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="toggleModoImagem()" title="Ativar/Desativar modo imagem">
-<span class="material-icons-round">image</span>
-Imagens
-</button>
-<button class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="toggleModoBuscaWeb()" title="Ativar/Desativar busca na web">
-<span class="material-icons-round">search</span>
-Busca Web
+<button class="funcao-btn" onclick="toggleModoBuscaWeb()" title="Ativar/Desativar busca na web" id="btn-modo-busca-web">
+    <span class="material-icons-round">search</span>
+    <span>Busca Web</span>
+    <span class="close-btn" onclick="event.stopPropagation(); toggleModoBuscaWeb()">×</span>
 </button>
 </div>
 
