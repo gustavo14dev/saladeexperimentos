@@ -7,6 +7,8 @@ let modoImagemAtivo = false;
 let imagensAtuais = [];
 let paginaAtual = 1;
 let termoBuscaAtual = '';
+// ===== SISTEMA DE BUSCA WEB =====
+let modoBuscaWebAtivo = false;
 
 // ===== SISTEMA DE PERSONALIDADES =====
 let personalidadeAtual = 'Normal';
@@ -525,6 +527,77 @@ function toggleModoImagem() {
     }
 }
 
+// ===== FUNÇÕES DE BUSCA WEB =====
+
+function toggleModoBuscaWeb() {
+    modoBuscaWebAtivo = !modoBuscaWebAtivo;
+    
+    const btn = document.querySelector('[onclick="toggleModoBuscaWeb()"]');
+    const input = document.getElementById('input-mensagem');
+    
+    if (modoBuscaWebAtivo) {
+        // Ativar modo busca web
+        if (btn) {
+            btn.style.background = 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)';
+            btn.style.color = 'white';
+            btn.innerHTML = '<span class="material-icons-round">search</span> Busca Web ON';
+        }
+        if (input) {
+            input.placeholder = '🔍 O que você quer pesquisar na web?';
+        }
+        console.log('[BUSCA WEB] Modo busca web ATIVADO');
+    } else {
+        // Desativar modo busca web
+        if (btn) {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.innerHTML = '<span class="material-icons-round">search</span> Busca Web';
+        }
+        if (input) {
+            input.placeholder = 'Converse com a Lhama AI...';
+        }
+        console.log('[BUSCA WEB] Modo busca web DESATIVADO');
+    }
+}
+
+async function buscarNaWeb(query) {
+    console.log('[BUSCA WEB] Buscando na web:', query);
+    
+    try {
+        const response = await fetch('/api/tavily-search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                search_depth: 'basic',
+                include_answer: true,
+                include_raw_content: false,
+                max_results: 5
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro na API Tavily');
+        }
+        
+        const data = await response.json();
+        console.log('[BUSCA WEB] Resultados:', data);
+        
+        if (data.answer) {
+            return `🔍 **Resultado da busca para "${query}"**\n\n${data.answer}\n\n**Fontes:**\n${data.results.map((result, index) => `${index + 1}. [${result.title}](${result.url})`).join('\n')}`;
+        } else {
+            return `🔍 Não encontrei resultados específicos para "${query}". Tente com outros termos.`;
+        }
+        
+    } catch (error) {
+        console.error('[BUSCA WEB] Erro:', error);
+        return `❌ Erro ao buscar na web: ${error.message}`;
+    }
+}
+
 // ===== FUNÇÕES DE UTILITÁRIOS (SENTIMENTO, TEXTO, MARCA D'ÁGUA) =====
 
 function enviarMensagem() {
@@ -569,6 +642,46 @@ function enviarMensagem() {
         }).catch(erro => {
             console.error('[ERRO] Falha ao buscar imagens:', erro);
             adicionarMensagem('Desculpe, não consegui buscar as imagens. Tente novamente.', 'bot');
+            
+            // Reabilitar botão
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+            }
+        });
+    } else if (modoBuscaWebAtivo) {
+        // Buscar na web e depois gerar resposta com base nos resultados
+        buscarNaWeb(mensagem).then(resultadosBusca => {
+            // Gerar resposta da IA usando os resultados da busca
+            const promptComBusca = `Com base nos seguintes resultados de busca na web sobre "${mensagem}":\n\n${resultadosBusca}\n\nPor favor, analise essas informações e gere uma resposta completa, detalhada e útil em português brasileiro. Use formatação markdown com negrito, listas e estrutura clara.`;
+            
+            gerarResposta(promptComBusca, historicoConversa).then(resposta => {
+                adicionarMensagem(resposta, 'bot');
+                
+                // Reabilitar botão
+                if (btnEnviar) {
+                    btnEnviar.disabled = false;
+                    btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+                }
+                
+                // Scroll para baixo
+                const container = document.getElementById('chat-box-container');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }).catch(erro => {
+                console.error('[ERRO] Falha ao gerar resposta com busca:', erro);
+                adicionarMensagem('Desculpe, não consegui processar os resultados da busca. Tente novamente.', 'bot');
+                
+                // Reabilitar botão
+                if (btnEnviar) {
+                    btnEnviar.disabled = false;
+                    btnEnviar.innerHTML = '<span class="material-icons-round text-base">arrow_upward</span>';
+                }
+            });
+        }).catch(erro => {
+            console.error('[ERRO] Falha ao buscar na web:', erro);
+            adicionarMensagem('Desculpe, não consegui buscar na web. Tente novamente.', 'bot');
             
             // Reabilitar botão
             if (btnEnviar) {
@@ -1427,3 +1540,7 @@ window.selecionarPersonalidade = selecionarPersonalidade;
 window.toggleModoImagem = toggleModoImagem;
 window.mostrarMaisImagens = mostrarMaisImagens;
 window.abrirImagemNovaJanela = abrirImagemNovaJanela;
+
+// Exportar funções de busca web
+window.toggleModoBuscaWeb = toggleModoBuscaWeb;
+window.buscarNaWeb = buscarNaWeb;
