@@ -1,0 +1,25 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/tavily-search",
+      "destination": "/api/tavily-search.js"
+    },
+    {
+      "source": "/api/test",
+      "destination": "/api/test.js"
+    },
+    {
+      "source": "/api/lhama-groq-api-proxy",
+      "destination": "/api/lhama-groq-api-proxy.js"
+    },
+    {
+      "source": "/api/pixels-proxy",
+      "destination": "/api/pixels-proxy.js"
+    }
+  ],
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
