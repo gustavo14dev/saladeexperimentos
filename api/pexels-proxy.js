@@ -31,34 +31,82 @@ export default async function handler(req, res) {
 
         console.log('[PEXELS-PROXY] Buscando:', query, `per_page:${per_page} page:${page}`);
 
-        // Chave da API (somente via variável de ambiente)
         const apiKey = process.env.PEXELS_API_KEY;
-        if (!apiKey) {
-            return res.status(500).json({
-                error: 'PEXELS_API_KEY não configurada'
-            });
-        }
+        if (apiKey) {
+            const pexelsResponse = await fetch(
+                `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${per_page}&page=${page}`,
+                {
+                    method: 'GET',
+                    headers: { 'Authorization': apiKey }
+                }
+            );
 
-        const pexelsResponse = await fetch(
-            `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${per_page}&page=${page}`,
-            {
-                method: 'GET',
-                headers: { 'Authorization': apiKey }
+            const text = await pexelsResponse.text();
+
+            if (!pexelsResponse.ok) {
+                console.error('[PEXELS-PROXY] Erro API:', pexelsResponse.status, text);
+                return res.status(pexelsResponse.status).json({
+                    error: `Pexels API error: ${pexelsResponse.statusText}`,
+                    details: text
+                });
             }
-        );
 
-        const text = await pexelsResponse.text();
+            res.setHeader('Content-Type', 'application/json');
+            return res.status(200).send(text);
+        }
 
-        if (!pexelsResponse.ok) {
-            console.error('[PEXELS-PROXY] Erro API:', pexelsResponse.status, text);
-            return res.status(pexelsResponse.status).json({
-                error: `Pexels API error: ${pexelsResponse.statusText}`,
-                details: text
+        const limit = Math.min(Number(per_page) || 20, 50);
+        const offset = (Math.max(Number(page) || 1, 1) - 1) * limit;
+
+        const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&gsrnamespace=6&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1200`;
+        const commonsResponse = await fetch(commonsUrl);
+
+        if (!commonsResponse.ok) {
+            const raw = await commonsResponse.text();
+            return res.status(commonsResponse.status).json({
+                error: `Wikimedia API error: ${commonsResponse.statusText}`,
+                details: raw
             });
         }
 
-        res.setHeader('Content-Type', 'application/json');
-        return res.status(200).send(text);
+        const commonsData = await commonsResponse.json();
+        const pages = commonsData?.query?.pages ? Object.values(commonsData.query.pages) : [];
+
+        const photos = pages
+            .map((p) => {
+                const info = Array.isArray(p?.imageinfo) ? p.imageinfo[0] : null;
+                if (!info) return null;
+
+                const src = {
+                    large: info.thumburl || info.url,
+                    original: info.url
+                };
+
+                const alt = (p?.title || '').replace(/^File:/, '');
+
+                let photographer = 'Wikimedia Commons';
+                const artist = info?.extmetadata?.Artist?.value;
+                if (artist) {
+                    photographer = String(artist).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || photographer;
+                }
+
+                return {
+                    id: p?.pageid,
+                    width: info?.width,
+                    height: info?.height,
+                    url: info?.descriptionurl || info?.url,
+                    photographer,
+                    alt,
+                    src
+                };
+            })
+            .filter(Boolean);
+
+        return res.status(200).json({
+            page: Number(page) || 1,
+            per_page: limit,
+            photos
+        });
 
     } catch (error) {
         console.error('[PEXELS-PROXY] Erro interno:', error);
