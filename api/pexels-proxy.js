@@ -31,13 +31,11 @@ export default async function handler(req, res) {
 
         console.log('[PEXELS-PROXY] Buscando:', query, `per_page:${per_page} page:${page}`);
 
-        // Chave da API (em produção, use variável de ambiente)
-        const apiKey = process.env.PEXELS_API_KEY || 'sua_chave_aqui';
-        
-        if (apiKey === 'sua_chave_aqui') {
-            return res.status(500).json({ 
-                error: 'PEXELS_API_KEY não configurada',
-                message: 'Configure a chave da API Pexels no ambiente ou no arquivo .env'
+        // Chave da API (somente via variável de ambiente)
+        const apiKey = process.env.PEXELS_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({
+                error: 'PEXELS_API_KEY não configurada'
             });
         }
 

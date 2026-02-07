@@ -409,12 +409,82 @@ function gerarHTMLImagens() {
             }
         }
         </style>
+    `;
+    
+    return html;
+}
 
 async function mostrarMaisImagens() {
     const btn = document.getElementById('btn-mostrar-mais');
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Carregando...';
+    }
+    
+    try {
+        paginaAtual++;
+        
+        const response = await fetch(`/api/pixels-proxy?query=${encodeURIComponent(termoBuscaAtual)}&per_page=10&page=${paginaAtual}`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const novasImagens = data.photos || [];
+        
+        if (novasImagens.length === 0) {
+            if (btn) {
+                btn.innerHTML = '<span class="material-icons-round">check_circle</span> Fim dos resultados';
+                btn.disabled = true;
+            }
+            return;
+        }
+        
+        imagensAtuais.push(...novasImagens);
+        
+        const grid = document.getElementById('imagens-grid');
+        if (grid) {
+            novasImagens.forEach((imagem, index) => {
+                const globalIndex = imagensAtuais.length - novasImagens.length + index;
+                const cardHTML = `
+                    <div class="imagem-card" data-index="${globalIndex}">
+                        <img src="${imagem.src.large}" alt="${imagem.alt}" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkltYWdlbSBubyBkaXNwb25pdmVsPC90ZXh0Pjwvc3ZnPg=='" />
+                        <div class="imagem-overlay">
+                            <div class="imagem-acoes">
+                                <button class="btn-acao" onclick="baixarImagem('${imagem.src.large}')" title="Baixar">
+                                    <span class="material-icons-round">download</span>
+                                </button>
+                                <button class="btn-acao" onclick="copiarTexto('${imagem.src.large}')" title="Copiar URL">
+                                    <span class="material-icons-round">content_copy</span>
+                                </button>
+                                <button class="btn-acao" onclick="abrirImagemNovaJanela('${imagem.src.large}')" title="Abrir em nova janela">
+                                    <span class="material-icons-round">open_in_new</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="imagem-info">
+                            <span class="imagem-fotografo">📷 ${imagem.photographer}</span>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+        
+        if (btn) {
+            btn.innerHTML = '<span class="material-icons-round">add_circle</span> Mostrar mais 10';
+            btn.disabled = false;
+        }
+    } catch (erro) {
+        console.error('[IMAGENS] Erro ao carregar mais imagens:', erro);
+        if (btn) {
+            btn.innerHTML = '<span class="material-icons-round">error</span> Erro ao carregar';
+            btn.disabled = false;
+        }
+    }
+}
 
 function toggleModoImagem() {
     modoImagemAtivo = !modoImagemAtivo;
