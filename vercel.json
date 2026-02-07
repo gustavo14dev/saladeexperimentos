@@ -16,10 +16,5 @@
       "source": "/api/pixels-proxy",
       "destination": "/api/pixels-proxy.js"
     }
-  ],
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }
