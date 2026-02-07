@@ -68,8 +68,9 @@ app.use('/api/pixels-proxy', (req, res, next) => {
   }
 
   try {
-    // Import dinâmico do unified-proxy
-    const { default: handler } = await import('./api/unified-proxy.js');
+    // Import dinâmico do proxy Pexels
+    const { default: handler } = await import('./api/pexels-proxy.js');
+    // Adaptar request para o formato esperado
     const mockRes = {
       status: (code) => {
         res.status(code);
@@ -83,17 +84,7 @@ app.use('/api/pixels-proxy', (req, res, next) => {
       json: (data) => res.json(data),
       end: () => res.end()
     };
-    // Adaptar request GET para o formato esperado pelo unified-proxy
-    const mockReq = {
-      method: 'POST',
-      body: {
-        service: 'pixels',
-        query: req.query.query,
-        per_page: parseInt(req.query.per_page) || 10,
-        page: parseInt(req.query.page) || 1
-      }
-    };
-    await handler(mockReq, mockRes);
+    await handler(req, mockRes);
   } catch (error) {
     console.error('[PIXELS-PROXY] Erro:', error);
     res.status(500).json({ error: 'Internal server error' });
