@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Plane Adventure - Vivo e Denso</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Arial', sans-serif; user-select: none; }
+        
+        /* UI Original Melhorada */
+        #ui { position: absolute; top: 20px; left: 20px; color: white; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); z-index: 5; background: rgba(0, 0, 0, 0.4); padding: 15px 20px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); pointer-events: none; }
+        .stat { color: #FFD700; }
+        
+        /* Menu de Game Over */
+        #game-over {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); display: none; flex-direction: column;
+            align-items: center; justify-content: center; color: white; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        #game-over h1 { font-size: 60px; margin-bottom: 10px; color: #ff5555; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn-group { display: flex; gap: 20px; margin-top: 20px;}
+        button {
+            padding: 15px 30px; font-size: 18px; cursor: pointer; border: none;
+            border-radius: 8px; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #222;
+            text-transform: uppercase;
+        }
+        .btn-restart { background: #4CAF50; color: white; }
+        .btn-back { background: #555; color: white; }
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 6px #222; }
+        button:active { transform: translateY(2px); box-shadow: 0 0px #222; }
+        
+        /* Efeito visual de dano rápido */
+        #flash { position: absolute; top:0; left:0; width:100%; height:100%; background: red; z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.1s; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="ui">
+        PTS: <span id="score" class="stat">0</span> | 
+        ALT: <span id="alt" class="stat">0</span>m | 
+        VEL: <span id="speed" class="stat">0</span>km/h
+    </div>
+
+    <div id="flash"></div>
+
+    <div id="game-over">
+        <h1>Bateu!</h1>
+        <p id="final-score" style="font-size: 28px; font-weight: bold; color: #FFD700;">Pontuação: 0</p>
+        <div class="btn-group">
+            <button class="btn-restart" onclick="resetGame()">Tentar Novamente</button>
+            <button class="btn-back" onclick="alert('Redirecionar para início')">Sair</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO SCENE ---
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x87CEEB, 150, 900); // Neblina mais suave, combinando com o céu
+        scene.background = new THREE.Color(0x87CEEB);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+        document.body.appendChild(renderer.domElement);
+
+        // --- LUZES ---
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+        scene.add(hemiLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(150, 300, 100);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.top = 300; dirLight.shadow.camera.bottom = -300;
+        dirLight.shadow.camera.left = -300; dirLight.shadow.camera.right = 300;
+        dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        // --- VARIÁVEIS DE ESTADO ---
+        let isDead = false;
+        let score = 0;
+        let speed = 1.5;
+        const WORLD_SIZE = 2000;
+        const HALF_WORLD = WORLD_SIZE / 2;
+        let mouseX = 0, mouseY = 0;
+
+        // --- WORLD WRAP ---
+        function wrapObject(obj) {
+             const dx = airplane.position.x - obj.position.x;
+             const dz = airplane.position.z - obj.position.z;
+             if (dx > HALF_WORLD) obj.position.x += WORLD_SIZE;
+             else if (dx < -HALF_WORLD) obj.position.x -= WORLD_SIZE;
+             if (dz > HALF_WORLD) obj.position.z += WORLD_SIZE;
+             else if (dz < -HALF_WORLD) obj.position.z -= WORLD_SIZE;
+        }
+
+        // --- O AVIÃO ---
+        const planeGeo = new THREE.BufferGeometry();
+        const vertices = new Float32Array([
+            0, 0, -2.5,  -1.5, 0.2, 1.5,   0, -0.5, 1.5,
+            0, 0, -2.5,   0, -0.5, 1.5,    1.5, 0.2, 1.5,
+            0, 0, -1.8,   0, -0.5, 1.5,    0, 0.8, 1.5
+        ]);
+        planeGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+        planeGeo.computeVertexNormals();
+        const airplane = new THREE.Mesh(planeGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, roughness: 0.5 }));
+        airplane.position.set(0, 60, 0);
+        airplane.castShadow = true;
+        scene.add(airplane);
+
+        // --- EXPLOSÃO ---
+        const particles = [];
+        function triggerGameOver() {
+            if (isDead) return;
+            isDead = true; 
+            airplane.visible = false;
+            
+            // Efeito de flash vermelho
+            document.getElementById('flash').style.opacity = '0.5';
+            setTimeout(() => document.getElementById('flash').style.opacity = '0', 100);
+
+            // Partículas
+            for(let i=0; i<25; i++) {
+                const p = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.6), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+                p.position.copy(airplane.position);
+                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*2, Math.random()*1.5, (Math.random()-0.5)*2);
+                p.userData.rot = new THREE.Vector3(Math.random()*0.3, Math.random()*0.3, Math.random()*0.3);
+                scene.add(p); particles.push(p);
+            }
+
+            document.getElementById('game-over').style.display = 'flex';
+            document.getElementById('final-score').innerText = `Pontuação: ${score}`;
+        }
+
+        // --- CENÁRIO ---
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD_SIZE*2, WORLD_SIZE*2), new THREE.MeshStandardMaterial({ color: 0x3a9d3a, roughness: 0.8 }));
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const trees = [], clouds = [], rings = [], birds = [];
+
+        // Geometrias
+        const trunkGeo = new THREE.CylinderGeometry(0.8, 1.2, 4, 6);
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5D4037 });
+        const leavesGeo = new THREE.ConeGeometry(4.5, 12, 6);
+        const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228B22, flatShading: true });
+        const ringGeo = new THREE.TorusGeometry(4.5, 0.6, 8, 16);
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, emissive: 0x665500, flatShading: true });
+        
+        // Passarinho Original (V Simples)
+        const birdGeo = new THREE.BufferGeometry();
+        const birdVerts = new Float32Array([
+            -1,0,0.5,  0,0,-0.2,   0,0,0,
+             1,0,0.5,  0,0,0,      0,0,-0.2
+        ]);
+        birdGeo.setAttribute('position', new THREE.BufferAttribute(birdVerts, 3));
+        birdGeo.computeVertexNormals();
+        const birdMat = new THREE.MeshStandardMaterial({ color: 0x222222, side: THREE.DoubleSide, flatShading: true });
+
+        // Nuvens
+        const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, transparent:true, opacity:0.9 });
+        const cloudSphere = new THREE.SphereGeometry(5, 7, 7);
+        function createCloud() {
+            const group = new THREE.Group();
+            for(let i=0; i<4 + Math.random()*3; i++) {
+                 const p = new THREE.Mesh(cloudSphere, cloudMat);
+                 p.position.set(Math.random()*10-5, Math.random()*4, Math.random()*10-5);
+                 const s = 0.7 + Math.random()*0.8; p.scale.set(s,s*0.8,s);
+                 group.add(p);
+            }
+            return group;
+        }
+
+        // Popular Mundo
+        for(let i=0; i<600; i++) {
+            const tree = new THREE.Group();
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = 6; trunk.position.y = 2;
+            trunk.castShadow = true; leaves.castShadow = true;
+            tree.add(trunk); tree.add(leaves);
+            tree.position.set((Math.random()-0.5)*WORLD_SIZE, 0, (Math.random()-0.5)*WORLD_SIZE);
+            const s = 0.7 + Math.random()*0.6; tree.scale.set(s,s,s);
+            // Hitbox da árvore (raio e altura)
+            tree.userData = { colRadius: 2.5 * s, colHeight: 14 * s };
+            scene.add(tree); trees.push(tree);
+        }
+        for(let i=0; i<100; i++) {
+            const c = createCloud();
+            c.position.set((Math.random()-0.5)*WORLD_SIZE, 70+Math.random()*100, (Math.random()-0.5)*WORLD_SIZE);
+            scene.add(c); clouds.push(c);
+        }
+        for(let i=0; i<100; i++) {
+            const r = new THREE.Mesh(ringGeo, ringMat);
+            r.position.set((Math.random()-0.5)*WORLD_SIZE, 30+Math.random()*80, (Math.random()-0.5)*WORLD_SIZE);
+            r.userData = { active: true, baseH: r.position.y, spinSpeed: Math.random()*0.02+0.01 };
+            scene.add(r); rings.push(r);
+        }
+        for(let i=0; i<80; i++) {
+            const b = new THREE.Mesh(birdGeo, birdMat);
+            b.position.set((Math.random()-0.5)*WORLD_SIZE, 50+Math.random()*120, (Math.random()-0.5)*WORLD_SIZE);
+            b.userData = { vel: new THREE.Vector3((Math.random()-0.5)*0.3, 0, -0.5 - Math.random()*0.5), phase: Math.random()*Math.PI*2 };
+            scene.add(b); birds.push(b);
+        }
+
+        // --- CONTROLES ---
+        document.addEventListener('mousemove', (e) => {
+            if(isDead) return;
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = (e.clientY / window.innerHeight) * 2 - 1; 
+        });
+
+        function resetGame() {
+            isDead = false; score = 0; speed = 1.5;
+            airplane.position.set(0, 60, 0); 
+            airplane.rotation.set(0, 0, 0);
+            airplane.visible = true;
+            document.getElementById('game-over').style.display = 'none';
+            particles.forEach(p => scene.remove(p)); particles.length = 0;
+            rings.forEach(r => { r.visible = true; r.userData.active = true; });
+        }
+
+        // --- LOOP PRINCIPAL ---
+        const clock = new THREE.Clock();
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            
+            if (!isDead) {
+                // SUA FÍSICA ORIGINAL RESTAURADA E SUAVIZADA
+                const targetRoll = mouseX * (Math.PI / 2.2);
+                const targetPitch = -mouseY * (Math.PI / 3.5); 
+
+                // Movimento ágil do avião
+                airplane.rotation.z += (targetRoll - airplane.rotation.z) * 0.08;
+                airplane.rotation.x += (targetPitch - airplane.rotation.x) * 0.08;
+                airplane.rotation.y += airplane.rotation.z * -0.025; // Yaw
+
+                // Aceleração pelo mergulho
+                speed -= Math.sin(airplane.rotation.x) * 0.12;
+                speed += (1.5 - speed) * 0.015; // Retorna à velocidade base
+                speed = THREE.MathUtils.clamp(speed, 0.4, 4.5);
+
+                // Sustentação (Floaty / Arcade)
+                const lift = (speed / 1.5) * 0.045 * Math.max(0.2, Math.cos(airplane.rotation.z));
+                const gravity = 0.05;
+                
+                airplane.translateZ(-speed);
+                airplane.position.y -= (gravity - lift);
+
+                // COLISÃO COM O CHÃO
+                if (airplane.position.y <= 2.0) {
+                    triggerGameOver();
+                }
+
+                // COLISÃO COM ÁRVORES (Otimizado)
+                for (let tree of trees) {
+                    // Checa distância no eixo X e Z
+                    if (Math.abs(airplane.position.x - tree.position.x) < tree.userData.colRadius &&
+                        Math.abs(airplane.position.z - tree.position.z) < tree.userData.colRadius) {
+                        // Checa se está baixo o suficiente para bater
+                        if (airplane.position.y < tree.userData.colHeight) {
+                            triggerGameOver();
+                            break;
+                        }
+                    }
+                }
+
+                // CÂMERA SUAVE
+                const offset = new THREE.Vector3(0, 7, 22).applyQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), airplane.rotation.y)).add(airplane.position);
+                camera.position.lerp(offset, 0.15);
+                camera.lookAt(airplane.position.clone().add(new THREE.Vector3(0, 2, 0)));
+
+                // ATUALIZAÇÃO DO MUNDO
+                ground.position.set(airplane.position.x, 0, airplane.position.z);
+                trees.forEach(wrapObject);
+                clouds.forEach(wrapObject);
+                
+                // ANÉIS
+                rings.forEach(r => {
+                    r.rotation.y += r.userData.spinSpeed;
+                    r.position.y = r.userData.baseH + Math.sin(time * 2 + r.position.x) * 3;
+                    
+                    if(r.userData.active && airplane.position.distanceTo(r.position) < 6.5) {
+                        r.userData.active = false; r.visible = false;
+                        score += 500; speed = 4.5; // Boost
+                    }
+                    wrapObject(r);
+                    if(airplane.position.distanceTo(r.position) > HALF_WORLD * 0.8 && !r.userData.active) {
+                         r.userData.active = true; r.visible = true;
+                         r.position.y = r.userData.baseH = 30 + Math.random()*80;
+                    }
+                });
+
+                // PASSARINHOS
+                birds.forEach(b => {
+                    b.position.add(b.userData.vel);
+                    b.position.y += Math.sin(time * 6 + b.userData.phase) * 0.08;
+                    b.lookAt(b.position.clone().add(b.userData.vel));
+                    wrapObject(b);
+                });
+                
+                // UI
+                document.getElementById('score').innerText = score;
+                document.getElementById('alt').innerText = Math.max(0, Math.floor(airplane.position.y));
+                document.getElementById('speed').innerText = Math.floor(speed * 40);
+
+            } else {
+                // PARTÍCULAS DE EXPLOSÃO
+                particles.forEach(p => {
+                    p.position.add(p.userData.vel);
+                    p.rotation.x += p.userData.rot.x; p.rotation.y += p.userData.rot.y;
+                    p.userData.vel.y -= 0.05; 
+                    if(p.position.y < 0) p.userData.vel.y *= -0.5;
+                });
+            }
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        animate();
+    </script>
+</body>
+</html>
