@@ -1,345 +1,462 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Experimentos - Frases Motivacionais</title>
+    <title>Daily Motivation | Sala de Experimentos</title>
+    
+    <!-- Fontes Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
+        :root {
+            --bg-dark: #050505;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(20, 20, 20, 0.4);
+            --accent-glow: rgba(124, 58, 237, 0.5);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-color: var(--bg-dark);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Evita scroll na animação de fundo */
             color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
         }
 
-        .container {
-            background: rgba(30, 30, 50, 0.8);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 90%;
+        /* Fundo Animado (Aurora Boreal) */
+        .ambient-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+            overflow: hidden;
         }
 
-        h1 {
-            color: #6a5acd;
-            margin-bottom: 30px;
-            font-size: 32px;
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out;
         }
 
-        #frase {
-            font-size: 22px;
-            margin: 30px 0;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1.6;
-            transition: opacity 0.5s ease;
+        .orb-1 {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: #4c1d95; /* Violeta escuro */
+            animation-delay: 0s;
         }
 
-        button {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #6a5acd, #4b0082);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: transform 0.3s, box-shadow 0.3s;
+        .orb-2 {
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: #be185d; /* Rosa escuro */
+            animation-delay: -5s;
         }
 
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(106, 90, 205, 0.4);
+        .orb-3 {
+            top: 40%;
+            left: 40%;
+            width: 30vw;
+            height: 30vw;
+            background: #0f766e; /* Teal escuro */
+            animation-delay: -10s;
+            opacity: 0.4;
         }
 
-        .voltar-btn {
-            margin-top: 30px;
-            background: rgba(100, 100, 150, 0.3);
-            padding: 10px 20px;
-            border-radius: 8px;
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
         }
 
-        .voltar-btn:hover {
-            background: rgba(100, 100, 150, 0.5);
+        /* Efeito de Ruído (Noise Texture) para dar textura profissional */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            pointer-events: none;
         }
 
-        /* Animação de entrada da frase */
-        @keyframes aparecer {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        /* Cartão de Vidro (Glassmorphism) */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .frase-animada {
-            animation: aparecer 0.8s ease-out;
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(124, 58, 237, 0.1);
         }
 
-        /* ---------------------------------------------------- */
-        /* 6. MEDIA QUERIES RESPONSIVAS PARA FRASES */
-        /* ---------------------------------------------------- */
-
-        /* Tablet */
-        @media (max-width: 768px) {
-            .container {
-                padding: 30px;
-                width: 90%;
-            }
-            
-            h1 {
-                font-size: 28px;
-            }
-            
-            #frase {
-                font-size: 18px;
-                min-height: 60px;
-            }
-            
-            button {
-                padding: 12px 24px;
-                font-size: 16px;
-            }
-            
-            .voltar-btn {
-                padding: 8px 16px;
-                font-size: 14px;
-            }
+        /* Tipografia */
+        .quote-text {
+            font-family: 'Playfair Display', serif;
+            line-height: 1.4;
         }
 
-        /* Celular */
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-                width: 95%;
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-            
-            #frase {
-                font-size: 16px;
-                min-height: 50px;
-            }
-            
-            button {
-                padding: 10px 20px;
-                font-size: 16px;
-                width: 90%;
-                max-width: 250px;
-            }
-            
-            .voltar-btn {
-                padding: 6px 12px;
-                font-size: 14px;
-            }
+        .quote-icon {
+            font-family: 'Playfair Display', serif;
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 8rem;
+            color: rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            line-height: 1;
         }
 
-        /* Pequenos celulares */
-        @media (max-width: 320px) {
-            .container {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 20px;
-            }
-            
-            #frase {
-                font-size: 14px;
-                min-height: 40px;
-            }
-            
-            button {
-                padding: 8px 16px;
-                font-size: 14px;
-            }
+        /* Botões */
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: white;
+            color: black;
+            border: 1px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animação de Texto */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        .loading-blur {
+            filter: blur(10px);
+            opacity: 0;
+            transition: all 0.5s ease;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>✨ Frases Motivacionais ✨</h1>
-        <div id="frase">Clique no botão abaixo para uma frase nova!</div>
-        <button onclick="gerarFrase()">Nova Frase</button>
-        <button class="voltar-btn" onclick="window.location.href = '../index.html'">← Voltar</button>
+<body class="h-screen w-full flex items-center justify-center p-4 relative">
+
+    <!-- Background Elements -->
+    <div class="ambient-light">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="noise-overlay"></div>
+
+    <!-- Botão Voltar -->
+    <a href="../index.html" class="absolute top-6 left-6 flex items-center gap-2 text-white/50 hover:text-white transition-colors z-50 group">
+        <div class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-all">
+            <i class="fa-solid fa-arrow-left text-sm"></i>
+        </div>
+        <span class="text-sm font-medium tracking-wide">Voltar</span>
+    </a>
+
+    <!-- Main Card -->
+    <main class="w-full max-w-2xl relative z-10">
+        <div class="glass-card rounded-3xl p-8 md:p-12 relative overflow-hidden">
+            
+            <!-- Aspas Decorativas -->
+            <div class="quote-icon">“</div>
+
+            <!-- Conteúdo da Frase -->
+            <div id="quote-container" class="relative z-10 text-center min-h-[200px] flex flex-col justify-center items-center">
+                <div class="mb-2">
+                    <span class="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] uppercase tracking-widest text-white/60 font-medium">
+                        Daily Inspiration
+                    </span>
+                </div>
+                
+                <h1 id="quote-text" class="quote-text text-2xl md:text-4xl font-medium text-white mb-6 mt-4 fade-in">
+                    "A única maneira de fazer um excelente trabalho é amar o que você faz."
+                </h1>
+                
+                <div class="w-12 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent mb-6"></div>
+                
+                <p id="quote-author" class="text-white/60 text-sm md:text-base font-light tracking-wide uppercase fade-in">
+                    Steve Jobs
+                </p>
+            </div>
+
+            <!-- Controles -->
+            <div class="mt-12 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-white/5 pt-8">
+                
+                <div class="flex items-center gap-3 w-full md:w-auto justify-center">
+                    <button onclick="copiarFrase()" class="btn-action w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white" title="Copiar">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                    <button onclick="compartilharWhatsApp()" class="btn-action w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white" title="WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button onclick="compartilharTwitter()" class="btn-action w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white" title="Twitter">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </button>
+                </div>
+
+                <button onclick="novaFrase()" class="btn-primary px-8 py-3 rounded-full font-medium text-sm tracking-wide w-full md:w-auto flex items-center justify-center gap-2 group">
+                    <span>Nova Inspiração</span>
+                    <i class="fa-solid fa-rotate group-hover:rotate-180 transition-transform duration-500"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Créditos discretos -->
+        <div class="text-center mt-6 text-white/20 text-xs tracking-widest uppercase">
+            Sala de Experimentos &bull; Design Edition
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i class="fa-solid fa-check-circle text-green-600"></i>
+        <span class="text-sm font-medium">Copiado para a área de transferência</span>
     </div>
 
     <script>
-    const frases = [
-        "A cada amanhecer, você recebe uma nova chance de brilhar.",
-        "Você é capaz de transformar qualquer desafio em força.",
-        "Não importa a velocidade — o importante é continuar.",
-        "A sua determinação abre portas que o medo tentou fechar.",
-        "Sonhe grande, comece pequeno, avance sempre.",
-        "A vida recompensa quem tem coragem de tentar.",
-        "Você não precisa ver o caminho inteiro para dar o primeiro passo.",
-        "Tudo o que você precisa já está em você.",
-        "Seja paciente com o seu processo.",
-        "Dias difíceis também passam — e você fica mais forte.",
-        "O mundo precisa do que só você pode oferecer.",
-        "Você não veio até aqui para desistir agora.",
-        "Cada escolha sua constrói o seu destino.",
-        "Permita-se brilhar sem pedir permissão.",
-        "Todo esforço vale a pena quando você acredita.",
-        "A sua energia atrai o que você vive.",
-        "Crescer exige coragem — e você tem muita.",
-        "Faça hoje o que seu futuro vai agradecer.",
-        "Você é a prova viva de que tudo pode dar certo.",
-        "Nada muda se você não mudar — mas você pode tudo.",
-        "A vida é mais leve quando você é gentil consigo.",
-        "Você é o único limite para sua própria grandeza.",
-        "Cada pequeno avanço é uma vitória.",
-        "Você merece oportunidades incríveis.",
-        "Não compare seu capítulo 1 com o capítulo 20 de alguém.",
-        "Seu valor não diminui por causa dos seus erros.",
-        "Aquilo que você busca também está buscando você.",
-        "O melhor ainda está por vir.",
-        "Você é capaz de superar qualquer tempestade.",
-        "Um novo começo é sempre possível.",
-        "Faça o seu melhor, mesmo nos dias ruins.",
-        "Seja constante, mesmo quando a motivação falhar.",
-        "Grandes sonhos pedem grandes atitudes.",
-        "Tudo acontece no tempo certo — confie.",
-        "Você tem um brilho que ninguém mais tem.",
-        "Persistir é a chave para criar milagres.",
-        "Cada passo fora da zona de conforto é uma vitória.",
-        "Há muito poder na forma como você escolhe pensar.",
-        "Seu coração sabe o caminho.",
-        "Continue — você está mais perto do que imagina.",
-        "Acredite na sua capacidade de recomeçar quantas vezes for preciso.",
-        "Foque no progresso, não na perfeição.",
-        "Você pode ser a inspiração que procura.",
-        "A vida fica mais bonita quando você se escolhe.",
-        "Seu esforço diário te leva longe.",
-        "Você é capaz de fazer história com pequenas ações.",
-        "Continue plantando — a colheita vem.",
-        "Você é digno de tudo que sonha.",
-        "Mesmo devagar, você está indo na direção certa.",
-        "Todo dia é uma oportunidade de ser melhor que ontem.",
-        "Seja corajoso o suficiente para tentar outra vez.",
-        "Acredite no que você ainda não viu.",
-        "O seu futuro começa no agora.",
-        "Você é mais resiliente do que imagina.",
-        "Nada pode parar alguém que não desiste.",
-        "Seu brilho é único — cuide dele.",
-        "Há sempre algo bom esperando por você no próximo passo.",
-        "Seja luz, mesmo quando estiver cansado.",
-        "Orgulhe-se do caminho que você está construindo.",
-        "Você é mais forte do que qualquer obstáculo.",
-        "A esperança é o combustível da sua jornada.",
-        "Cada sorriso que você dá ilumina o mundo.",
-        "Acredite: o impossível é apenas algo que ainda não foi feito.",
-        "Você é capaz de transformar dor em aprendizado.",
-        "A vida é feita de recomeços — e você pode sempre começar de novo.",
-        "Seja grato pelo que tem e confiante no que virá.",
-        "Você é uma obra-prima em constante evolução.",
-        "A sua coragem inspira quem está ao seu redor.",
-        "Nunca subestime o poder de um pequeno passo.",
-        "Você é capaz de escrever uma nova história todos os dias.",
-        "A vida floresce quando você cultiva pensamentos positivos.",
-        "Você é a mudança que deseja ver no mundo.",
-        "Cada queda é uma oportunidade de levantar mais forte.",
-        "Você é digno de paz, amor e sucesso.",
-        "Acredite: sua jornada é única e valiosa.",
-        "Você é capaz de transformar sonhos em realidade.",
-        "A vida sorri para quem não desiste.",
-        "Você é a prova de que milagres existem.",
-        "Cada dia é uma página em branco esperando por você.",
-        "Você é capaz de criar beleza a partir da simplicidade.",
-        "A sua fé move montanhas.",
-        "Você é mais brilhante do que imagina.",
-        "A vida é generosa com quem acredita.",
-        "Você é capaz de inspirar até nos seus silêncios.",
-        "Cada passo seu é uma vitória contra o medo.",
-        "Você é digno de todas as conquistas que sonha.",
-        "A vida é feita de coragem — e você tem de sobra.",
-        "Você é capaz de transformar lágrimas em força.",
-        "Cada amanhecer traz novas possibilidades.",
-        "Você é a esperança que o mundo precisa.",
-        "A vida é mais bonita quando você confia em si.",
-        "Você é capaz de transformar o ordinário em extraordinário.",
-        "Cada desafio é uma oportunidade de crescer.",
-        "Você é digno de amor e sucesso.",
-        "A vida recompensa quem não desiste.",
-        "Você é capaz de iluminar até os dias mais escuros.",
-        "Cada vitória sua inspira outras pessoas.",
-        "Você é a prova de que sonhos se realizam.",
-        "A vida é generosa com quem persiste.",
-        "Você é capaz de transformar o impossível em realidade.",
-        "Cada sorriso seu é uma vitória contra a tristeza.",
-        "Você é digno de todas as bênçãos que recebe.",
-        "A vida é feita de escolhas — e você pode escolher vencer.",
-        "Você é capaz de transformar o medo em coragem.",
-        "Cada passo seu é uma prova de força.",
-        "Você é a inspiração que o mundo precisa.",
-        "A vida é mais leve quando você acredita.",
-        "Você é capaz de transformar o hoje em um futuro brilhante.",
-        "Cada conquista sua é motivo de orgulho.",
-        "Você é digno de tudo que sonha e deseja.",
-        "A vida é feita de esperança — e você é cheio dela.",
-        "Você é capaz de transformar o silêncio em paz.",
-        "Cada desafio vencido é uma medalha invisível.",
-        "Você é a prova de que nada é impossível.",
-        "A vida é generosa com quem tem fé.",
-        "Você é capaz de transformar o simples em grandioso.",
-        "Cada passo seu é uma vitória contra a dúvida.",
-        "Você é digno de todas as oportunidades que surgem.",
-        "A vida é feita de recomeços — e você é mestre nisso.",
-        "Você é capaz de transformar o caos em ordem.",
-        "Cada vitória sua é uma inspiração para o mundo.",
-        "Você é a prova de que coragem muda destinos.",
-        "A vida é mais bonita quando você sorri.",
-        "Você é capaz de transformar o impossível em possível.",
-        "Cada desafio vencido é uma prova da sua força.",
-        "Você é digno de todas as conquistas que alcança.",
-        "A vida é feita de fé — e você tem muita.",
-        "Você é capaz de transformar o medo em motivação.",
-        "Cada passo seu é uma vitória contra a insegurança.",
-        "Você é a inspiração que move o mundo.",
-        "A vida é generosa com quem acredita em si.",
-        "Você é capaz de transformar o presente em futuro brilhante.",
-        "Cada conquista sua é uma prova de determinação.",
-        "Você é digno de todas as bênçãos que recebe.",
-        "A vida é feita de coragem — e você é cheio dela.",
-        "Você é capaz de transformar o impossível em realidade.",
-        "Cada sorriso seu é uma vitória contra a tristeza.",
-        "Você é a prova de que sonhos se realizam.",
-        "A vida é mais leve quando você confia em si.",
-        "Você é capaz de transformar o hoje em um amanhã melhor.",
-        "Cada vitória sua é motivo de celebração.",
-        "Você é digno de tudo que deseja alcançar.",
-        "A vida é feita de esperança — e você é cheio dela.",
-        "Você é capaz de transformar o silêncio em força.",
-        "Cada desafio vencido é uma medalha invisível.",
-        "Você é a prova de que nada é impossível.",
-        "A vida é generosa com quem tem fé.",
-        "Você é capaz de transformar o simples em grandioso.",
-        "Cada passo seu é uma vitória contra a dúvida.",
-        "Você é digno de todas as oportunidades que surgem.",
-        "A vida é feita de recomeços — e você é mestre nisso.",
-        "Você é capaz de transformar o caos em ordem.",
-        "Cada vitória sua é uma inspiração para o mundo.",
-        "Você é a prova de que coragem muda destinos."
-    ];
+        const frases = [
+            { texto: "A persistência é o caminho do êxito.", autor: "Charles Chaplin" },
+            { texto: "O único lugar onde o sucesso vem antes do trabalho é no dicionário.", autor: "Albert Einstein" },
+            { texto: "Acredite em si próprio e todo o resto virá naturalmente.", autor: "Elon Musk" },
+            { texto: "Não espere por oportunidades. Crie-as.", autor: "George Bernard Shaw" },
+            { texto: "O fracasso é apenas a oportunidade de recomeçar de novo com mais inteligência.", autor: "Henry Ford" },
+            { texto: "A simplicidade é o último grau de sofisticação.", autor: "Leonardo da Vinci" },
+            { texto: "Você nunca é velho demais para definir outro objetivo ou sonhar um novo sonho.", autor: "C.S. Lewis" },
+            { texto: "A melhor maneira de prever o futuro é criá-lo.", autor: "Peter Drucker" },
+            { texto: "Tudo o que um sonho precisa para ser realizado é alguém que acredite que ele possa ser realizado.", autor: "Roberto Shinyashiki" },
+            { texto: "Imagine uma nova história para sua vida e acredite nela.", autor: "Paulo Coelho" },
+            { texto: "A criatividade é a inteligência se divertindo.", autor: "Albert Einstein" },
+            { texto: "Se você não está disposto a arriscar, esteja disposto a uma vida comum.", autor: "Jim Rohn" },
+            { texto: "A vida é 10% o que acontece com você e 90% como você reage a isso.", autor: "Charles R. Swindoll" },
+            { texto: "O impossível é apenas uma opinião.", autor: "Paulo Vieira" },
+            { texto: "A disciplina é a mãe do êxito.", autor: "Ésquilo" },
+            { texto: "Seja a mudança que você quer ver no mundo.", autor: "Mahatma Gandhi" },
+            { texto: "O conhecimento fala, mas a sabedoria escuta.", autor: "Jimi Hendrix" },
+            { texto: "A mente que se abre a uma nova ideia jamais voltará ao seu tamanho original.", autor: "Albert Einstein" },
+            { texto: "Não conte os dias, faça os dias contarem.", autor: "Muhammad Ali" },
+            { texto: "A coragem não é a ausência do medo, mas o triunfo sobre ele.", autor: "Nelson Mandela" },
+            { texto: "O sucesso nasce do querer, da determinação e da persistência.", autor: "José de Alencar" },
+            { texto: "Lute com determinação, abrace a vida com paixão, perca com classe e vença com ousadia.", autor: "Charlie Chaplin" },
+            { texto: "A verdadeira motivação vem de realização, desenvolvimento pessoal, satisfação no trabalho e reconhecimento.", autor: "Frederick Herzberg" },
+            { texto: "Pedras no caminho? Eu guardo todas. Um dia vou construir um castelo.", autor: "Nemo Nox" },
+            { texto: "É parte da cura o desejo de ser curado.", autor: "Sêneca" },
+            { texto: "Tudo o que a mente humana pode conceber e acreditar, ela pode conquistar.", autor: "Napoleon Hill" },
+            { texto: "O que você faz hoje pode melhorar todos os seus amanhãs.", autor: "Ralph Marston" },
+            { texto: "Não se deixe intimidar pela opinião dos outros. Só a mediocridade é segura, por isso corra seus riscos.", autor: "Paulo Coelho" },
+            { texto: "Na vida, não existem soluções. Existem forças em marcha: é preciso criá-las e, então, a elas seguem-se as soluções.", autor: "Saint-Exupéry" },
+            { texto: "O insucesso é apenas uma oportunidade para recomeçar com mais inteligência.", autor: "Henry Ford" },
+            { texto: "Você precisa fazer aquilo que pensa que não é capaz de fazer.", autor: "Eleanor Roosevelt" },
+            { texto: "A vitalidade é demonstrada não apenas pela persistência, mas pela capacidade de começar de novo.", autor: "F. Scott Fitzgerald" },
+            { texto: "O homem não teria alcançado o possível se, repetidas vezes, não tivesse tentado o impossível.", autor: "Max Weber" },
+            { texto: "Só se pode alcançar um grande êxito quando nos mantemos fiéis a nós mesmos.", autor: "Friedrich Nietzsche" },
+            { texto: "Lute. Acredite. Conquiste. Perca. Deseje. Espere. Alcance. Invada. Caia. Seja tudo o quiser ser, mas acima de tudo, seja você sempre.", autor: "Tumblr" },
+            { texto: "A alegria de fazer o bem é a única felicidade verdadeira.", autor: "Léon Tolstói" },
+            { texto: "A vida é um eco. Se você não está gostando do que está recebendo, observe o que está emitindo.", autor: "Desconhecido" },
+            { texto: "O segredo da felicidade não é fazer o que a gente gosta, mas gostar do que a gente faz.", autor: "Desconhecido" },
+            { texto: "Não existe um caminho para a felicidade. A felicidade é o caminho.", autor: "Mahatma Gandhi" },
+            { texto: "A felicidade não é algo pronto. Ela vem das suas próprias ações.", autor: "Dalai Lama" },
+            { texto: "A única forma de multiplicar a felicidade é dividi-la.", autor: "Paul Scherrer" },
+            { texto: "A felicidade é a aceitação corajosa da vida.", autor: "Desconhecido" },
+            { texto: "Ser feliz sem motivo é a mais autêntica forma de felicidade.", autor: "Carlos Drummond de Andrade" },
+            { texto: "Não permita que o comportamento dos outros destrua a sua paz interior.", autor: "Dalai Lama" },
+            { texto: "A paz vem de dentro de você mesmo. Não a procure à sua volta.", autor: "Buda" },
+            { texto: "Quem olha para fora sonha, quem olha para dentro desperta.", autor: "Carl Jung" },
+            { texto: "O que somos é consequência do que pensamos.", autor: "Buda" },
+            { texto: "A vida é 10% o que acontece comigo e 90% como eu reajo a isso.", autor: "Charles Swindoll" },
+            { texto: "A única revolução possível é a que acontece dentro de nós.", autor: "Mahatma Gandhi" },
+            { texto: "Seja a mudança que você quer ver no mundo.", autor: "Mahatma Gandhi" },
+            { texto: "A vida é curta demais para ser pequena.", autor: "Benjamin Disraeli" },
+            { texto: "O tempo é o melhor autor; sempre encontra um final perfeito.", autor: "Charles Chaplin" },
+            { texto: "A vida é a arte do encontro, embora haja tanto desencontro pela vida.", autor: "Vinicius de Moraes" },
+            { texto: "Viver é a coisa mais rara do mundo. A maioria das pessoas apenas existe.", autor: "Oscar Wilde" },
+            { texto: "A vida é maravilhosa se não se tem medo dela.", autor: "Charles Chaplin" },
+            { texto: "A vida é um processo fluente e em todos os lugares do caminho sempre haverá coisas desagradáveis. Podem ser cicatrizes, mas a vida continua a fluir. É como a água fluindo, que estagna se parar.", autor: "Bruce Lee" },
+            { texto: "A vida é o que acontece enquanto você está ocupado fazendo outros planos.", autor: "John Lennon" },
+            { texto: "O sucesso é a soma de pequenos esforços repetidos dia após dia.", autor: "Robert Collier" },
+            { texto: "A motivação é o que te faz começar. O hábito é o que te faz continuar.", autor: "Jim Ryun" },
+            { texto: "Não importa o quão devagar você vá, desde que você não pare.", autor: "Confúcio" },
+            { texto: "Acredite que você pode, assim você já está no meio do caminho.", autor: "Theodore Roosevelt" },
+            { texto: "A única maneira de fazer um excelente trabalho é amar o que você faz.", autor: "Steve Jobs" },
+            { texto: "Se você traçar metas absurdamente altas e falhar, seu fracasso será muito melhor que o sucesso de todos.", autor: "James Cameron" },
+            { texto: "O sucesso normalmente vem para quem está ocupado demais para procurar por ele.", autor: "Henry David Thoreau" },
+            { texto: "A vida é melhor para aqueles que fazem o possível para ter o melhor.", autor: "John Wooden" },
+            { texto: "Os empreendedores falham, em média, 3,8 vezes antes do sucesso final. O que separa os bem-sucedidos dos outros é a persistência.", autor: "Lisa M. Amos" },
+            { texto: "Se você não está disposto a arriscar, esteja disposto a uma vida comum.", autor: "Jim Rohn" },
+            { texto: "Escolha uma ideia. Faça dessa ideia a sua vida. Pense nela, sonhe com ela, viva pensando nela. Deixe cérebro, músculos, nervos, todas as partes do seu corpo serem preenchidas com essa ideia. Esse é o caminho para o sucesso.", autor: "Swami Vivekananda" },
+            { texto: "Para de perseguir o dinheiro e comece a perseguir o sucesso.", autor: "Tony Hsieh" },
+            { texto: "Todos os seus sonhos podem se tornar realidade se você tiver coragem para persegui-los.", autor: "Walt Disney" },
+            { texto: "Ter sucesso é falhar repetidamente, mas sem perder o entusiasmo.", autor: "Winston Churchill" },
+            { texto: "Sempre que você vir uma pessoa de sucesso, você sempre verá as glórias, nunca os sacrifícios para alcançá-las.", autor: "Vaibhav Shah" },
+            { texto: "Sucesso? Eu não sei o que isso significa. Eu sou feliz. A definição de sucesso varia de pessoa para pessoa. Para mim, o sucesso é paz interior.", autor: "Denzel Washington" },
+            { texto: "Oportunidades não surgem. É você que as cria.", autor: "Chris Grosser" },
+            { texto: "Não tente ser uma pessoa de sucesso. Em vez disso, seja uma pessoa de valor.", autor: "Albert Einstein" },
+            { texto: "Não é o mais forte que sobrevive, nem o mais inteligente. Quem sobrevive é o mais disposto à mudança.", autor: "Charles Darwin" },
+            { texto: "A melhor vingança é um sucesso estrondoso.", autor: "Frank Sinatra" },
+            { texto: "Eu não falhei. Só descobri 10 mil caminhos que não eram o certo.", autor: "Thomas Edison" },
+            { texto: "Um homem de sucesso é aquele que cria uma parede com os tijolos que jogaram nele.", autor: "David Brinkley" },
+            { texto: "Ninguém pode fazer você se sentir inferior sem o seu consentimento.", autor: "Eleanor Roosevelt" },
+            { texto: "O segredo do sucesso é saber algo que ninguém mais sabe.", autor: "Aristóteles Onassis" },
+            { texto: "Eu falhei muitas vezes na minha vida e é por isso que eu tenho sucesso.", autor: "Michael Jordan" },
+            { texto: "Se você não é teimoso, vai desistir de fazer experiências cedo demais. E se não for flexível, vai bater de cabeça na parede e não vai ver uma solução diferente para um problema que está tentando resolver.", autor: "Jeff Bezos" },
+            { texto: "Se você realmente quer algo, não espere. Ensine a si mesmo a ser impaciente.", autor: "Gurbaksh Chahal" },
+            { texto: "A única coisa que se coloca entre um homem e o que ele quer na vida é a vontade de tentar e a fé de que é possível.", autor: "Richard M. DeVos" },
+            { texto: "Eu não sou um produto de minhas circunstâncias. Eu sou um produto de minhas decisões.", autor: "Stephen Covey" },
+            { texto: "Tudo o que você sempre quis está do outro lado do seu medo.", autor: "George Addair" },
+            { texto: "Podemos facilmente perdoar uma criança que tem medo do escuro; a real tragédia da vida é quando os homens têm medo da luz.", autor: "Platão" },
+            { texto: "Quando você parar de sonhar, você para de viver.", autor: "Malcolm Forbes" },
+            { texto: "Uma pessoa que nunca cometeu um erro, nunca tentou nada de novo.", autor: "Albert Einstein" },
+            { texto: "A única maneira de fazer um bom trabalho é amando o que você faz. Se você ainda não encontrou, continue procurando. Não se desespere. Assim como no amor, você saberá quando tiver encontrado.", autor: "Steve Jobs" },
+            { texto: "Não deixe o medo de perder ser maior que a excitação de ganhar.", autor: "Robert Kiyosaki" },
+            { texto: "Você não pode deixar de usar a criatividade. Quanto mais você usa, mais você tem.", autor: "Maya Angelou" },
+            { texto: "Você nunca se arrependerá de ser gentil.", autor: "Nicole Shepherd" },
+            { texto: "Faça o que você pode, com o que você tem, onde você estiver.", autor: "Theodore Roosevelt" },
+            { texto: "Lembre-se que a felicidade é uma forma de viajar, não um destino.", autor: "Roy L. Goodman" },
+            { texto: "A única jornada impossível é a que você nunca começa.", autor: "Tony Robbins" },
+            { texto: "Seus sonhos não têm data de validade. Respire fundo e tente de novo.", autor: "Desconhecido" },
+            { texto: "Acredite que você merece o mundo e o universo vai te dar.", autor: "Desconhecido" },
+            { texto: "Seja a energia que você quer atrair.", autor: "Desconhecido" },
+            { texto: "O que você pensa, você cria. O que você sente, você atrai. O que você imagina, você se torna.", autor: "Buda" },
+            { texto: "A gratidão transforma o que temos em suficiente.", autor: "Desconhecido" },
+            { texto: "Comece onde você está. Use o que você tem. Faça o que você pode.", autor: "Arthur Ashe" },
+            { texto: "A persistência realiza o impossível.", autor: "Provérbio Chinês" },
+            { texto: "Não espere. O tempo nunca será o ideal.", autor: "Napoleon Hill" },
+            { texto: "Ação é a chave fundamental para todo o sucesso.", autor: "Pablo Picasso" },
+            { texto: "O sucesso é ir de fracasso em fracasso sem perder o entusiasmo.", autor: "Winston Churchill" },
+            { texto: "Acredite em milagres, mas não dependa deles.", autor: "Immanuel Kant" },
+            { texto: "Tudo é possível. O impossível apenas demora mais.", autor: "Dan Brown" },
+            { texto: "Sonhe como se fosse viver para sempre, viva como se fosse morrer amanhã.", autor: "James Dean" },
+            { texto: "A vida é 10% o que acontece a você e 90% como você reage a isso.", autor: "Charles R. Swindoll" },
+            { texto: "Mude seus pensamentos e você muda seu mundo.", autor: "Norman Vincent Peale" },
+            { texto: "A única sabedoria verdadeira é saber que você não sabe nada.", autor: "Sócrates" },
+            { texto: "A vida não examinada não vale a pena ser vivida.", autor: "Sócrates" },
+            { texto: "Penso, logo existo.", autor: "René Descartes" },
+            { texto: "Onde há amor, há vida.", autor: "Mahatma Gandhi" },
+            { texto: "A imaginação é mais importante que o conhecimento.", autor: "Albert Einstein" },
+            { texto: "A lógica vai levar você de A a B. A imaginação vai levar você a qualquer lugar.", autor: "Albert Einstein" },
+            { texto: "A vida é como andar de bicicleta. Para manter o equilíbrio, você deve continuar se movendo.", autor: "Albert Einstein" },
+            { texto: "A paz começa com um sorriso.", autor: "Madre Teresa" },
+            { texto: "Espalhe amor por onde você for.", autor: "Madre Teresa" },
+            { texto: "A maior glória em viver não está em nunca cair, mas em nos levantarmos cada vez que caímos.", autor: "Nelson Mandela" },
+            { texto: "A educação é a arma mais poderosa que você pode usar para mudar o mundo.", autor: "Nelson Mandela" },
+            { texto: "O futuro pertence àqueles que acreditam na beleza de seus sonhos.", autor: "Eleanor Roosevelt" },
+            { texto: "A vida é o que fazemos dela. As viagens são os viajantes. O que vemos não é o que vemos, senão o que somos.", autor: "Fernando Pessoa" },
+            { texto: "Tudo vale a pena se a alma não é pequena.", autor: "Fernando Pessoa" },
+            { texto: "Navegar é preciso; viver não é preciso.", autor: "Fernando Pessoa" },
+            { texto: "O poeta é um fingidor. Finge tão completamente que chega a fingir que é dor a dor que deveras sente.", autor: "Fernando Pessoa" },
+            { texto: "Ame a vida que você vive. Viva a vida que você ama.", autor: "Bob Marley" },
+            { texto: "A verdade é que todo mundo vai te machucar. Você só tem que encontrar aqueles pelos quais vale a pena sofrer.", autor: "Bob Marley" },
+            { texto: "Melhor morrer lutando pela liberdade do que ser um prisioneiro todos os dias da sua vida.", autor: "Bob Marley" },
+            { texto: "O dinheiro não pode comprar a vida.", autor: "Bob Marley" },
+            { texto: "A música é a linguagem universal da humanidade.", autor: "Henry Wadsworth Longfellow" },
+            { texto: "Sem música, a vida seria um erro.", autor: "Friedrich Nietzsche" },
+            { texto: "A inspiração existe, mas ela precisa te encontrar trabalhando.", autor: "Pablo Picasso" },
+            { texto: "A criatividade é permitir a si mesmo cometer erros. A arte é saber quais erros manter.", autor: "Scott Adams" },
+            { texto: "Todo artista foi primeiro um amador.", autor: "Ralph Waldo Emerson" },
+            { texto: "Aprender é a única coisa de que a mente nunca se cansa, nunca tem medo e nunca se arrepende.", autor: "Leonardo da Vinci" },
+            { texto: "A sabedoria é filha da experiência.", autor: "Leonardo da Vinci" },
+            { texto: "Quem pouco pensa, muito erra.", autor: "Leonardo da Vinci" },
+            { texto: "O tempo dura bastante para aqueles que sabem aproveitá-lo.", autor: "Leonardo da Vinci" }
+        ];
 
-        function gerarFrase() {
-            const fraseElement = document.getElementById('frase');
-            fraseElement.classList.remove('frase-animada');
+        const quoteText = document.getElementById('quote-text');
+        const quoteAuthor = document.getElementById('quote-author');
+        const container = document.getElementById('quote-container');
 
-            // Força o reflow para reiniciar a animação
-            void fraseElement.offsetWidth;
+        function novaFrase() {
+            // Animação de saída
+            quoteText.classList.remove('fade-in');
+            quoteAuthor.classList.remove('fade-in');
+            
+            quoteText.style.opacity = '0';
+            quoteText.style.filter = 'blur(10px)';
+            quoteText.style.transform = 'translateY(-10px)';
+            
+            quoteAuthor.style.opacity = '0';
+            
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * frases.length);
+                const frase = frases[randomIndex];
+                
+                quoteText.textContent = `"${frase.texto}"`;
+                quoteAuthor.textContent = frase.autor;
+                
+                // Reset estilos para animação de entrada
+                quoteText.style.transition = 'all 0.5s ease';
+                quoteAuthor.style.transition = 'all 0.5s ease 0.1s';
+                
+                requestAnimationFrame(() => {
+                    quoteText.style.opacity = '1';
+                    quoteText.style.filter = 'blur(0)';
+                    quoteText.style.transform = 'translateY(0)';
+                    
+                    quoteAuthor.style.opacity = '1';
+                });
+            }, 300);
+        }
 
-            const fraseAleatoria = frases[Math.floor(Math.random() * frases.length)];
-            fraseElement.textContent = `"${fraseAleatoria}"`;
-            fraseElement.classList.add('frase-animada');
+        function copiarFrase() {
+            const texto = `${quoteText.textContent} — ${quoteAuthor.textContent}`;
+            navigator.clipboard.writeText(texto).then(() => {
+                mostrarToast();
+            });
+        }
+
+        function compartilharWhatsApp() {
+            const texto = `${quoteText.textContent} — ${quoteAuthor.textContent}`;
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        function compartilharTwitter() {
+            const texto = `${quoteText.textContent} — ${quoteAuthor.textContent}`;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        function mostrarToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
         }
     </script>
 </body>

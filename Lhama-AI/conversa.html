@@ -2,7 +2,8 @@
 <html class="" lang="pt-BR"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Lhama AI 1 - Professional Interface</title>
+<title>Lumi AI 1.2 - Professional Interface</title>
+<link rel="icon" type="image/png" href="../hahaha.png">
 <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet"/>
@@ -801,8 +802,8 @@
         <div class="mobile-blocker-content">
             <div style="font-size: 48px;">📱</div>
             <h1>Indisponível em Celulares</h1>
-            <p>Por motivo de design, o Lhama AI 1 está indisponível para celulares.</p>
-            <p style="font-size: 14px;">Por favor, dirija-se a um computador ou tablet para poder usar o Lhama AI 1.</p>
+            <p>Por motivo de design, a Lumi AI 1.2 está indisponível para celulares.</p>
+            <p style="font-size: 14px;">Por favor, dirija-se a um computador ou tablet para poder usar a Lumi AI.</p>
             <p style="font-size: 12px; margin-top: 20px; opacity: 0.9;">Desculpa pelo transtorno! 😔</p>
             <button class="mobile-blocker-btn" onclick="history.back()">Voltar</button>
         </div>
@@ -812,12 +813,10 @@
 <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
     <span class="material-icons-outlined" style="font-size: 16px;">menu</span>
 </button>
-<div class="sidebar-content">
+<div class="sidebar-content flex flex-col h-full">
 <div class="p-5 flex items-center gap-3">
-<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold shadow-glow">
-<span class="material-icons-round text-lg">smart_toy</span>
-</div>
-<span class="font-semibold text-lg tracking-tight text-slate-900 dark:text-white">Lhama AI</span>
+<img src="../hahaha.png" alt="Lumi AI" class="w-8 h-8 rounded-lg shadow-glow object-cover">
+<span class="font-semibold text-lg tracking-tight text-slate-900 dark:text-white">Lumi AI</span>
 </div>
 <div class="px-4 mb-4">
 <button class="w-full flex items-center gap-3 px-4 py-3 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-xl transition-all duration-200 group border border-transparent dark:border-zinc-700" id="new-chat-btn" onclick="iniciarNovaConversa()">
@@ -827,6 +826,14 @@
 </div>
 <div id="historico-sidebar" class="flex-1 overflow-y-auto px-2 space-y-1">
             <!-- Histórico será carregado dinamicamente pelo JavaScript -->
+</div>
+<div class="px-4 pt-2">
+    <div class="bg-slate-50 dark:bg-zinc-800/50 rounded-xl p-3 text-center border border-slate-200 dark:border-zinc-700">
+        <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Teste a nova IA,<br><span class="font-bold text-slate-900 dark:text-white">Drekee AI 1</span></p>
+        <a href="https://drekee.vercel.app/code.html" target="_blank" class="block w-full py-1.5 bg-primary hover:bg-black text-white dark:bg-white dark:text-primary dark:hover:bg-slate-200 text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1">
+            Testar <span class="material-icons-round" style="font-size: 12px;">open_in_new</span>
+        </a>
+    </div>
 </div>
 <div class="p-4 border-t border-slate-200 dark:border-zinc-800">
     <button class="w-full flex items-center gap-3 px-4 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-all duration-200 group border border-red-200 dark:border-red-800" onclick="limparTodosHistoricos()">
@@ -853,12 +860,12 @@
 <button class="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300">
 <span class="material-icons-round">menu</span>
 </button>
-<span class="font-bold text-slate-900 dark:text-white">Lhama AI 1</span>
+<span class="font-bold text-slate-900 dark:text-white">Lumi AI 1.2</span>
 </div>
 <div class="hidden md:block">
 <h1 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    Lhama AI 1
-                    <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide uppercase">Beta v1.2</span>
+                    Lumi AI 1.2
+                    <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide uppercase">v1.2</span>
 </h1>
 <p class="text-xs text-slate-500 dark:text-slate-400">Sua IA pronta para tudo.</p>
 </div>
@@ -890,16 +897,12 @@
         <span class="material-icons-round" style="font-size:20px; line-height:1;">keyboard_double_arrow_down</span>
     </button>
 <div class="relative bg-white dark:bg-surface-dark rounded-t-3xl rounded-b-none shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.3)] border-x border-t border-slate-200 dark:border-zinc-700 overflow-hidden transition-all duration-300 pb-4">
-<textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Olá! Pergunte-me qualquer coisa..." rows="1"></textarea>
+<textarea id="input-mensagem" class="w-full px-6 py-3 bg-transparent border-none focus:outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 resize-none text-base max-h-48 overflow-y-auto" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Converse com a Lumi AI..." rows="1"></textarea>
 <div class="px-6 pb-2 pt-1 flex flex-wrap items-center justify-between gap-3">
 <div class="flex flex-wrap items-center gap-2">
 <button class="funcao-btn px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="togglePersonalidadeMenu()" title="Escolher personalidade">
 <span class="material-icons-round">psychology</span>
 Personalidade
-</button>
-<button class="funcao-btn px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2" onclick="window.location.href = 'https://lhama.vercel.app'" title="Ir para Lhama Code">
-<span class="material-icons-round">code</span>
-Código
 </button>
 <button class="funcao-btn" onclick="toggleModoImagem()" title="Ativar/Desativar modo imagem" id="btn-modo-imagem">
     <span class="material-icons-round">image</span>
@@ -1074,7 +1077,7 @@ Buscando imagens...
 <div id="live-modal" class="live-modal" aria-hidden="true">
     <div class="live-modal-content">
         <button class="live-close-btn" id="live-close" title="Fechar">×</button>
-        <h2 class="live-title">Lhama Live</h2>
+        <h2 class="live-title">Lumi Live</h2>
         <div class="live-ball" id="live-ball" aria-hidden="true"></div>
         <div class="live-hint">Respondendo somente por áudio...</div>
     </div>

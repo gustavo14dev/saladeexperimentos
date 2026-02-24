@@ -16,7 +16,7 @@ let personalidadeAtual = 'Normal';
 const configuracoesPersonalidade = {
     'Normal': {
         icone: 'person',
-        prompt: 'Seja uma assistente equilibrada, prestativa e amigável. Responda de forma clara, direta e útil. Use tom neutro e profissional.'
+        prompt: 'Você é a Lumi AI 1.2. Seja uma assistente equilibrada, prestativa e amigável. Responda de forma clara, direta e útil. Use tom neutro e profissional.'
     },
     'Divertida': {
         icone: 'mood',
@@ -134,38 +134,6 @@ function checkScrollButtonVisibility() {
     } else {
         btn.style.display = 'none';
     }
-}
-
-// ===== ANÚNCIO =====
-function mostrarAnuncio() {
-    const overlay = document.createElement('div');
-    overlay.id = 'anuncio-overlay';
-    overlay.className = 'anuncio-overlay';
-    overlay.innerHTML = `
-        <div class="anuncio-container">
-            <div class="titulo-com-badge">
-                <h2 class="titulo-animado">Lhama AI 1</h2>
-            </div>
-            <div class="anuncio-texto">
-                <ul>
-                    <li>Mais inteligente</li>
-                    <li>30.000 novos treinamentos</li>
-                    <li>Design premium e mais suave</li>
-                    <li>Interface aprimorada estilo moderno</li>
-                    <li>Ficando cada vez mais profissional</li>
-                </ul>
-            </div>
-            <div class="anuncio-botoes">
-                <button onclick="fecharAnuncio()">Fechar</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-}
-
-function fecharAnuncio() {
-    const overlay = document.getElementById('anuncio-overlay');
-    if (overlay) overlay.remove();
 }
 
 // ===== MENU MOBILE =====
@@ -498,7 +466,7 @@ function toggleModoImagem() {
             btn.classList.add('ativo');
         }
         if (input) {
-            input.placeholder = '📸 Descreva as imagens que quer buscar...';
+            input.placeholder = '📸 Descreva as imagens que quer buscar com a Lumi...';
         }
         console.log('[IMAGENS] Modo imagem ATIVADO');
     } else {
@@ -507,7 +475,7 @@ function toggleModoImagem() {
             btn.classList.remove('ativo');
         }
         if (input) {
-            input.placeholder = 'Converse com a Lhama AI...';
+            input.placeholder = 'Converse com a Lumi AI...';
         }
         console.log('[IMAGENS] Modo imagem DESATIVADO');
     }
@@ -536,7 +504,7 @@ function toggleModoBuscaWeb() {
             btn.classList.remove('ativo');
         }
         if (input) {
-            input.placeholder = 'Converse com a Lhama AI...';
+            input.placeholder = 'Converse com a Lumi AI...';
         }
         console.log('[BUSCA WEB] Modo busca web DESATIVADO');
     }
@@ -825,7 +793,7 @@ function mostrarDigitando(mostrar) {
             const div = document.createElement('div');
             div.id = 'digitando';
             div.className = 'mensagem bot digitando';
-            div.innerHTML = '<div class="message-content">Lhama AI está pensando...</div>';
+            div.innerHTML = '<div class="message-content">Lumi AI está pensando...</div>';
             chatBox.appendChild(div);
         }
         scrollParaBaixo();
@@ -1128,12 +1096,12 @@ function iniciarNovaConversa() {
     chatBox.innerHTML = `
         <div class="mensagem bot boas-vindas-inicial">
             <div class="message-content">Olá!
-Sou a Dora AI. Como posso te ajudar hoje? ✨</div>
+Sou a Lumi AI. Como posso te ajudar hoje? ✨</div>
         </div>
     `;
     const input = document.getElementById('input-mensagem');
     input.value = '';
-    input.placeholder = "Converse com a Dora AI...";
+    input.placeholder = "Converse com a Lumi AI...";
     input.focus();
 }
 
@@ -1240,12 +1208,16 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
     
     try {
         // Adicionar prompt de personalidade ao system message
-        const promptPersonalidade = configuracoesPersonalidade[personalidadeAtual]?.prompt || '';
-        const systemMessage = promptPersonalidade ? 
-            `IMPORTANTE: ${promptPersonalidade}\n\nVocê é a Lhama AI 1, uma assistente inteligente. Responda em português brasileiro.` :
-            `Você é a Lhama AI 1, uma assistente inteligente. Responda em português brasileiro.`;
+        const configPersonalidade = configuracoesPersonalidade[personalidadeAtual];
+        const promptPersonalidade = configPersonalidade ? configPersonalidade.prompt : '';
+        
+        // Construção robusta do System Message
+        const systemMessage = `Você é a Lhama AI 1, uma inteligência artificial avançada.
 
-        console.log('[DEBUG] System message completo:', systemMessage);
+MODO DE PERSONALIDADE ATUAL: ${personalidadeAtual.toUpperCase()}
+DIRETRIZES: ${promptPersonalidade || 'Seja prestativa, educada e inteligente.'}
+
+IMPORTANTE: Mantenha essa personalidade durante toda a resposta. Responda sempre em português brasileiro.`;
 
         const response = await fetch('/api/lhama-groq-api-proxy', {
             method: 'POST',
@@ -1320,11 +1292,6 @@ async function gerarResposta(mensagemUsuario, historicoConversa = []) {
 
 // ===== LOAD EVENT LISTENER =====
 document.addEventListener('DOMContentLoaded', () => {
-    if (!localStorage.getItem('dora_announced_v1.4')) {
-        mostrarAnuncio();
-        localStorage.setItem('dora_announced_v1.4', '1');
-    }
-
     const textarea = document.getElementById('input-mensagem');
     if (textarea) {
         ajustarAlturaTextarea(textarea);
@@ -1372,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btnSend || !ta) return;
         if (ta.value.trim().length === 0) {
             btnSend.innerHTML = '<span class="material-symbols-rounded">graphic_eq</span>';
-            btnSend.title = 'Ativar Lhama Live (voz)';
+            btnSend.title = 'Ativar Lumi Live (voz)';
         } else {
             btnSend.innerHTML = '<span class="material-symbols-rounded">arrow_upward</span>';
             btnSend.title = 'Enviar mensagem';
@@ -1532,61 +1499,6 @@ function carregarPersonalidadeSalva() {
         }
     }
 }
-
-// Modificar função gerarResposta para incluir personalidade
-const gerarRespostaOriginal = gerarResposta;
-gerarResposta = function(mensagemUsuario, historicoConversa = []) {
-    // Adicionar prompt de personalidade
-    const promptPersonalidade = configuracoesPersonalidade[personalidadeAtual]?.prompt || '';
-    const systemMessage = promptPersonalidade ? 
-        `Você é a Lhama AI 1. ${promptPersonalidade} Responda em português brasileiro de forma completa e detalhada.` :
-        `Você é a Lhama AI 1, uma assistente EXTREMAMENTE INTELIGENTE, criativa e MUITO ÚTIL. Responda em português brasileiro de forma completa e detalhada.`;
-
-    // Modificar a chamada da API para incluir o system message
-    const chamadaOriginal = gerarRespostaOriginal;
-    return new Promise((resolve) => {
-        // Substituir o system message na chamada
-        fetch('/api/lhama-groq-api-proxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
-                messages: [
-                    {
-                        role: 'system',
-                        content: systemMessage
-                    },
-                    ...historicoConversa.map(msg => ({
-                        role: msg.tipo === 'usuario' ? 'user' : 'assistant',
-                        content: msg.texto
-                    })),
-                    {
-                        role: 'user',
-                        content: mensagemUsuario
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 8192,
-                top_p: 1,
-                stream: false
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.choices && data.choices.length > 0) {
-                resolve(data.choices[0].message.content);
-            } else {
-                resolve("Desculpe, não consegui gerar uma resposta. Tente novamente.");
-            }
-        })
-        .catch(error => {
-            console.error('[PERSONALIDADE] Erro:', error);
-            resolve("Desculpe, estou com dificuldades para responder no momento. Tente novamente em alguns instantes.");
-        });
-    });
-};
 
 // Exportar funções de personalidade
 window.togglePersonalidadeMenu = togglePersonalidadeMenu;
