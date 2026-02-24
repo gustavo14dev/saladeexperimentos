@@ -32,6 +32,131 @@
         [data-theme="tubes"] .background-orb {
             display: none;
         }
+
+        /* ============================================ */
+        /* CABEÇALHO FIXO COM BARRA DE PESQUISA */
+        /* ============================================ */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 220px; /* espaço para o theme-switcher à direita */
+            height: 70px;
+            background: rgba(15, 16, 20, 0.6);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            transition: background 0.5s ease, border-color 0.3s ease;
+        }
+
+        [data-theme="light"] .site-header,
+        [data-theme="pastel"] .site-header {
+            background: rgba(240, 242, 245, 0.7);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        [data-theme="marine"] .site-header {
+            background: rgba(0, 30, 43, 0.7);
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        [data-theme="newyear"] .site-header {
+            background: rgba(11, 16, 38, 0.7);
+        }
+
+        .site-header .header-logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            margin-right: 20px;
+            opacity: 0.9;
+            letter-spacing: -0.3px;
+        }
+
+        .site-header .header-logo span {
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        [data-theme="marine"] .site-header .header-logo span {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .site-header .header-search {
+            flex: 1;
+            max-width: 560px;
+            position: relative;
+        }
+
+        .site-header .header-search i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .site-header #busca-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: var(--btn-radius);
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .site-header #busca-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+        }
+
+        [data-theme="light"] .site-header #busca-input:focus {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Empurra o conteúdo principal para baixo do header fixo */
+        .main-wrapper {
+            padding-top: 90px !important;
+        }
+
+        /* ============================================ */
+        /* MOBILE: esconde header, centraliza switcher */
+        /* ============================================ */
+        @media (max-width: 600px) {
+            .site-header {
+                display: none !important;
+            }
+
+            /* O main-wrapper não precisa de padding extra no mobile */
+            .main-wrapper {
+                padding-top: 0 !important;
+            }
+
+            /* O header original (título) fica no main-wrapper normalmente */
+        }
+
+        /* Ajuste do theme-switcher para não sobrepor o header */
+        @media (min-width: 601px) {
+            .theme-switcher {
+                top: 12px !important;
+            }
+        }
     </style>
 </head>
 
@@ -85,6 +210,15 @@
     <div class="background-orb orb-1"></div>
     <div class="background-orb orb-2"></div>
 
+    <!-- CABEÇALHO FIXO (desktop only) -->
+    <header class="site-header">
+        <div class="header-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="busca-input" placeholder="O que você procura hoje?">
+        </div>
+    </header>
+
+    <!-- THEME SWITCHER -->
     <div class="theme-switcher glass-liquid">
         <button class="theme-btn" onclick="mudarTema('light')" data-tooltip="Claro">
             <i class="fa-regular fa-sun"></i>
@@ -104,15 +238,16 @@
         <button class="theme-btn" onclick="mudarTema('tubes')" data-tooltip="Tubes">
             <i class="fa-solid fa-bezier-curve"></i>
         </button>
-        <!-- Botão Retrospectiva Mobile (Só aparece no celular e após 1h) -->
+        <!-- Botão Retrospectiva Mobile -->
         <button class="theme-btn retro-mobile" onclick="toggleRetrospective(true)" data-tooltip="Retrospectiva" style="display: none;">
             <i class="fa-solid fa-clock-rotate-left"></i>
         </button>
     </div>
 
     <div class="main-wrapper">
-        <header>
-            <div class="badge">v7</div>
+
+        <!-- Título (visível em todas as telas) -->
+        <header style="text-align:center; margin-bottom: 50px; animation: fadeInDown 0.8s ease;">
             <h1>Sala de <span class="text-gradient">Experimentos</span></h1>
             <h2>Onde a criatividade encontra a <span class="text-highlight">tecnologia</span>.</h2>
         </header>
@@ -126,46 +261,36 @@
             <button class="filter-btn special" onclick="window.location.href='equipe/equipe.html'"><i class="fa-solid fa-users"></i> Equipe</button>
         </nav>
 
-        <div id="busca-container">
-            <div class="input-wrapper">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="busca-input" placeholder="O que você procura hoje?">
-            </div>
-        </div>
-
-        <!-- ZapWrapped Featured Card -->
-        <div class="featured-card-wrapper">
-            <div class="featured-card">
-                <div class="featured-fire-icon">
-                    <i class="fa-solid fa-fire"></i>
-                </div>
-                
-                <div class="featured-content">
-                    <div class="featured-image">
-                        <img src="zapwrapped/logo.png" alt="ZapWrapped">
-                    </div>
-                    
-                    <div class="featured-text">
-                        <h3 class="featured-title">ZapWrapped</h3>
-                        <p class="featured-description">Descubra quem manda mais áudio, quem some e quem é o inimigo do fim.</p>
-                    </div>
-                </div>
-                
-                <a href="zapwrapped/index.html" onclick="atualizarEstatistica('zapwrapped')" class="featured-btn">
-                    Acessar <i class="fa-solid fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
+        <!-- Barra de busca desktop (agora no header fixo) — mantida aqui apenas para mobile -->
+        <!-- REMOVIDA do main-wrapper pois agora está no site-header -->
 
         <div id="container-cards">
+            <div class="glass-card" data-projeto="zapwrapped" data-categoria="ferramentas">
+                <div class="card-image-wrapper">
+                    <img src="zapwrapped/logo.png" alt="ZapWrapped" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=ZapWrapped'">
+                    
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>ZapWrapped</h3>
+                        <span class="category-icon"><i class="fa-brands fa-whatsapp"></i></span>
+                    </div>
+                    <p>Descubra quem manda mais áudio, quem some e quem é o inimigo do fim de semana.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="zapwrapped-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="zapwrapped/index.html" onclick="atualizarEstatistica('zapwrapped')" class="action-btn">Acessar</a>
+                </div>
+            </div>
             <div class="glass-card" data-projeto="drive-mad" data-categoria="jogos">
                 <div class="card-image-wrapper">
                     <img src="imagens/drive-mad.png" alt="Drive Mad" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Drive+Mad'">
                     <span class="status-tag dev">POPULAR</span>
+                    
                 </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Drive Mad</h3>
+                        <h3>Drive Mad - Coding Stella</h3>
                         <span class="category-icon"><i class="fa-solid fa-car"></i></span>
                     </div>
                     <p>Desafie a física em pistas insanas! Você consegue chegar à linha de chegada sem capotar?</p>
@@ -179,11 +304,11 @@
             <div class="glass-card" data-projeto="escape-road" data-categoria="jogos">
                 <div class="card-image-wrapper">
                     <img src="imagens/escape-road.png" alt="Escape Road" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Escape+Road'">
-                    <span class="status-tag dev">NOVO</span>
+                    
                 </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Escape Road</h3>
+                        <h3>Escape Road  - Coding Stella</h3>
                         <span class="category-icon"><i class="fa-solid fa-road"></i></span>
                     </div>
                     <p>Fuja da perseguição em alta velocidade! Sobreviva o máximo que puder nas estradas perigosas.</p>
@@ -197,11 +322,11 @@
             <div class="glass-card" data-projeto="canvas" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                 <img src="imagens/canvas.png" alt="Canvas" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Canvas'">
-                <span class="status-tag dev">NOVO</span>
+                
             </div>
                 <div class="card-info">
                     <div class="card-header">
-                        <h3>Canvas</h3>
+                        <h3>Canvas - Coding Stella</h3>
                         <span class="category-icon"><i class="fa-solid fa-pencil"></i></span>
                     </div>
                     <p>Uma plataforma para soltar sua imaginação e criar artes digitais incríveis.</p>
@@ -215,7 +340,7 @@
             <div class="glass-card" data-projeto="converter" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/converter.png" alt="Conversor de Moedas" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Converter'">
-                    <span class="status-tag dev">NOVO</span>
+                    
                 </div>
                 <div class="card-info">
                     <div class="card-header">
@@ -535,8 +660,7 @@
         }
 
         window.addEventListener('load', () => {
-            // LISTA ATUALIZADA DE PROJETOS
-            const projetos = ['drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
+            const projetos = ['zapwrapped', 'drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
             
             projetos.forEach(proj => {
                 let count = localStorage.getItem(proj) || 0;
@@ -614,16 +738,12 @@
         }
 
         // --- LÓGICA REAL DA RETROSPECTIVA ---
-        
-        // 1. Monitoramento de Tempo e Horário
         let totalSeconds = parseInt(localStorage.getItem('site-time-spent') || 0);
         
-        // Roda a cada segundo
         setInterval(() => {
             totalSeconds++;
             localStorage.setItem('site-time-spent', totalSeconds);
             
-            // Monitora horário de pico (salva a hora atual a cada minuto)
             if (totalSeconds % 60 === 0) {
                 const currentHour = new Date().getHours();
                 let hourStats = JSON.parse(localStorage.getItem('site-hour-stats') || '{}');
@@ -634,40 +754,31 @@
             checkRetroAvailability();
         }, 1000);
 
-        // 2. Verifica se pode mostrar o botão (Regra de 1 Hora)
         function checkRetroAvailability() {
             const btnDesktop = document.getElementById('retro-trigger');
             const btnMobile = document.querySelector('.theme-btn.retro-mobile');
             
-            // 3600 segundos = 1 hora
             if (totalSeconds >= 3600) {
-                // Lógica de exibição baseada no CSS (Media Query controla quem aparece)
-                // Mas precisamos remover o display:none inline ou adicionar classes
                 if(window.innerWidth > 480) {
                     btnDesktop.style.display = 'flex';
                 } else {
                     btnDesktop.style.display = 'none';
                 }
                 
-                // Adiciona classe para o CSS controlar o mobile
                 btnMobile.classList.add('unlocked');
             }
         }
 
-        // Chama ao carregar e ao redimensionar
         window.addEventListener('resize', checkRetroAvailability);
         window.addEventListener('load', checkRetroAvailability);
 
-        // 3. Geração de Dados Dinâmicos
         let retroData = [];
 
         function generateRetroData() {
-            // Card 1: Tempo Total
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             
-            // Card 2: Top 5 Projetos
-            const projetos = ['drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
+            const projetos = ['zapwrapped', 'drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
             let usageData = projetos.map(p => ({
                 name: p.replace('-', ' ').toUpperCase(),
                 count: parseInt(localStorage.getItem(p) || 0)
@@ -682,12 +793,10 @@
             top5HTML += '</div>';
             if (usageData[0].count === 0) top5HTML = "<p>Você ainda não explorou o suficiente!</p>";
 
-            // Card 3: Horário de Pico
             let hourStats = JSON.parse(localStorage.getItem('site-hour-stats') || '{}');
-            let peakHour = Object.keys(hourStats).reduce((a, b) => hourStats[a] > hourStats[b] ? a : b, 12); // Default 12h
+            let peakHour = Object.keys(hourStats).reduce((a, b) => hourStats[a] > hourStats[b] ? a : b, 12);
             let peakHourStr = `${peakHour}:00 - ${parseInt(peakHour)+1}:00`;
 
-            // Card 4: Veredito (Baseado no mais usado)
             let topProject = usageData[0].name;
             let veredito = "O Explorador";
             let vereditoDesc = "Você gosta de navegar por tudo um pouco.";
@@ -741,7 +850,7 @@
         function toggleRetrospective(show) {
             const modal = document.getElementById('retro-overlay');
             if (show) {
-                retroData = generateRetroData(); // Gera dados frescos ao abrir
+                retroData = generateRetroData();
                 currentRetroIndex = 0;
                 updateRetroCard();
                 modal.classList.remove('retro-hidden');
@@ -762,18 +871,15 @@
             const data = retroData[currentRetroIndex];
             const total = retroData.length;
 
-            // Aplica o gradiente dinâmico no card
             const card = document.querySelector('.retro-card');
             card.style.background = data.gradient;
 
-            // Reseta animações (remove e adiciona a classe para reiniciar)
             const header = document.querySelector('.retro-header');
             const content = document.querySelector('.retro-content');
             
             header.classList.remove('retro-anim-enter');
             content.classList.remove('retro-anim-enter');
             
-            // Força o reflow para reiniciar a animação CSS
             void header.offsetWidth; 
             
             header.classList.add('retro-anim-enter');
@@ -783,7 +889,6 @@
             document.getElementById('retro-icon-wrapper').innerHTML = data.icon;
             document.getElementById('retro-stat').innerText = data.stat;
             
-            // Verifica se tem HTML customizado (para listas) ou texto normal
             const descEl = document.getElementById('retro-desc');
             if (data.customHTML) {
                 descEl.innerHTML = data.customHTML;
@@ -815,7 +920,7 @@
         }
 
         // ========================================
-        // MODAL DE APRESENTAÇÃO - RETROSPECTIVA
+        // MODAL DE APRESENTAÇÃO
         // ========================================
 
         function closeWelcomeModal() {
@@ -825,33 +930,60 @@
         }
 
         function checkWelcomeModal() {
-            // Verifica se o modal já foi fechado neste dispositivo
             const wasClosed = localStorage.getItem('welcome-modal-closed');
-            
+            const modal = document.getElementById('welcome-modal');
             if (!wasClosed) {
-                // Mostra o modal pela primeira vez
-                const modal = document.getElementById('welcome-modal');
                 modal.classList.remove('hidden');
             } else {
-                // Esconde o modal se já foi visto
-                const modal = document.getElementById('welcome-modal');
                 modal.classList.add('hidden');
             }
         }
 
-        // Checa o modal quando a página carrega
         window.addEventListener('load', () => {
             checkWelcomeModal();
         });
 
-        // Também verifica ao carregar se o usuário já viu (para garantir)
         document.addEventListener('DOMContentLoaded', () => {
             checkWelcomeModal();
         });
     </script>
-</body>
 
-</html>
+    <script>
+        // Redireciona para 404.html em caso de erro de navegação
+        window.addEventListener('error', function(e) {
+            if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK' || e.target.tagName === 'IMG')) {
+                return; // Ignora erros de recursos (imagens, etc.)
+            }
+            window.location.href = '404.html';
+        }, true);
+
+        // Intercepta cliques em links e redireciona para 404 se a página não existir
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link || !link.href || link.href.startsWith('#') || link.href.startsWith('javascript')) return;
+            
+            const url = link.href;
+            // Só intercepta links internos (mesmo domínio)
+            if (!url.startsWith(window.location.origin)) return;
+
+            e.preventDefault();
+            fetch(url, { method: 'HEAD' })
+                .then(res => {
+                    if (res.ok) {
+                        // Executa onclick original se existir, depois navega
+                        if (link.getAttribute('onclick')) {
+                            try { eval(link.getAttribute('onclick')); } catch(_) {}
+                        }
+                        window.location.href = url;
+                    } else {
+                        window.location.href = '404.html';
+                    }
+                })
+                .catch(() => {
+                    window.location.href = '404.html';
+                });
+        });
+    </script>
 </body>
 
 </html>

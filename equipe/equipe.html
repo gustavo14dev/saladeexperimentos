@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Equipe</title>
+    <title>Equipe | Sala de Experimentos</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Reset e base */
+        :root {
+            --bg-color: #050507;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --primary: #8a2be2;
+            --secondary: #4169e1;
+            --text-main: #ffffff;
+            --text-muted: #9494a0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,216 +27,209 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-background: radial-gradient(
-    125% 125% at -2% 101%,
-    rgba(245, 87, 2, 1) 10.5%,
-    rgba(245, 120, 2, 1) 16%,
-    rgba(245, 140, 2, 1) 17.5%,
-    rgba(245, 170, 100, 1) 25%,
-    rgba(238, 174, 202, 1) 40%,
-    rgba(202, 179, 214, 1) 65%,
-    rgba(148, 201, 233, 1) 100%
-  );          
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 0%, rgba(138, 43, 226, 0.15), transparent 35%),
+                radial-gradient(circle at 85% 100%, rgba(65, 105, 225, 0.1), transparent 35%);
+            color: var(--text-main);
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* Container principal */
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Título */
-        h1 {
-            text-align: center;
-            font-size: 32px;
-            color: #ffffff;
-            margin: 20px 0;
-            text-shadow: 0 0 10px rgba(106, 90, 205, 0.3);
-            animation: fadeIn 1s ease-out;
-        }
-
-        /* Conteúdo da equipe */
-        .equipe-content {
             display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: center;
-        }
-
-        /* Card de equipe */
-        .equipe-card {
-            display: flex;
+            flex-direction: column;
             align-items: center;
-            background: rgba(30, 30, 50, 0.8);
-            padding: 20px;
-            border-radius: 20px;
-            border: 1px solid #555;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: slideIn 0.6s ease-out;
-            max-width: 450px;
+            padding: 4rem 1.5rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title-wrapper {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #a0a0ab 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .equipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
             width: 100%;
         }
 
+        .equipe-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: fadeUp 0.8s ease-out backwards;
+        }
+
+        .equipe-card:nth-child(1) { animation-delay: 0.1s; }
+        .equipe-card:nth-child(2) { animation-delay: 0.2s; }
+        .equipe-card:nth-child(3) { animation-delay: 0.3s; }
+
         .equipe-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(106, 90, 205, 0.4);
+            transform: translateY(-10px);
+            border-color: rgba(138, 43, 226, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(138, 43, 226, 0.1);
         }
 
         .perfil-imagem {
-            width: 100px;
-            height: 100px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
             object-fit: cover;
-            margin-right: 20px;
-            border: 3px solid #6a5acd;
+            margin-bottom: 1.5rem;
+            border: 3px solid transparent;
+            background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box,
+                        linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
+            padding: 5px;
         }
 
-        .perfil-info {
-            flex: 1;
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.4rem;
         }
 
-        .equipe-card h3 {
-            font-size: 24px;
-            color: #6a5acd;
-            margin: 0 0 10px 0;
+        p.role {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            min-height: 45px;
         }
 
-        .equipe-card p {
-            font-size: 16px;
-            color: #aaa;
-            margin-bottom: 15px;
-        }
-
-        /* Contatos */
         .contato {
             display: flex;
-            gap: 15px;
-            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
         }
 
         .contato a {
-            display: inline-block;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #6a5acd, #4b0082);
-            color: white;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
             text-decoration: none;
-            border-radius: 30px;
-            font-weight: bold;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--card-border);
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(106, 90, 205, 0.3);
-            font-size: 14px;
         }
 
         .contato a:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(106, 90, 205, 0.5);
-            background: linear-gradient(135deg, #5a4cb0, #3a006a);
+            background: var(--text-main);
+            color: var(--bg-color);
+            transform: translateY(-2px);
         }
 
-        /* Botão de voltar */
+        .btn-container {
+            margin-top: 4rem;
+            text-align: center;
+        }
+
         .botao-voltar {
-            display: block;
-            width: 200px;
-            margin: 30px auto;
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #000000, #000000);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
+            padding: 1rem 3rem;
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4)
         }
 
         .botao-voltar:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(50, 50, 50, 0.6);
-            background: linear-gradient(135deg, #3a3a3a, #3a006a);
+            background: var(--text-main);
+            color: var(--bg-color);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
         }
 
-        /* Animações */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Scroll personalizado */
-        body::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        body::-webkit-scrollbar-track {
-            background: rgba(30, 30, 40, 0.5);
-        }
-
-        body::-webkit-scrollbar-thumb {
-            background: #6a5acd;
-            border-radius: 4px;
-        }
-
-        body::-webkit-scrollbar-thumb:hover {
-            background: #4b0082;
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>👥 Equipe da Sala de Experimentos</h1>
+        
+        <div class="title-wrapper">
+            <div class="subtitle">Sala de Experimentos</div>
+            <h1>Conheça a Equipe</h1>
+        </div>
 
-        <div class="equipe-content">
-            <!-- Card 1: Gustavo -->
+        <div class="equipe-grid">
             <div class="equipe-card">
                 <img src="../imagens/gustavo.png" alt="Foto de Gustavo" class="perfil-imagem">
-                <div class="perfil-info">
-                    <h3>Gustavo</h3>
-                    <p>Criador e Desenvolvedor Principal</p>
-                    <div class="contato">
-                        <a href="https://github.com/gustavo15dev" target="_blank">GitHub</a>
-                        <a href="mailto:gustavo.gomes9546@gmail.com">Email</a>
-                        <a href="tel:+5519998510546">Telefone</a>                     
-                    </div>
+                <h3>Gustavo</h3>
+                <p class="role">SEO, criador e desenvolvedor principal do Sala de Experimentos, de 2 IAs, 1 jogo, 1 rede social, entre muitos outros sites.</p>
+                <div class="contato">
+                    <a href="https://github.com/gustavo15dev" target="_blank">GitHub</a>
+                    <a href="tel:+5519998519546">Telefone</a>                     
+                    <a href="mailto:gustavo14dev@gmail.com">Email</a>
                 </div>
             </div>
 
-            <!-- Card 2: Rafaela -->
             <div class="equipe-card">
-                <img src="../imagens/rafaela.png" alt="Foto de Rafaela" class="perfil-imagem">
-                <div class="perfil-info">
-                    <h3>Rafaela de Oliveira</h3>
-                    <p>Criadora e Avaliadora da Interface do Site</p>
-                    <div class="contato">
-                    <a href="tel:+5519995465543">Telefone</a>                        <a href="../falha.html">Email</a>
-                    </div>
+                <img src="../imagens/rafa.png" alt="Foto de Rafaela" class="perfil-imagem">
+                <h3>Rafaela de Oliveira</h3>
+                <p class="role">SEO, criadora e Avaliadora da Interface do Site</p>
+                <div class="contato">
+                    <a href="tel:+5519995405543">Telefone</a>
                 </div>
             </div>
 
-            <!-- Card 3: Heloíse -->
             <div class="equipe-card">
                 <img src="../imagens/heloise.png" alt="Foto de Heloíse" class="perfil-imagem">
-                <div class="perfil-info">
-                    <h3>Heloíse</h3>
-                    <p>Criadora do "Descubra qual Animal Marinho você é!"</p>
-                    <div class="contato">
-                    <a href="tel:+5519997210511">Telefone</a>                        <a href="../falha.html">Email</a>
-                    </div>
+                <h3>Heloíse</h3>
+                <p class="role">SEO e criadora do "Descubra qual Animal Marinho você é!"</p>
+                <div class="contato">
+                    <a href="tel:+5519997210511">Telefone</a>
                 </div>
             </div>
         </div>
 
-        <button class="botao-voltar" onclick="window.location.href = '../index.html'">Voltar</button>
+        <div class="btn-container">
+            <button class="botao-voltar" onclick="window.location.href = '../index.html'">Voltar ao Início</button>
+        </div>
+        
     </div>
 </body>
 </html>
