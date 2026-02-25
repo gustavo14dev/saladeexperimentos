@@ -196,3 +196,8 @@ Se precisar de ajuda:
 3. Confirme se o frontend está chamando `/api/unified-proxy`
 
 **Problema resolvido!** 🚀
+
+
+
+
+SENHA SUPABASE: #Casa130##Casa130
