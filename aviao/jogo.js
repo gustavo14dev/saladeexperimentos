@@ -68,12 +68,26 @@ function updateRemotePlayer(id, data) {
     if (!remotePlayers[id]) {
         // Usa sua geometria original, mas com cor vermelha
         const otherPlane = new THREE.Mesh(planeGeo, new THREE.MeshStandardMaterial({ color: 0xff4444, side: THREE.DoubleSide }));
+        
+        // Define a posição e rotação inicial para não "nascer" no 0,0,0
+        otherPlane.position.set(data.x, data.y, data.z);
+        otherPlane.rotation.set(data.rx, data.ry, data.rz);
+        
+        // Cria os alvos para a Interpolação (LERP)
+        otherPlane.userData.targetPos = new THREE.Vector3(data.x, data.y, data.z);
+        otherPlane.userData.targetRot = new THREE.Euler(data.rx, data.ry, data.rz);
+        
         scene.add(otherPlane);
         remotePlayers[id] = otherPlane;
     }
     const p = remotePlayers[id];
-    p.position.set(data.x, data.y, data.z);
-    p.rotation.set(data.rx, data.ry, data.rz);
+    
+    // Atualiza apenas o OBJETIVO para onde o avião deve ir
+    if (p.userData.targetPos) {
+        p.userData.targetPos.set(data.x, data.y, data.z);
+        p.userData.targetRot.set(data.rx, data.ry, data.rz);
+    }
+    
     p.visible = !data.isDead;
 }
 
@@ -283,6 +297,19 @@ function animate() {
             if(p.position.y < 0) p.userData.vel.y *= -0.5;
         });
     }
+
+    // --- SUAVIZAÇÃO DOS OUTROS JOGADORES (LERP) ---
+    for (let id in remotePlayers) {
+        const p = remotePlayers[id];
+        if (p.userData.targetPos) {
+            // O valor 0.1 dita a velocidade do deslizamento
+            p.position.lerp(p.userData.targetPos, 0.1); 
+            p.rotation.x += (p.userData.targetRot.x - p.rotation.x) * 0.1;
+            p.rotation.y += (p.userData.targetRot.y - p.rotation.y) * 0.1;
+            p.rotation.z += (p.userData.targetRot.z - p.rotation.z) * 0.1;
+        }
+    }
+
     renderer.render(scene, camera);
 }
 
@@ -290,4 +317,4 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-animate();
+animate();l
