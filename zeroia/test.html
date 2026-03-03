@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroIA - Teste Local</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(99, 102, 241, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            max-width: 250px;
+            z-index: 1000;
+        }
+        .test-info p {
+            margin: 0;
+            line-height: 1.5;
+        }
+        .test-info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <strong>🧪 Modo Teste</strong>
+        <p>Use dados simulados para testar o design sem API</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🤖 ZeroIA</h1>
+            <p class="subtitle">Detecta se um texto foi escrito por IA ou não</p>
+        </header>
+
+        <div class="cards-wrapper">
+            <!-- Card de Entrada -->
+            <div class="card input-card">
+                <h2>📝 Cole seu texto aqui</h2>
+                <textarea id="inputText" placeholder="Cole o texto que deseja verificar..." maxlength="5000">Este é um exemplo de texto para testar o ZeroIA. A inteligência artificial tem revolucionado a forma como criamos conteúdo. Por outro lado, é importante validar a autenticidade dos textos. Este detector foi desenvolvido para ajudar nessa tarefa.</textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span> / 5000 caracteres
+                </div>
+                <button id="analyzeBtn" class="btn-analyze">Analisar Texto</button>
+            </div>
+
+            <!-- Card de Resultado -->
+            <div class="card result-card">
+                <h2>📊 Resultado da Análise</h2>
+                <div id="resultContainer" class="result-container hidden">
+                    <div class="percentage-display">
+                        <div class="circle-chart">
+                            <svg viewBox="0 0 100 100">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="45" class="background"></circle>
+                                <circle cx="50" cy="50" r="45" class="progress" id="progressCircle" stroke="url(#progressGradient)"></circle>
+                            </svg>
+                            <div class="percentage-text" id="percentageText">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="result-details">
+                        <div class="detail-box">
+                            <h3>Probabilidade de IA</h3>
+                            <p id="aiPercentage" class="ai-percentage">0%</p>
+                        </div>
+                        <div class="detail-box">
+                            <h3>Probabilidade Humano</h3>
+                            <p id="humanPercentage" class="human-percentage">0%</p>
+                        </div>
+                    </div>
+
+                    <div class="verdict" id="verdict"></div>
+                    <div class="analysis-details" id="analysisDetails"></div>
+                </div>
+
+                <div id="loadingContainer" class="loading-container hidden">
+                    <div class="spinner"></div>
+                    <p>Analisando seu texto...</p>
+                </div>
+
+                <div id="emptyContainer" class="empty-container">
+                    <p>Cole um texto e clique em "Analisar" para começar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MODO TESTE - Dados simulados
+        const inputText = document.getElementById('inputText');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const charCount = document.getElementById('charCount');
+        const resultContainer = document.getElementById('resultContainer');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const emptyContainer = document.getElementById('emptyContainer');
+
+        const mockData = {
+            percentage: 45,
+            suspicious_phrases: [
+                "é importante validar",
+                "por outro lado",
+                "tem revolucionado"
+            ],
+            characteristics: [
+                {
+                    trait: "Estrutura de Parágrafos",
+                    evidence: "Parágrafos bem estruturados mas genéricos"
+                },
+                {
+                    trait: "Uso de Conectores",
+                    evidence: "Muitos conectores lógicos ('por outro lado', 'portanto')"
+                },
+                {
+                    trait: "Vocabulário",
+                    evidence: "Vocabulário formal mas comum em IA"
+                }
+            ]
+        };
+
+        // Atualizar contagem de caracteres
+        inputText.addEventListener('input', () => {
+            charCount.textContent = inputText.value.length;
+            if (inputText.value.length === 0) {
+                emptyContainer.classList.remove('hidden');
+                resultContainer.classList.add('hidden');
+            }
+        });
+
+        // Analisar texto ao clicar no botão
+        analyzeBtn.addEventListener('click', async () => {
+            const text = inputText.value.trim();
+            
+            if (!text) {
+                alert('Por favor, cole um texto para analisar');
+                return;
+            }
+
+            // Mostrar loading
+            emptyContainer.classList.add('hidden');
+            resultContainer.classList.add('hidden');
+            loadingContainer.classList.remove('hidden');
+            analyzeBtn.disabled = true;
+            analyzeBtn.style.opacity = '0.6';
+
+            // Simular delay de requisição
+            setTimeout(() => {
+                displayResults(mockData);
+                loadingContainer.classList.add('hidden');
+                analyzeBtn.disabled = false;
+                analyzeBtn.style.opacity = '1';
+            }, 2000);
+        });
+
+        function displayResults(data) {
+            const percentage = data.percentage || 0;
+            const suspiciousPhrases = data.suspicious_phrases || [];
+            const characteristics = data.characteristics || [];
+
+            // Atualizar porcentagem
+            document.getElementById('percentageText').textContent = `${Math.round(percentage)}%`;
+            document.getElementById('aiPercentage').textContent = `${Math.round(percentage)}%`;
+            document.getElementById('humanPercentage').textContent = `${Math.round(100 - percentage)}%`;
+
+            // Atualizar círculo de progresso
+            const progressCircle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (percentage / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+
+            // Cores baseado na porcentagem
+            let verdictClass = 'verdict-human';
+            let verdictText = '✓ Texto provavelmente HUMANO';
+            
+            if (percentage >= 75) {
+                verdictClass = 'verdict-ai-high';
+                verdictText = '⚠️ Texto MUITO PROVÁVEL ser de IA';
+            } else if (percentage >= 50) {
+                verdictClass = 'verdict-ai-medium';
+                verdictText = '⚠️ Texto POSSIVELMENTE de IA';
+            } else if (percentage >= 25) {
+                verdictClass = 'verdict-ai-low';
+                verdictText = '🤔 Traços de IA detectados';
+            }
+
+            const verdictEl = document.getElementById('verdict');
+            verdictEl.className = `verdict ${verdictClass}`;
+            verdictEl.textContent = verdictText;
+
+            // Exibir trechos suspeitos
+            let detailsHTML = '';
+            
+            if (suspiciousPhrases && suspiciousPhrases.length > 0) {
+                detailsHTML += '<div class="suspicious-section">';
+                detailsHTML += '<h3>🚨 Trechos Suspeitos</h3>';
+                detailsHTML += '<div class="phrases-list">';
+                suspiciousPhrases.slice(0, 5).forEach(phrase => {
+                    detailsHTML += `<div class="phrase-item">"${phrase}"</div>`;
+                });
+                detailsHTML += '</div>';
+                detailsHTML += '</div>';
+            }
+
+            // Exibir características
+            if (characteristics && characteristics.length > 0) {
+                detailsHTML += '<div class="characteristics-section">';
+                detailsHTML += '<h3>📊 Características Detectadas</h3>';
+                detailsHTML += '<div class="characteristics-list">';
+                characteristics.slice(0, 4).forEach(char => {
+                    detailsHTML += `<div class="characteristic-item">
+                        <strong>${char.trait}</strong>
+                        <p>${char.evidence}</p>
+                    </div>`;
+                });
+                detailsHTML += '</div>';
+                detailsHTML += '</div>';
+            }
+
+            document.getElementById('analysisDetails').innerHTML = detailsHTML;
+
+            // Mostrar resultado
+            resultContainer.classList.remove('hidden');
+        }
+
+        // Inicializar
+        charCount.textContent = inputText.value.length;
+    </script>
+</body>
+</html>

@@ -15,6 +15,10 @@
     {
       "source": "/api/pixels-proxy",
       "destination": "/api/pixels-proxy.js"
+    },
+    {
+      "source": "/api/ai-detect",
+      "destination": "/api/ai-detect.js"
     }
   ]
 }

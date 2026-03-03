@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroIA - Detectar IA em Textos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 ZeroIA</h1>
+            <p class="subtitle">Detecta se um texto foi escrito por IA ou não</p>
+        </header>
+
+        <div class="cards-wrapper">
+            <!-- Card de Entrada -->
+            <div class="card input-card">
+                <h2>📝 Cole seu texto aqui</h2>
+                <textarea id="inputText" placeholder="Cole o texto que deseja verificar..." maxlength="5000"></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span> / 5000 caracteres
+                </div>
+                <button id="analyzeBtn" class="btn-analyze">Analisar Texto</button>
+            </div>
+
+            <!-- Card de Resultado -->
+            <div class="card result-card">
+                <h2>📊 Resultado da Análise</h2>
+                <div id="resultContainer" class="result-container hidden">
+                    <div class="percentage-display">
+                        <div class="circle-chart">
+                            <svg viewBox="0 0 100 100">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="45" class="background"></circle>
+                                <circle cx="50" cy="50" r="45" class="progress" id="progressCircle" stroke="url(#progressGradient)"></circle>
+                            </svg>
+                            <div class="percentage-text" id="percentageText">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="result-details">
+                        <div class="detail-box">
+                            <h3>Probabilidade de IA</h3>
+                            <p id="aiPercentage" class="ai-percentage">0%</p>
+                        </div>
+                        <div class="detail-box">
+                            <h3>Probabilidade Humano</h3>
+                            <p id="humanPercentage" class="human-percentage">0%</p>
+                        </div>
+                    </div>
+
+                    <div class="verdict" id="verdict"></div>
+                    <div class="analysis-details" id="analysisDetails"></div>
+                </div>
+
+                <div id="loadingContainer" class="loading-container hidden">
+                    <div class="spinner"></div>
+                    <p>Analisando seu texto...</p>
+                </div>
+
+                <div id="emptyContainer" class="empty-container">
+                    <p>Cole um texto e clique em "Analisar" para começar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
