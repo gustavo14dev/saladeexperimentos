@@ -132,6 +132,8 @@ api/
 - [ ] Modo escuro automático
 - [ ] Suporte a mais idiomas
 - [x] Botão "Humanizar" para reescrever texto e reanalisar
+- [x] Exibição de rótulo de pontuação estilo "AI GPT*"
+- [x] Caixa de sugestões com pontos positivos/negativos e melhorias
 
 ## 📄 Licença
 

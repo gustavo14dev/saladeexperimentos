@@ -83,6 +83,28 @@ function displayResults(data) {
     const suspiciousPhrases = data.suspicious_phrases || [];
     const characteristics = data.characteristics || [];
 
+    // construir recomendações
+    const suggestionsArr = [];
+    if (percentage >= 75) {
+        suggestionsArr.push('Texto com alta probabilidade de IA – considere usar o botão "Humanizar".');
+    } else if (percentage >= 50) {
+        suggestionsArr.push('Texto possivelmente gerado por IA; pequenas reformulações podem ajudar.');
+    } else if (percentage < 25) {
+        suggestionsArr.push('Texto parece bastante humanoic. Continue nessa linha.');
+    }
+    if (suspiciousPhrases.length) {
+        suggestionsArr.push('Frases suspeitas detectadas: ' + suspiciousPhrases.slice(0,3).join(', ') + '.');
+    }
+    if (characteristics.length) {
+        characteristics.slice(0,3).forEach(c => {
+            suggestionsArr.push(`Característica observada: ${c.trait} – ${c.evidence}`);
+        });
+    }
+    
+    // atualizar score label
+    document.getElementById('scoreLabel').textContent = 'AI GPT*';
+
+
     // Atualizar porcentagem
     document.getElementById('percentageText').textContent = `${Math.round(percentage)}%`;
     document.getElementById('aiPercentage').textContent = `${Math.round(percentage)}%`;
@@ -143,6 +165,18 @@ function displayResults(data) {
     }
 
     document.getElementById('analysisDetails').innerHTML = detailsHTML;
+
+    // preencher sugestões
+    const sugEl = document.getElementById('suggestions');
+    if (suggestionsArr.length) {
+        let html = '<h3>💡 Sugestões</h3><ul>';
+        suggestionsArr.forEach(s => html += `<li>${s}</li>`);
+        html += '</ul>';
+        sugEl.innerHTML = html;
+        sugEl.classList.remove('hidden');
+    } else {
+        sugEl.classList.add('hidden');
+    }
 
     // Mostrar resultado
     resultContainer.classList.remove('hidden');
