@@ -20,10 +20,13 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Texto é obrigatório' });
         }
 
-        const apiKey = process.env.GROQ_API_KEY;
+        const apiKey = process.env.LHAMA_GROQ_API_PROXY;
         if (!apiKey) {
-            return res.status(500).json({ error: 'GROQ_API_KEY não configurada' });
+            console.error('[AI-DETECT] LHAMA_GROQ_API_PROXY não configurada');
+            return res.status(500).json({ error: 'API Key não configurada no servidor' });
         }
+
+        console.log('[AI-DETECT] Iniciando análise com Groq');
 
         // Chamada para GROQ com prompt especializado em detecção de IA
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -63,12 +66,16 @@ Retorne APENAS um JSON válido, sem explicações adicionais, neste formato exat
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            console.error('[AI-DETECT] Erro GROQ:', error);
-            return res.status(500).json({ error: 'Erro ao chamar API GROQ' });
+            const errorText = await response.text();
+            console.error('[AI-DETECT] Erro Groq - Status:', response.status, 'Body:', errorText);
+            return res.status(response.status).json({ 
+                error: 'Erro ao analisar com Groq',
+                details: errorText 
+            });
         }
 
         const data = await response.json();
+        console.log('[AI-DETECT] Resposta Groq recebida com sucesso');
         
         // Extrair a resposta
         const content = data.choices[0].message.content.trim();
@@ -97,13 +104,15 @@ Retorne APENAS um JSON válido, sem explicações adicionais, neste formato exat
 
         // Validar dados
         analysis.percentage = Math.max(0, Math.min(100, analysis.percentage || 0));
-        analysis.suspicious_phrases = analysis.suspicious_phrases || [];
-        analysis.characteristics = analysis.characteristics || [];
+        analysis.suspicious_phrases = (analysis.suspicious_phrases || []).slice(0, 5);
+        analysis.characteristics = (analysis.characteristics || []).slice(0, 4);
+
+        console.log('[AI-DETECT] Análise concluída:', { percentage: analysis.percentage });
 
         return res.status(200).json(analysis);
 
     } catch (error) {
-        console.error('[AI-DETECT] Erro interno:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+        console.error('[AI-DETECT] Erro interno:', error.message);
+        return res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
     }
 }

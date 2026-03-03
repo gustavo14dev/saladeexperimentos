@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroIA - Teste da API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .section {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            margin-bottom: 15px;
+            color: #60a5fa;
+            font-size: 1.2rem;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: monospace;
+            margin-bottom: 10px;
+            resize: none;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .output {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #334155;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .config {
+            background: #334155;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        .test-item {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste da API ZeroIA</h1>
+
+        <div class="section">
+            <h2>📋 Configuração</h2>
+            <div class="config">
+                API URL: <strong id="apiUrl"></strong><br>
+                Ambiente: <strong id="environment"></strong>
+            </div>
+        </div>
+
+        <div class="section test-item">
+            <h2>✅ Teste 1: Status da API</h2>
+            <p style="margin-bottom: 15px;">Verifica se a API está respondendo.</p>
+            <button onclick="testApiStatus()">Testar Status</button>
+            <div id="statusOutput" class="output hidden"></div>
+        </div>
+
+        <div class="section test-item">
+            <h2>🚀 Teste 2: Análise de Texto</h2>
+            <p style="margin-bottom: 15px;">Envia um texto para análise.</p>
+            <textarea id="testText" placeholder="Cole um texto para testar...">Este é um texto de teste para verificar se a API está funcionando corretamente.</textarea>
+            <button onclick="testApiAnalysis()">Analisar Texto</button>
+            <div id="analysisOutput" class="output hidden"></div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Teste 3: Análise Detalhada (Console)</h2>
+            <p style="margin-bottom: 15px;">Abra o DevTools (F12) e veja os logs em tempo real.</p>
+            <button onclick="testDetailedAnalysis()">Análise com Logs</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api/ai-detect'
+            : 'https://saladeexperimentos.vercel.app/api/ai-detect';
+
+        // Configurar página
+        document.getElementById('apiUrl').textContent = API_URL;
+        document.getElementById('environment').textContent = window.location.hostname === 'localhost' ? 'Desenvolvimento' : 'Produção';
+
+        function showOutput(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            el.classList.remove('hidden');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = `[${timestamp}]`;
+            el.innerHTML += `\n<span class="${type}">${prefix} ${message}</span>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function clearOutput(elementId) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = '';
+            el.classList.add('hidden');
+        }
+
+        async function testApiStatus() {
+            clearOutput('statusOutput');
+            showOutput('statusOutput', 'Testando status da API...', 'info');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'OPTIONS'
+                });
+                
+                showOutput('statusOutput', `Status: ${response.status} ${response.statusText}`, 'success');
+                showOutput('statusOutput', '✅ API está acessível!', 'success');
+
+            } catch (error) {
+                showOutput('statusOutput', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testApiAnalysis() {
+            clearOutput('analysisOutput');
+            const text = document.getElementById('testText').value.trim();
+
+            if (!text) {
+                showOutput('analysisOutput', '❌ Cole um texto primeiro!', 'error');
+                return;
+            }
+
+            showOutput('analysisOutput', 'Enviando texto para análise...', 'info');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                showOutput('analysisOutput', `Status: ${response.status}`, 'info');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    showOutput('analysisOutput', `❌ Erro ${response.status}: ${JSON.stringify(errorData)}`, 'error');
+                    return;
+                }
+
+                const data = await response.json();
+                showOutput('analysisOutput', '✅ Resposta recebida com sucesso!', 'success');
+                showOutput('analysisOutput', `\nResultado:\n${JSON.stringify(data, null, 2)}`, 'success');
+
+            } catch (error) {
+                showOutput('analysisOutput', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDetailedAnalysis() {
+            const text = document.getElementById('testText').value.trim();
+
+            if (!text) {
+                alert('Cole um texto primeiro!');
+                return;
+            }
+
+            console.clear();
+            console.log('%c🚀 ZeroIA API Test', 'font-size: 16px; font-weight: bold; color: #3b82f6;');
+            console.log('API URL:', API_URL);
+            console.log('Texto:', text.substring(0, 100) + '...');
+
+            try {
+                console.log('%c📤 Enviando requisição...', 'color: #60a5fa;');
+                
+                const startTime = performance.now();
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text })
+                });
+                const endTime = performance.now();
+
+                console.log(`%c⏱️ Tempo de resposta: ${(endTime - startTime).toFixed(2)}ms`, 'color: #f59e0b;');
+                console.log(`%c📥 Status: ${response.status}`, response.ok ? 'color: #10b981;' : 'color: #ef4444;');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('%c❌ Erro da API:', 'color: #ef4444;', errorData);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('%c✅ Sucesso!', 'color: #10b981;');
+                console.table({
+                    'Probabilidade de IA': data.percentage + '%',
+                    'Trechos suspeitos': data.suspicious_phrases.length,
+                    'Características': data.characteristics.length
+                });
+                console.log('%cDados completos:', 'font-weight: bold;', data);
+
+            } catch (error) {
+                console.error('%c❌ Erro:', 'color: #ef4444;', error);
+            }
+        }
+    </script>
+</body>
+</html>

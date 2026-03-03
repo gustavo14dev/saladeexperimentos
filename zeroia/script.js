@@ -10,6 +10,8 @@ const resultContainer = document.getElementById('resultContainer');
 const loadingContainer = document.getElementById('loadingContainer');
 const emptyContainer = document.getElementById('emptyContainer');
 
+console.log('[ZeroIA] API URL:', API_URL);
+
 // Atualizar contagem de caracteres
 inputText.addEventListener('input', () => {
     charCount.textContent = inputText.value.length;
@@ -32,6 +34,8 @@ analyzeBtn.addEventListener('click', async () => {
     analyzeBtn.style.opacity = '0.6';
 
     try {
+        console.log('[ZeroIA] Enviando requisição...');
+        
         // Fazer requisição à API
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -41,18 +45,23 @@ analyzeBtn.addEventListener('click', async () => {
             body: JSON.stringify({ text })
         });
 
+        console.log('[ZeroIA] Status da resposta:', response.status);
+
         if (!response.ok) {
-            throw new Error('Erro ao analisar texto');
+            const errorData = await response.json().catch(() => ({}));
+            console.error('[ZeroIA] Erro da API:', errorData);
+            throw new Error(errorData.error || `Erro ao analisar texto (${response.status})`);
         }
 
         const data = await response.json();
+        console.log('[ZeroIA] Dados recebidos:', data);
         
         // Exibir resultado
         displayResults(data);
 
     } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao analisar o texto. Tente novamente.');
+        console.error('[ZeroIA] Erro:', error);
+        alert('❌ Erro ao analisar o texto:\n\n' + error.message);
     } finally {
         // Esconder loading
         loadingContainer.classList.add('hidden');
