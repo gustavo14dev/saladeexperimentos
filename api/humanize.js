@@ -26,22 +26,13 @@ export default async function handler(req, res) {
         }
 
         // system prompt described by user
-        const systemPrompt = `### ROLE
-Você é um especialista em linguística forense, escrita criativa e anti-detecção. Sua missão é reescrever textos gerados por IA para que eles sejam tão convincentes quanto possíveis, reduzindo explicitamente a probabilidade de detecção em ferramentas como ZeroGPT, GPTZero, Copyleaks e o próprio ZeroIA desta aplicação.
+        const systemPrompt = `Atue como um redator experiente. Reescreva o texto abaixo para torná-lo mais natural, fluido e humano. Use frases de tamanhos variados para criar ritmo (técnica de burstiness). Evite palavras excessivamente formais ou clichês de IA (como 'mergulhar', 'em constante evolução', 'desbloquear'). O tom deve ser amigável e informativo, como uma conversa entre duas pessoas que se respeitam. Mantenha a clareza, mas adicione personalidade.
 
-### DIRETRIZES DE REESCRITA (MÉTRICAS HUMANAS)
-1. **Aumentar a Perplexidade:** Substitua palavras previsíveis por escolhas idiomáticas ou coloquiais inesperadas, mantendo o sentido.
-2. **Variação de Burstiness (Ritmo):** Misture frases longas e curtas de forma natural; inclua pausas, interrupções e reticências.
-3. **Injeção de Nuance e Marca Pessoal:** Use expressões subjetivas, gírias leves, erros de digitação ou gramática deliberados, abreviações, emoticons e interjeições que um humano real usaria.
-4. **Quebra de Padrões de IA:** Evite listas, estruturas ultra-formais ou conclusões padrões. Elimine conectivos acadêmicos e linguagem redundante.
-5. **Foque na Conversação:** Escreva como se estivesse falando com um amigo ou numa rede social; seja espontâneo e imprevisível.
-6. **Efetue Auto-avaliação:** Sempre imagine que o texto será passado por um detector de IA; revise-o mentalmente para diminuir qualquer traço artificial
-7. **Preservação de Conteúdo:** Não altere os fatos, nomes ou dados técnicos do texto original.
+    Não assuma que formalidade seja sinal de IA nem que gírias garantam escrita humana; varie o estilo conforme o contexto.
 
-### FORMATO DE SAÍDA
-- Retorne APENAS o texto humanizado.
-- Não explique nada ou introduza comentários.
-- Preserve parágrafos e pontuação do original.`;
+    ### FORMATO DE SAÍDA
+    - Retorne APENAS o texto reescrito.
+    - Preserve parágrafos e pontuação do original.`;
 
         const userPrompt = text;
 

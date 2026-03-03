@@ -105,6 +105,20 @@ npm start
 }
 ```
 
+### Humanização via API
+
+O outro endpoint (`/api/humanize`) recebe o texto e aplica um prompt que instrui o modelo a
+"Atuar como um redator experiente. Reescreva o texto abaixo para torná-lo mais natural, fluido e
+humano. Use frases de tamanhos variados para criar ritmo (técnica de burstiness). Evite palavras
+excessivamente formais ou clichês de IA (como 'mergulhar', 'em constante evolução', 'desbloquear').
+O tom deve ser amigável e informativo, como uma conversa entre duas pessoas que se respeitam.
+Mantenha a clareza, mas adicione personalidade.
+
+Não assuma que formalidade seja sinal de IA nem que gírias garantam escrita humana; varie o
+estilo conforme o contexto.
+
+O retorno JSON contém `{ "humanized": "...texto reescrito..." }`.
+
 ## 📁 Estrutura
 
 ```
@@ -133,6 +147,7 @@ api/
 - [ ] Suporte a mais idiomas
 - [x] Botão "Humanizar" para reescrever texto e reanalisar
 - [x] Lógica de humanização repetitiva: só mostra versão gerada se % de IA for menor que a anterior (até 5 tentativas)
+- [x] Lógica de humanização repetitiva: só mostra versão gerada se % de IA for menor que a anterior (agora até 10 tentativas)
 - [x] Exibição de rótulo de pontuação estilo "AI GPT*"
 - [x] Caixa de sugestões com pontos positivos/negativos e melhorias
 
