@@ -28,8 +28,23 @@ export default async function handler(req, res) {
 
         console.log('[AI-DETECT] Iniciando análise com Groq');
 
-        // Chamada para GROQ com prompt especializado em detecção de IA
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        // Prompt simples e direto para detecção de IA
+        const systemPrompt = `Você é um detector de textos gerados por IA. Analise o texto e retorne APENAS um JSON VÁLIDO sem explicações:
+
+{
+  "percentage": <número 0-100>,
+  "suspicious_phrases": ["frase1", "frase2", "frase3"],
+  "characteristics": [
+    {"trait": "trait1", "evidence": "evidence1"}
+  ]
+}`;
+
+        const userPrompt = `Analise: ${text}`;
+
+        console.log('[AI-DETECT] Payload:', { model: 'llama-3.1-70b-versatile', textLength: text.length });
+
+        // Chamada para GROQ
+        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
@@ -40,46 +55,54 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: 'system',
-                        content: `Você é um especialista em detecção de textos gerados por IA. Analise o texto fornecido e determine:
-1. A probabilidade percentual de o texto ter sido gerado por IA (0-100%)
-2. Os trechos mais suspeitos que indicam possível geração por IA
-3. Características observadas (estrutura, vocabulário, padrões que indicam IA)
-
-Retorne APENAS um JSON válido, sem explicações adicionais, neste formato exato:
-{
-  "percentage": <número entre 0 e 100>,
-  "suspicious_phrases": ["frase1", "frase2", "frase3"],
-  "characteristics": [
-    {"trait": "característica1", "evidence": "evidência1"},
-    {"trait": "característica2", "evidence": "evidência2"}
-  ]
-}`
+                        content: systemPrompt
                     },
                     {
                         role: 'user',
-                        content: `Analise este texto:\n\n"${text}"`
+                        content: userPrompt
                     }
                 ],
-                temperature: 0.3,
-                max_tokens: 1000,
+                temperature: 0.2,
+                max_tokens: 500,
             })
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[AI-DETECT] Erro Groq - Status:', response.status, 'Body:', errorText);
-            return res.status(response.status).json({ 
-                error: 'Erro ao analisar com Groq',
-                details: errorText 
+        const responseText = await groqResponse.text();
+        console.log('[AI-DETECT] Status Groq:', groqResponse.status);
+
+        if (!groqResponse.ok) {
+            console.error('[AI-DETECT] Erro Groq:', responseText);
+            return res.status(groqResponse.status).json({ 
+                error: 'Erro ao chamar API Groq',
+                details: responseText,
+                status: groqResponse.status
             });
         }
 
-        const data = await response.json();
-        console.log('[AI-DETECT] Resposta Groq recebida com sucesso');
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('[AI-DETECT] Erro ao parsear resposta Groq:', responseText);
+            return res.status(500).json({
+                error: 'Erro ao processar resposta da API',
+                details: responseText
+            });
+        }
+
+        console.log('[AI-DETECT] Resposta Groq recebida');
         
         // Extrair a resposta
-        const content = data.choices[0].message.content.trim();
+        const content = data.choices?.[0]?.message?.content?.trim();
         
+        if (!content) {
+            console.error('[AI-DETECT] Conteúdo vazio na resposta:', data);
+            return res.status(500).json({
+                error: 'Resposta vazia da API',
+                details: JSON.stringify(data)
+            });
+        }
+
         // Tentar parsear o JSON da resposta
         let analysis;
         try {
@@ -90,29 +113,44 @@ Retorne APENAS um JSON válido, sem explicações adicionais, neste formato exat
             } else if (jsonString.includes('```')) {
                 jsonString = jsonString.split('```')[1].split('```')[0];
             }
+            
             analysis = JSON.parse(jsonString.trim());
+            console.log('[AI-DETECT] JSON parseado com sucesso');
         } catch (parseError) {
-            console.error('[AI-DETECT] Erro ao parsear resposta:', content);
-            // Fallback: retornar resposta como texto
+            console.error('[AI-DETECT] Não foi JSON puro, tentando fallback:', content);
+            
+            // Fallback: extrair dados do texto
+            const percentageMatch = content.match(/(\d+)\s*%/);
             analysis = {
-                percentage: 50,
+                percentage: percentageMatch ? parseInt(percentageMatch[1]) : 50,
                 suspicious_phrases: [],
-                characteristics: [],
-                raw_analysis: content
+                characteristics: [
+                    {
+                        trait: 'Análise',
+                        evidence: content.substring(0, 200)
+                    }
+                ]
             };
         }
 
         // Validar dados
         analysis.percentage = Math.max(0, Math.min(100, analysis.percentage || 0));
-        analysis.suspicious_phrases = (analysis.suspicious_phrases || []).slice(0, 5);
-        analysis.characteristics = (analysis.characteristics || []).slice(0, 4);
+        analysis.suspicious_phrases = Array.isArray(analysis.suspicious_phrases) 
+            ? analysis.suspicious_phrases.slice(0, 5) 
+            : [];
+        analysis.characteristics = Array.isArray(analysis.characteristics) 
+            ? analysis.characteristics.slice(0, 4) 
+            : [];
 
         console.log('[AI-DETECT] Análise concluída:', { percentage: analysis.percentage });
 
         return res.status(200).json(analysis);
 
     } catch (error) {
-        console.error('[AI-DETECT] Erro interno:', error.message);
-        return res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
+        console.error('[AI-DETECT] Erro interno:', error.message, error.stack);
+        return res.status(500).json({ 
+            error: 'Erro interno do servidor',
+            details: error.message 
+        });
     }
 }

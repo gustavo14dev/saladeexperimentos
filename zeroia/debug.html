@@ -202,18 +202,23 @@
 
                 showOutput('analysisOutput', `Status: ${response.status}`, 'info');
 
+                const data = await response.json();
+                
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    showOutput('analysisOutput', `❌ Erro ${response.status}: ${JSON.stringify(errorData)}`, 'error');
+                    showOutput('analysisOutput', `❌ Erro ${response.status}:`, 'error');
+                    showOutput('analysisOutput', `${JSON.stringify(data, null, 2)}`, 'error');
+                    
+                    // Log no console também
+                    console.error('[TEST] Erro da API:', data);
                     return;
                 }
 
-                const data = await response.json();
                 showOutput('analysisOutput', '✅ Resposta recebida com sucesso!', 'success');
                 showOutput('analysisOutput', `\nResultado:\n${JSON.stringify(data, null, 2)}`, 'success');
 
             } catch (error) {
                 showOutput('analysisOutput', `❌ Erro: ${error.message}`, 'error');
+                console.error('[TEST] Erro:', error);
             }
         }
 
