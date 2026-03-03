@@ -224,6 +224,24 @@
         <!-- REMOVIDA do main-wrapper pois agora está no site-header -->
 
         <div id="container-cards">
+            <div class="glass-card" data-projeto="halibuspace" data-categoria="diversao">
+                <div class="card-image-wrapper">
+                    <img src="imagens/halibu.png" alt="Halibu Space" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Halibu+Space'">
+                    <span class="status-tag">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Halibu Space</h3>
+                        <span class="category-icon"><i class="fa-solid fa-rocket"></i></span>
+                    </div>
+                    <p>Embarque em uma aventura intergaláctica! Explore o espaço e viva experiências incríveis.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="halibuspace-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="halibuspace/index.html" onclick="atualizarEstatistica('halibuspace')" class="action-btn">Explorar</a>
+                </div>
+            </div>
+
             <div class="glass-card" data-projeto="hacker" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/hacker.png" alt="Terminal Neural" onerror="this.src='https://placehold.co/600x400/000/0F0?text=Terminal+Neural'">
@@ -579,7 +597,7 @@
         }
 
         window.addEventListener('load', () => {
-            const projetos = ['zapwrapped', 'drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker'];
+            const projetos = ['zapwrapped', 'drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker', 'halibuspace'];
             
             projetos.forEach(proj => {
                 let count = localStorage.getItem(proj) || 0;
