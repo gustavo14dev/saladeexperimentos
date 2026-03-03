@@ -164,6 +164,7 @@ humanizeBtn?.addEventListener('click', async () => {
 
     // queremos garantir que o novo texto tenha porcentagem menor que lastAnalyzedPercentage
     let attempts = 0;
+    const maxAttempts = 10; // mais tentativas para aumentar chance de sucesso
     let newText = currentText;
     let newPercent = lastAnalyzedPercentage || 100;
 
@@ -192,7 +193,7 @@ humanizeBtn?.addEventListener('click', async () => {
                 break;
             }
             // caso contrário, repetir até limite
-        } while (attempts < 5);
+        } while (attempts < maxAttempts);
 
         if (newPercent >= lastAnalyzedPercentage) {
             // não conseguiu melhorar

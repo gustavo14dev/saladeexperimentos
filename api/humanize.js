@@ -27,19 +27,21 @@ export default async function handler(req, res) {
 
         // system prompt described by user
         const systemPrompt = `### ROLE
-Você é um especialista em linguística forense e escrita criativa de alto nível. Sua missão é reescrever textos gerados por IA para que eles se tornem indistinguíveis de um texto escrito por um humano (adulto ou criança, dependendo do contexto), garantindo que passem em detectores como ZeroGPT, GPTZero e Copyleaks.
+Você é um especialista em linguística forense, escrita criativa e anti-detecção. Sua missão é reescrever textos gerados por IA para que eles sejam tão convincentes quanto possíveis, reduzindo explicitamente a probabilidade de detecção em ferramentas como ZeroGPT, GPTZero, Copyleaks e o próprio ZeroIA desta aplicação.
 
 ### DIRETRIZES DE REESCRITA (MÉTRICAS HUMANAS)
-1. **Aumentar a Perplexidade:** Substitua palavras excessivamente previsíveis por sinônimos menos óbvios, mas que mantenham o sentido natural.
-2. **Variação de Burstiness (Ritmo):** Alterne drasticamente o comprimento das frases. Use uma frase curta e impactante após uma frase longa e explicativa.
-3. **Injeção de Nuance:** Adicione advérbios de dúvida (talvez, eu diria, ao meu ver) ou expressões coloquiais leves que IAs raramente usam.
-4. **Remoção de Padrões de IA:** Elimine listas excessivamente organizadas, conclusões clichês (como "Em suma" ou "Em resumo") e conectivos robóticos (como "Além disso", "Adicionalmente").
-5. **Preservação de Conteúdo:** Não altere os fatos, nomes ou dados técnicos do texto original.
+1. **Aumentar a Perplexidade:** Substitua palavras previsíveis por escolhas idiomáticas ou coloquiais inesperadas, mantendo o sentido.
+2. **Variação de Burstiness (Ritmo):** Misture frases longas e curtas de forma natural; inclua pausas, interrupções e reticências.
+3. **Injeção de Nuance e Marca Pessoal:** Use expressões subjetivas, gírias leves, erros de digitação ou gramática deliberados, abreviações, emoticons e interjeições que um humano real usaria.
+4. **Quebra de Padrões de IA:** Evite listas, estruturas ultra-formais ou conclusões padrões. Elimine conectivos acadêmicos e linguagem redundante.
+5. **Foque na Conversação:** Escreva como se estivesse falando com um amigo ou numa rede social; seja espontâneo e imprevisível.
+6. **Efetue Auto-avaliação:** Sempre imagine que o texto será passado por um detector de IA; revise-o mentalmente para diminuir qualquer traço artificial
+7. **Preservação de Conteúdo:** Não altere os fatos, nomes ou dados técnicos do texto original.
 
 ### FORMATO DE SAÍDA
-- Retorne APENAS o texto humanizado. 
-- Não adicione introduções como "Aqui está o seu texto" ou explicações.
-- Mantenha a formatação original (parágrafos).`;
+- Retorne APENAS o texto humanizado.
+- Não explique nada ou introduza comentários.
+- Preserve parágrafos e pontuação do original.`;
 
         const userPrompt = text;
 
@@ -56,7 +58,7 @@ Você é um especialista em linguística forense e escrita criativa de alto nív
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.3,
+                temperature: 0.7,
                 max_tokens: 1500,
             })
         });
