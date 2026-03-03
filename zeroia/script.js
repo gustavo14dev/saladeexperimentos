@@ -5,6 +5,7 @@ const API_URL = window.location.hostname === 'localhost'
 
 const inputText = document.getElementById('inputText');
 const analyzeBtn = document.getElementById('analyzeBtn');
+const humanizeBtn = document.getElementById('humanizeBtn');
 const charCount = document.getElementById('charCount');
 const resultContainer = document.getElementById('resultContainer');
 const loadingContainer = document.getElementById('loadingContainer');
@@ -15,6 +16,10 @@ console.log('[ZeroIA] API URL:', API_URL);
 // Atualizar contagem de caracteres
 inputText.addEventListener('input', () => {
     charCount.textContent = inputText.value.length;
+    // se usuário editar após análise, esconder o botão humanizar
+    if (inputText.value.trim().length > 0) {
+        humanizeBtn.classList.add('hidden');
+    }
 });
 
 // Analisar texto ao clicar no botão
@@ -58,6 +63,9 @@ analyzeBtn.addEventListener('click', async () => {
         
         // Exibir resultado
         displayResults(data);
+
+        // ativar botão humanizar
+        humanizeBtn.classList.remove('hidden');
 
     } catch (error) {
         console.error('[ZeroIA] Erro:', error);
@@ -139,6 +147,44 @@ function displayResults(data) {
     // Mostrar resultado
     resultContainer.classList.remove('hidden');
 }
+
+// Humanizar botão
+humanizeBtn.addEventListener('click', async () => {
+    const text = inputText.value.trim();
+    if (!text) return;
+
+    humanizeBtn.disabled = true;
+    humanizeBtn.textContent = 'Humanizando...';
+
+    try {
+        const resp = await fetch(window.location.hostname === 'localhost' ?
+            'http://localhost:3000/api/humanize' :
+            'https://saladeexperimentos.vercel.app/api/humanize', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+            console.error('[ZeroIA] erro humanize', data);
+            alert('Erro ao humanizar: ' + (data.error || resp.status));
+            return;
+        }
+
+        // substituir texto e reanalisar
+        inputText.value = data.humanized || '';
+        charCount.textContent = inputText.value.length;
+        humanizeBtn.textContent = 'Humanizar Texto';
+        humanizeBtn.disabled = false;
+
+        analyzeBtn.click();
+    } catch (err) {
+        console.error('[ZeroIA] falha humanizar', err);
+        alert('Falha na humanização');
+        humanizeBtn.textContent = 'Humanizar Texto';
+        humanizeBtn.disabled = false;
+    }
+});
 
 // Permitir análise com Ctrl+Enter / Cmd+Enter
 inputText.addEventListener('keydown', (e) => {

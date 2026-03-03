@@ -131,6 +131,7 @@ api/
 - [ ] Comparação entre múltiplos textos
 - [ ] Modo escuro automático
 - [ ] Suporte a mais idiomas
+- [x] Botão "Humanizar" para reescrever texto e reanalisar
 
 ## 📄 Licença
 

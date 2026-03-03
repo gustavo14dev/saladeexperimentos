@@ -19,6 +19,10 @@
     {
       "source": "/api/ai-detect",
       "destination": "/api/ai-detect.js"
+    },
+    {
+      "source": "/api/humanize",
+      "destination": "/api/humanize.js"
     }
   ]
 }

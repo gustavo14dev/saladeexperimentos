@@ -326,6 +326,31 @@ textarea::placeholder {
     animation: slideUp 0.4s ease-out;
 }
 
+/* HUMANIZE BUTTON */
+.btn-humanize {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+    margin-top: 20px;
+    align-self: center;
+}
+
+.btn-humanize:hover:not(:disabled) {
+    background: #db2777;
+    transform: translateY(-2px);
+}
+
+.btn-humanize:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .verdict-human {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
     color: #065f46;
