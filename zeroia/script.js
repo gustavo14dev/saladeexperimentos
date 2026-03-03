@@ -150,66 +150,7 @@ function renderResult(data = {}) {
 // Reanalisar (botão dentro do resultado)
 document.getElementById('reanalyzeBtn')?.addEventListener('click', () => analyzeBtn.click());
 
-// Humanizar: envia para endpoint /api/humanize, substitui texto e reanalisar
-humanizeBtn?.addEventListener('click', async () => {
-    let currentText = inputText.value.trim();
-    if (!currentText) return;
-
-    const HUMANIZE_URL = window.location.hostname === 'localhost'
-        ? 'http://localhost:3000/api/humanize'
-        : 'https://saladeexperimentos.vercel.app/api/humanize';
-
-    humanizeBtn.disabled = true;
-    const originalLabel = humanizeBtn.textContent;
-
-    // queremos garantir que o novo texto tenha porcentagem menor que lastAnalyzedPercentage
-    let attempts = 0;
-    const maxAttempts = 10; // mais tentativas para aumentar chance de sucesso
-    let newText = currentText;
-    let newPercent = lastAnalyzedPercentage || 100;
-
-    showLoading();
-    try {
-        do {
-            attempts += 1;
-            // solicitar humanização
-            const resp = await fetch(HUMANIZE_URL, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text: newText })
-            });
-            const data = await resp.json().catch(() => ({}));
-            if (!resp.ok) throw new Error(data.error || 'Erro humanize');
-
-            newText = data.humanized || newText;
-            // analisar novo texto
-            const analysis = await analyzeText(newText);
-            newPercent = Math.max(0, Math.min(100, Math.round(analysis.percentage || 0)));
-            // se melhor caiu abaixo do anterior, pode mostrar
-            if (newPercent < lastAnalyzedPercentage) {
-                inputText.value = newText;
-                charCount.textContent = newText.length;
-                renderResult(analysis);
-                break;
-            }
-            // caso contrário, repetir até limite
-        } while (attempts < maxAttempts);
-
-        if (newPercent >= lastAnalyzedPercentage) {
-            // não conseguiu melhorar
-            alert('Não foi possível gerar um texto com menor % de IA após várias tentativas. Tente reformular manualmente.');
-            // reapresenta resultado original (sem substituir texto)
-            renderResult({ percentage: lastAnalyzedPercentage });
-        }
-    } catch (err) {
-        console.error('[ZeroIA] humanize error', err);
-        alert('Erro ao humanizar: ' + (err.message || err));
-    } finally {
-        hideLoading();
-        humanizeBtn.disabled = false;
-        humanizeBtn.textContent = originalLabel;
-    }
-});
+// Humanizar temporariamente removido — a UI não contém mais o botão
 
 // (botões de copiar/tema/exemplos removidos — funcionalidade simplificada)
 
