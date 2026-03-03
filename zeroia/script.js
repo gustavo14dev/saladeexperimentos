@@ -1,228 +1,214 @@
-// URL da API - usar localhost para desenvolvimento, Vercel em produção
-const API_URL = window.location.hostname === 'localhost' 
+// Configuração de endpoints (mantive compatibilidade com ambiente local)
+const API_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3000/api/ai-detect'
     : 'https://saladeexperimentos.vercel.app/api/ai-detect';
 
+// Elementos principais
 const inputText = document.getElementById('inputText');
+
+// armazena a última porcentagem que foi exibida (antes de humanizar)
+let lastAnalyzedPercentage = null;
+
 const analyzeBtn = document.getElementById('analyzeBtn');
 const humanizeBtn = document.getElementById('humanizeBtn');
 const charCount = document.getElementById('charCount');
 const resultContainer = document.getElementById('resultContainer');
 const loadingContainer = document.getElementById('loadingContainer');
 const emptyContainer = document.getElementById('emptyContainer');
+const progressCircle = document.getElementById('progressCircle');
+const percentageText = document.getElementById('percentageText');
+const aiPercentage = document.getElementById('aiPercentage');
+const humanPercentage = document.getElementById('humanPercentage');
+const verdictEl = document.getElementById('verdict');
+const suggestionsEl = document.getElementById('suggestions');
+const analysisDetails = document.getElementById('analysisDetails');
+const clearBtn = document.getElementById('clearBtn');
 
-console.log('[ZeroIA] API URL:', API_URL);
+// Inicialização
+let circleRadius = 45;
+const circumference = 2 * Math.PI * circleRadius;
+if (progressCircle) {
+    progressCircle.style.strokeDasharray = `${circumference}`;
+    progressCircle.style.strokeDashoffset = `${circumference}`;
+}
 
 // Atualizar contagem de caracteres
 inputText.addEventListener('input', () => {
     charCount.textContent = inputText.value.length;
-    // se usuário editar após análise, esconder o botão humanizar
-    if (inputText.value.trim().length > 0) {
-        humanizeBtn.classList.add('hidden');
+    // esconder se estiver visível um resultado antigo
+    if (resultContainer && !resultContainer.classList.contains('hidden')) {
+        // mantém resultado até nova análise; se preferir limpar automaticamente, descomente:
+        // resultContainer.classList.add('hidden');
     }
 });
 
-// Analisar texto ao clicar no botão
-analyzeBtn.addEventListener('click', async () => {
-    const text = inputText.value.trim();
-    
-    if (!text) {
-        alert('Por favor, cole um texto para analisar');
-        return;
-    }
+// Limpar texto
+clearBtn?.addEventListener('click', () => {
+    inputText.value = '';
+    charCount.textContent = '0';
+    resultContainer?.classList.add('hidden');
+    emptyContainer?.classList.remove('hidden');
+});
 
-    // Mostrar loading
-    emptyContainer.classList.add('hidden');
-    resultContainer.classList.add('hidden');
-    loadingContainer.classList.remove('hidden');
+
+// Função para mostrar loading
+function showLoading() {
+    emptyContainer?.classList.add('hidden');
+    resultContainer?.classList.add('hidden');
+    loadingContainer?.classList.remove('hidden');
     analyzeBtn.disabled = true;
-    analyzeBtn.style.opacity = '0.6';
+}
 
+function hideLoading() {
+    loadingContainer?.classList.add('hidden');
+    analyzeBtn.disabled = false;
+}
+
+// função de análise que chama a API e retorna os dados
+async function analyzeText(text) {
+    const resp = await fetch(API_URL, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    if (!resp.ok) {
+        const err = await resp.json().catch(()=>({}));
+        throw new Error(err.error || 'Erro na API');
+    }
+    return resp.json();
+}
+
+// Analisar texto (botão principal)
+analyzeBtn.addEventListener('click', async () => {
+    const txt = inputText.value.trim();
+    if (!txt) return alert('Cole um texto para analisar');
+
+    showLoading();
     try {
-        console.log('[ZeroIA] Enviando requisição...');
-        
-        // Fazer requisição à API
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text })
-        });
-
-        console.log('[ZeroIA] Status da resposta:', response.status);
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('[ZeroIA] Erro da API:', errorData);
-            throw new Error(errorData.error || `Erro ao analisar texto (${response.status})`);
-        }
-
-        const data = await response.json();
-        console.log('[ZeroIA] Dados recebidos:', data);
-        
-        // Exibir resultado
-        displayResults(data);
-
-        // ativar botão humanizar
-        humanizeBtn.classList.remove('hidden');
-
-    } catch (error) {
-        console.error('[ZeroIA] Erro:', error);
-        alert('❌ Erro ao analisar o texto:\n\n' + error.message);
+        const data = await analyzeText(txt);
+        renderResult(data);
+    } catch (err) {
+        console.error(err);
+        alert('Erro ao analisar: ' + (err.message || err));
     } finally {
-        // Esconder loading
-        loadingContainer.classList.add('hidden');
-        analyzeBtn.disabled = false;
-        analyzeBtn.style.opacity = '1';
+        hideLoading();
     }
 });
 
-function displayResults(data) {
-    const percentage = data.percentage || 0;
+// Atalho Ctrl/Cmd + Enter
+inputText.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyzeBtn.click();
+});
+
+// Renderiza resultado mantendo compatibilidade com campo JSON retornado da API
+function renderResult(data = {}) {
+    const percentage = Math.max(0, Math.min(100, Math.round(data.percentage || 0)));
+    // guardar último percentual para comparação quando humanizar
+    lastAnalyzedPercentage = percentage;
     const suspiciousPhrases = data.suspicious_phrases || [];
     const characteristics = data.characteristics || [];
 
-    // construir recomendações
-    const suggestionsArr = [];
-    if (percentage >= 75) {
-        suggestionsArr.push('Texto com alta probabilidade de IA – considere usar o botão "Humanizar".');
-    } else if (percentage >= 50) {
-        suggestionsArr.push('Texto possivelmente gerado por IA; pequenas reformulações podem ajudar.');
-    } else if (percentage < 25) {
-        suggestionsArr.push('Texto parece bastante humanoic. Continue nessa linha.');
-    }
+    percentageText.textContent = `${percentage}%`;
+    aiPercentage.textContent = `${percentage}%`;
+    humanPercentage.textContent = `${100 - percentage}%`;
+
+    // animar círculo
+    const offset = circumference - (percentage / 100) * circumference;
+    if (progressCircle) progressCircle.style.strokeDashoffset = offset;
+
+    // texto do veredito
+    let vtext = '✓ Texto provávelmente humano';
+    if (percentage >= 75) vtext = '⚠️ Muito provável ser gerado por IA';
+    else if (percentage >= 50) vtext = '⚠️ Possível conteúdo de IA';
+    else if (percentage >= 25) vtext = '🤔 Sinais de IA detectados';
+    verdictEl.textContent = vtext;
+
+    // sugestões simples
+    const suggestions = [];
+    if (percentage >= 75) suggestions.push('Alta probabilidade de IA — considere revisar ou humanizar.');
+    else if (percentage >= 50) suggestions.push('Possível IA — revise tom e variação de frases.');
+    else suggestions.push('Baixa probabilidade de IA — parece natural.');
+    if (suspiciousPhrases.length) suggestions.push('Trechos suspeitos: ' + suspiciousPhrases.slice(0,3).join('; '));
+    suggestionsEl.innerHTML = `<strong>Sugestões</strong><p style="color:var(--muted);margin-top:6px">${suggestions.join('<br>')}</p>`;
+    suggestionsEl.classList.remove('hidden');
+
+    // detalhes
+    let detailsHtml = '';
     if (suspiciousPhrases.length) {
-        suggestionsArr.push('Frases suspeitas detectadas: ' + suspiciousPhrases.slice(0,3).join(', ') + '.');
+        detailsHtml += '<div><strong>Trechos suspeitos</strong>';
+        suspiciousPhrases.slice(0,5).forEach(p => { detailsHtml += `<div style="padding:8px 10px;border-radius:8px;margin-top:8px;background:rgba(255,255,255,0.02)">"${p}"</div>` });
+        detailsHtml += '</div>';
     }
     if (characteristics.length) {
-        characteristics.slice(0,3).forEach(c => {
-            suggestionsArr.push(`Característica observada: ${c.trait} – ${c.evidence}`);
-        });
+        detailsHtml += '<div style="margin-top:8px"><strong>Características</strong>';
+        characteristics.slice(0,5).forEach(c => { detailsHtml += `<div style="padding:8px 10px;border-radius:8px;margin-top:8px;background:rgba(255,255,255,0.02)"><strong>${c.trait}</strong><div style="color:var(--muted)">${c.evidence}</div></div>` });
+        detailsHtml += '</div>';
     }
-    
-    // atualizar score label
-    document.getElementById('scoreLabel').textContent = 'AI GPT*';
+    analysisDetails.innerHTML = detailsHtml;
 
-
-    // Atualizar porcentagem
-    document.getElementById('percentageText').textContent = `${Math.round(percentage)}%`;
-    document.getElementById('aiPercentage').textContent = `${Math.round(percentage)}%`;
-    document.getElementById('humanPercentage').textContent = `${Math.round(100 - percentage)}%`;
-
-    // Atualizar círculo de progresso
-    const progressCircle = document.getElementById('progressCircle');
-    const circumference = 2 * Math.PI * 45;
-    const offset = circumference - (percentage / 100) * circumference;
-    progressCircle.style.strokeDashoffset = offset;
-
-    // Cores baseado na porcentagem
-    let verdictClass = 'verdict-human';
-    let verdictText = '✓ Texto provavelmente HUMANO';
-    
-    if (percentage >= 75) {
-        verdictClass = 'verdict-ai-high';
-        verdictText = '⚠️ Texto MUITO PROVÁVEL ser de IA';
-    } else if (percentage >= 50) {
-        verdictClass = 'verdict-ai-medium';
-        verdictText = '⚠️ Texto POSSIVELMENTE de IA';
-    } else if (percentage >= 25) {
-        verdictClass = 'verdict-ai-low';
-        verdictText = '🤔 Traços de IA detectados';
-    }
-
-    const verdictEl = document.getElementById('verdict');
-    verdictEl.className = `verdict ${verdictClass}`;
-    verdictEl.textContent = verdictText;
-
-    // Exibir trechos suspeitos
-    let detailsHTML = '';
-    
-    if (suspiciousPhrases && suspiciousPhrases.length > 0) {
-        detailsHTML += '<div class="suspicious-section">';
-        detailsHTML += '<h3 🚨 Trechos Suspeitos</h3>';
-        detailsHTML += '<div class="phrases-list">';
-        suspiciousPhrases.slice(0, 5).forEach(phrase => {
-            detailsHTML += `<div class="phrase-item">"${phrase}"</div>`;
-        });
-        detailsHTML += '</div>';
-        detailsHTML += '</div>';
-    }
-
-    // Exibir características
-    if (characteristics && characteristics.length > 0) {
-        detailsHTML += '<div class="characteristics-section">';
-        detailsHTML += '<h3>📊 Características Detectadas</h3>';
-        detailsHTML += '<div class="characteristics-list">';
-        characteristics.slice(0, 4).forEach(char => {
-            detailsHTML += `<div class="characteristic-item">
-                <strong>${char.trait}</strong>
-                <p>${char.evidence}</p>
-            </div>`;
-        });
-        detailsHTML += '</div>';
-        detailsHTML += '</div>';
-    }
-
-    document.getElementById('analysisDetails').innerHTML = detailsHTML;
-
-    // preencher sugestões
-    const sugEl = document.getElementById('suggestions');
-    if (suggestionsArr.length) {
-        let html = '<h3>💡 Sugestões</h3><ul>';
-        suggestionsArr.forEach(s => html += `<li>${s}</li>`);
-        html += '</ul>';
-        sugEl.innerHTML = html;
-        sugEl.classList.remove('hidden');
-    } else {
-        sugEl.classList.add('hidden');
-    }
-
-    // Mostrar resultado
+    emptyContainer.classList.add('hidden');
     resultContainer.classList.remove('hidden');
+    humanizeBtn?.classList.remove('hidden');
 }
 
-// Humanizar botão
-humanizeBtn.addEventListener('click', async () => {
-    const text = inputText.value.trim();
-    if (!text) return;
+// Reanalisar (botão dentro do resultado)
+document.getElementById('reanalyzeBtn')?.addEventListener('click', () => analyzeBtn.click());
+
+// Humanizar: envia para endpoint /api/humanize, substitui texto e reanalisar
+humanizeBtn?.addEventListener('click', async () => {
+    let currentText = inputText.value.trim();
+    if (!currentText) return;
+
+    const HUMANIZE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000/api/humanize'
+        : 'https://saladeexperimentos.vercel.app/api/humanize';
 
     humanizeBtn.disabled = true;
-    humanizeBtn.textContent = 'Humanizando...';
+    const originalLabel = humanizeBtn.textContent;
 
+    // queremos garantir que o novo texto tenha porcentagem menor que lastAnalyzedPercentage
+    let attempts = 0;
+    let newText = currentText;
+    let newPercent = lastAnalyzedPercentage || 100;
+
+    showLoading();
     try {
-        const resp = await fetch(window.location.hostname === 'localhost' ?
-            'http://localhost:3000/api/humanize' :
-            'https://saladeexperimentos.vercel.app/api/humanize', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ text })
-        });
-        const data = await resp.json();
-        if (!resp.ok) {
-            console.error('[ZeroIA] erro humanize', data);
-            alert('Erro ao humanizar: ' + (data.error || resp.status));
-            return;
+        do {
+            attempts += 1;
+            // solicitar humanização
+            const resp = await fetch(HUMANIZE_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ text: newText })
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(data.error || 'Erro humanize');
+
+            newText = data.humanized || newText;
+            // analisar novo texto
+            const analysis = await analyzeText(newText);
+            newPercent = Math.max(0, Math.min(100, Math.round(analysis.percentage || 0)));
+            // se melhor caiu abaixo do anterior, pode mostrar
+            if (newPercent < lastAnalyzedPercentage) {
+                inputText.value = newText;
+                charCount.textContent = newText.length;
+                renderResult(analysis);
+                break;
+            }
+            // caso contrário, repetir até limite
+        } while (attempts < 5);
+
+        if (newPercent >= lastAnalyzedPercentage) {
+            // não conseguiu melhorar
+            alert('Não foi possível gerar um texto com menor % de IA após várias tentativas. Tente reformular manualmente.');
+            // reapresenta resultado original (sem substituir texto)
+            renderResult({ percentage: lastAnalyzedPercentage });
         }
-
-        // substituir texto e reanalisar
-        inputText.value = data.humanized || '';
-        charCount.textContent = inputText.value.length;
-        humanizeBtn.textContent = 'Humanizar Texto';
-        humanizeBtn.disabled = false;
-
-        analyzeBtn.click();
     } catch (err) {
-        console.error('[ZeroIA] falha humanizar', err);
-        alert('Falha na humanização');
-        humanizeBtn.textContent = 'Humanizar Texto';
+        console.error('[ZeroIA] humanize error', err);
+        alert('Erro ao humanizar: ' + (err.message || err));
+    } finally {
+        hideLoading();
         humanizeBtn.disabled = false;
+        humanizeBtn.textContent = originalLabel;
     }
 });
 
-// Permitir análise com Ctrl+Enter / Cmd+Enter
-inputText.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        analyzeBtn.click();
-    }
-});
+// (botões de copiar/tema/exemplos removidos — funcionalidade simplificada)
+

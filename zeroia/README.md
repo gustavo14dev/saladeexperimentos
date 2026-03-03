@@ -132,6 +132,7 @@ api/
 - [ ] Modo escuro automático
 - [ ] Suporte a mais idiomas
 - [x] Botão "Humanizar" para reescrever texto e reanalisar
+- [x] Lógica de humanização repetitiva: só mostra versão gerada se % de IA for menor que a anterior (até 5 tentativas)
 - [x] Exibição de rótulo de pontuação estilo "AI GPT*"
 - [x] Caixa de sugestões com pontos positivos/negativos e melhorias
 

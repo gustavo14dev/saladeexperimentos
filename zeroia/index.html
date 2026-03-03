@@ -1,77 +1,100 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZeroIA - Detectar IA em Textos</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZeroIA — Detector de Texto por IA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🤖 ZeroIA</h1>
-            <p class="subtitle">Detecta se um texto foi escrito por IA ou não</p>
-        </header>
-
-        <div class="cards-wrapper">
-            <!-- Card de Entrada -->
-            <div class="card input-card">
-                <h2>📝 Cole seu texto aqui</h2>
-                <textarea id="inputText" placeholder="Cole o texto que deseja verificar..." maxlength="5000"></textarea>
-                <div class="char-count">
-                    <span id="charCount">0</span> / 5000 caracteres
+    <div class="app">
+        <nav class="topbar">
+            <div class="brand">
+                <div class="logo">ZI</div>
+                <div class="brand-text">
+                    <h1>ZeroIA</h1>
+                    <span class="tag">Detector de conteúdo gerado por IA</span>
                 </div>
-                <button id="analyzeBtn" class="btn-analyze">Analisar Texto</button>
             </div>
+            <div class="top-actions">
+        <a href="../index.html" class="btn ghost back-btn">← Voltar</a>
+      </div>
+        </nav>
 
-            <!-- Card de Resultado -->
-            <div class="card result-card">
-                <h2>📊 Resultado da Análise</h2>
-                <div id="resultContainer" class="result-container hidden">
-                    <div class="percentage-display">
+        <main class="layout">
+            <section class="panel input-panel card">
+                <div class="panel-header">
+                    <h2>Cole seu texto</h2>
+                    <small class="hint">Máx. 5000 caracteres • Pressione Ctrl/Cmd+Enter para analisar</small>
+                </div>
+
+                <textarea id="inputText" maxlength="5000" placeholder="Cole aqui o texto que deseja verificar..."></textarea>
+
+                <div class="controls">
+                    <div class="left-controls">
+                        <div class="char-count"><span id="charCount">0</span> / 5000</div>
+                    </div>
+                    <div class="right-controls">
+                        <button id="analyzeBtn" class="btn primary">Analisar</button>
+                        <button id="clearBtn" class="btn ghost">Limpar</button>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="panel result-panel card">
+                <div class="panel-header">
+                    <h2>Resultado</h2>
+                    <div class="result-actions"></div>
+                </div>
+
+                <div id="emptyContainer" class="empty">Cole um texto e clique em "Analisar"</div>
+
+                <div id="loadingContainer" class="loading hidden">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Analisando...</div>
+                </div>
+
+                <div id="resultContainer" class="result hidden" aria-live="polite">
+                    <div class="score">
                         <div class="circle-chart">
-                            <svg viewBox="0 0 100 100">
+                            <svg viewBox="0 0 100 100" class="progress-svg">
                                 <defs>
                                     <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                                        <stop offset="0%" stop-color="#6366f1" />
+                                        <stop offset="100%" stop-color="#ec4899" />
                                     </linearGradient>
                                 </defs>
-                                <circle cx="50" cy="50" r="45" class="background"></circle>
-                                <circle cx="50" cy="50" r="45" class="progress" id="progressCircle" stroke="url(#progressGradient)"></circle>
+                                <circle cx="50" cy="50" r="45" class="bg"></circle>
+                                <circle cx="50" cy="50" r="45" id="progressCircle" class="fg" stroke="url(#progressGradient)"></circle>
                             </svg>
-                            <div class="percentage-text" id="percentageText">0%</div>
+                            <div class="percentage" id="percentageText">0%</div>
                         </div>
-                        <div class="score-label" id="scoreLabel">AI GPT*</div>
-                    </div>
-
-                    <div class="result-details">
-                        <div class="detail-box">
-                            <h3>Probabilidade de IA</h3>
-                            <p id="aiPercentage" class="ai-percentage">0%</p>
-                        </div>
-                        <div class="detail-box">
-                            <h3>Probabilidade Humano</h3>
-                            <p id="humanPercentage" class="human-percentage">0%</p>
+                        <div class="labels">
+                            <div class="label"><strong id="aiPercentage">0%</strong><span>IA</span></div>
+                            <div class="label"><strong id="humanPercentage">0%</strong><span>Humano</span></div>
                         </div>
                     </div>
 
-                    <div class="verdict" id="verdict"></div>
-                    <div class="suggestions hidden" id="suggestions"></div>
-                    <div class="analysis-details" id="analysisDetails"></div>
-                    <button id="humanizeBtn" class="btn-humanize hidden">Humanizar Texto</button>
-                </div>
+                    <div id="verdict" class="verdict"></div>
 
-                <div id="loadingContainer" class="loading-container hidden">
-                    <div class="spinner"></div>
-                    <p>Analisando seu texto...</p>
-                </div>
+                    <div id="suggestions" class="suggestions hidden"></div>
 
-                <div id="emptyContainer" class="empty-container">
-                    <p>Cole um texto e clique em "Analisar" para começar</p>
+                    <div id="analysisDetails" class="details"></div>
+
+                    <div class="result-footer">
+                        <button id="humanizeBtn" class="btn accent hidden">Humanizar</button>
+                        <button id="reanalyzeBtn" class="btn ghost">Reanalisar</button>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </aside>
+        </main>
+
+        <footer class="footer">
+            <small>Feito com ❤️ — ZeroIA • Experimentos</small>
+        </footer>
     </div>
 
     <script src="script.js"></script>
