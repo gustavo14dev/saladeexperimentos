@@ -1581,6 +1581,9 @@
   #npTitle { cursor: pointer; }
   #npTitle:hover { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(57,255,120,0.4); }
 
+  /* card-text wrapper — transparent on desktop (vertical layout unchanged) */
+  .card-text { display: contents; }
+
   /* ─── RANKING CARDS ─── */
   .ranking-card { position: relative; overflow: visible !important; }
 
@@ -1614,6 +1617,107 @@
   }
 
   .card-views i { font-size: 9px; color: var(--accent); }
+
+  /* ─── MOBILE COMPACT CARDS ─── */
+  @media (max-width: 800px) {
+    /* Ranking containers: single-column, full width */
+    #trendingCards, #brazilCards {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    /* Ranking cards become horizontal rows */
+    #trendingCards .music-card,
+    #brazilCards .music-card {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+
+    /* Thumbnail: small square on the left */
+    #trendingCards .card-thumb,
+    #brazilCards .card-thumb {
+      width: 48px !important;
+      height: 48px !important;
+      min-width: 48px;
+      max-width: 48px;
+      border-radius: 8px !important;
+      margin-bottom: 0 !important;
+      font-size: 18px !important;
+    }
+
+    /* Ranking card text info */
+    #trendingCards .card-title,
+    #brazilCards .card-title {
+      font-size: 13px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #trendingCards .card-sub,
+    #brazilCards .card-sub {
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #trendingCards .card-views,
+    #brazilCards .card-views {
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    /* Play button: always visible, pushed to right */
+    #trendingCards .card-play-btn,
+    #brazilCards .card-play-btn {
+      position: static !important;
+      opacity: 1 !important;
+      transform: none !important;
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 12px !important;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Rank badge repositioned for horizontal layout */
+    #trendingCards .rank-badge,
+    #brazilCards .rank-badge {
+      position: static !important;
+      font-size: 15px !important;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: center;
+      color: rgba(255,255,255,0.25) !important;
+      text-shadow: none !important;
+      letter-spacing: 0 !important;
+      flex-shrink: 0;
+    }
+
+    #trendingCards .ranking-card:nth-child(1) .rank-badge,
+    #brazilCards .ranking-card:nth-child(1) .rank-badge { color: rgba(255,215,0,0.75) !important; }
+    #trendingCards .ranking-card:nth-child(2) .rank-badge,
+    #brazilCards .ranking-card:nth-child(2) .rank-badge { color: rgba(192,192,192,0.75) !important; }
+    #trendingCards .ranking-card:nth-child(3) .rank-badge,
+    #brazilCards .ranking-card:nth-child(3) .rank-badge { color: rgba(205,127,50,0.75) !important; }
+
+    /* Text block: flex column inside horizontal layout */
+    #trendingCards .card-text,
+    #brazilCards .card-text {
+      display: flex !important;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+  }
 
   /* ─── SHORTS PLAYER FULLSCREEN ─── */
   #shortsPlayer {
@@ -2241,52 +2345,7 @@
 
   .new-playlist-btn:hover { background: rgba(57,255,120,0.08); border-color: rgba(57,255,120,0.5); }
 
-  /* ─── RESPONSIVE MOBILE ─── */
-  @media (max-width: 800px) {
-    :root { --sidebar-width: 0px; --player-height: 70px; }
-    #sidebar { display: none; }
-    #app { grid-template-columns: 1fr; }
-
-    /* Mobile topbar */
-    #topbar { padding: 10px 14px; gap: 8px; }
-    .nav-arrows { display: none; }
-    .search-wrap { flex: 1; }
-    .search-wrap input { font-size: 14px; }
-
-    /* Mobile player */
-    #player { padding: 0 12px; gap: 10px; }
-    .player-left { min-width: 0; flex: 1; gap: 8px; }
-    #npThumb { width: 42px; height: 42px; }
-    .np-info { min-width: 0; }
-    #npTitle { font-size: 12px; }
-    #npArtist { font-size: 11px; }
-    .player-center { flex: none; }
-    .controls { gap: 6px; }
-    .ctrl-btn { font-size: 14px; padding: 4px; }
-    #playPauseBtn { width: 38px; height: 38px; font-size: 14px; }
-    .progress-wrap { display: none; }
-    .player-right { display: none; }
-    #likeBtn { display: none; }
-
-    /* Mobile content */
-    #content { padding: 14px; }
-    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .hero-card { flex-direction: column; gap: 14px; padding: 18px; }
-    .hero-art { width: 80px; height: 80px; }
-    .hero-title { font-size: 16px; }
-
-    /* Mobile bottom nav */
-    #mobileNav { display: flex; }
-
-    /* Hide queue panel on mobile - use full screen */
-    #queuePanel { width: 100vw; }
-
-    /* Genre chips scroll */
-    .genre-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
-    .genre-chips::-webkit-scrollbar { height: 0; }
-  }
-
-  /* Mobile bottom nav bar */
+  /* ─── MOBILE BOTTOM NAV (hidden on desktop) ─── */
   #mobileNav {
     display: none;
     position: fixed;
@@ -2294,10 +2353,11 @@
     left: 0;
     right: 0;
     z-index: 400;
-    background: rgba(0,0,0,0.92);
-    backdrop-filter: blur(20px);
+    background: rgba(5,5,5,0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border-top: 1px solid var(--glass-border);
-    padding: 8px 0 4px;
+    padding: 6px 0 env(safe-area-inset-bottom, 4px);
     justify-content: space-around;
     align-items: center;
   }
@@ -2308,22 +2368,164 @@
     align-items: center;
     gap: 3px;
     cursor: pointer;
-    padding: 4px 12px;
-    border-radius: 8px;
+    padding: 6px 10px;
+    border-radius: 10px;
     color: var(--text-muted);
     transition: color 0.2s;
     font-size: 10px;
     font-weight: 600;
+    min-width: 48px;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .mob-nav-item i { font-size: 18px; }
+  .mob-nav-item i { font-size: 20px; }
   .mob-nav-item.active { color: var(--accent); }
 
-  /* Responsive tweaks */
+  /* ─── RESPONSIVE MOBILE ─── */
   @media (max-width: 800px) {
-    :root { --sidebar-width: 0px; }
+    :root { --sidebar-width: 0px; --player-height: 68px; }
+
+    /* Layout */
     #sidebar { display: none; }
     #app { grid-template-columns: 1fr; }
+    #mobileNav { display: flex; }
+
+    /* Topbar */
+    #topbar { padding: 8px 12px; gap: 0; }
+    .nav-arrows { display: none; }
+    .user-area { display: none; }
+    .search-wrap { flex: 1; max-width: 100%; }
+    #searchInput {
+      font-size: 16px;
+      padding: 11px 72px 11px 38px;
+      border-radius: 12px;
+    }
+    #searchBtn {
+      padding: 7px 14px;
+      font-size: 13px;
+      border-radius: 9px;
+      right: 5px;
+    }
+
+    /* Content — extra bottom padding for player + nav bar */
+    #content {
+      padding: 14px 14px calc(var(--player-height) + 62px + env(safe-area-inset-bottom, 0px));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hero card */
+    .hero-card { flex-direction: row; align-items: center; gap: 12px; padding: 14px; height: auto; }
+    .hero-art { width: 88px; height: 88px; font-size: 30px; }
+    .hero-title { font-size: 16px; }
+    .hero-sub { font-size: 12px; margin-bottom: 10px; }
+    .hero-actions { gap: 8px; }
+    .btn-play-hero { padding: 8px 16px; font-size: 13px; }
+    .btn-outline { padding: 8px 12px; font-size: 13px; }
+
+    /* Cards grid — 2 cols for generic grids, 1 col for ranking (handled by compact cards block) */
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    #trendingCards, #brazilCards { grid-template-columns: 1fr; gap: 6px; }
+    .card-title { font-size: 12px; }
+    .card-sub { font-size: 11px; }
+
+    /* Section headers */
+    .section-title { font-size: 17px; }
+    .see-all { font-size: 12px; }
+    .section-header { margin-bottom: 12px; }
+
+    /* Track list — actions always visible on touch */
+    .track-item { padding: 10px; gap: 10px; }
+    .track-thumb { width: 40px; height: 40px; }
+    .track-name { font-size: 13px; }
+    .track-artist { font-size: 11px; }
+    .track-actions { opacity: 1; }
+    .track-duration { font-size: 11px; min-width: 30px; }
+
+    /* Search type filter */
+    .search-type-filter { width: 100%; }
+    .type-btn { flex: 1; padding: 8px 4px; font-size: 12px; }
+
+    /* Genre chips horizontal scroll */
+    .genre-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+    .genre-chips::-webkit-scrollbar { height: 0; }
+    .genre-chip { scroll-snap-align: start; flex-shrink: 0; }
+
+    /* Queue panel — full width */
+    #queuePanel { width: 100vw; }
+
+    /* Player bar */
+    #player { padding: 0 12px; padding-bottom: env(safe-area-inset-bottom, 0px); gap: 6px; }
+    .player-left { min-width: 0; flex: 1; gap: 8px; }
+    #npThumb { width: 44px; height: 44px; cursor: pointer; }
+    .np-info { min-width: 0; cursor: pointer; }
+    #npTitle { font-size: 13px; }
+    #npArtist { font-size: 11px; }
+    #likeBtn { display: flex; font-size: 15px; padding: 4px; }
+    .player-center { flex: none; gap: 0; }
+    .controls { gap: 2px; }
+    .ctrl-btn { font-size: 15px; padding: 6px; }
+    #playPauseBtn { width: 40px; height: 40px; font-size: 15px; margin: 0 2px; }
+    .progress-wrap { display: none; }
+    .player-right { display: none; }
+
+    /* NowPlaying full-page */
+    #nowPlayingPage { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .np-page-topbar { padding: 16px 20px 0; }
+    .np-page-body { padding: 16px 24px 16px; max-width: 100%; }
+    .np-cover { width: min(240px, 70vw); height: min(240px, 70vw); margin-bottom: 22px; border-radius: 18px; }
+    .np-song-title { font-size: 20px; }
+    .np-song-artist { font-size: 14px; }
+    .np-song-info { margin-bottom: 18px; }
+    .np-progress-wrap { margin-bottom: 18px; }
+    .np-controls { gap: 10px; margin-bottom: 18px; }
+    #npPlayPauseBtn { width: 56px; height: 56px; font-size: 20px; }
+    .np-ctrl { font-size: 16px; padding: 8px; }
+    #npVolSlider { width: 80px; }
+
+    /* Video modal — bottom sheet on mobile */
+    .modal-card {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 88vh;
+    }
+    #videoModal { align-items: flex-end; }
+
+    /* Playlist modal — bottom sheet on mobile */
+    .pl-modal-card {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      max-height: 90vh;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    #playlistModal { align-items: flex-end; padding: 0; }
+
+    /* Shorts */
+    #shortsPlayer { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .sp-topbar { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px; }
+  }
+
+  /* ─── SMALL PHONES (≤ 390px) ─── */
+  @media (max-width: 390px) {
+    .hero-card { padding: 12px; gap: 10px; }
+    .hero-art { width: 72px; height: 72px; }
+    .hero-title { font-size: 15px; }
+    .cards-grid { gap: 8px; }
+    .type-btn { font-size: 11px; padding: 7px 4px; }
+    #content { padding: 10px 10px calc(var(--player-height) + 62px + env(safe-area-inset-bottom, 0px)); }
+    .np-cover { width: min(200px, 74vw); height: min(200px, 74vw); }
+    .np-song-title { font-size: 17px; }
+    .mob-nav-item { padding: 6px; min-width: 40px; font-size: 9px; }
+    .mob-nav-item i { font-size: 18px; }
   }
 </style>
 </head>
@@ -2550,21 +2752,7 @@
               </div>
             </div>
           </div>
-          <!-- EXEMPLO DE ANÚNCIO — copie este bloco para adicionar mais -->
-          <div class="ad-slide">
-            <div class="hero-card" style="width:100%;background:linear-gradient(135deg,rgba(57,255,120,0.12),rgba(0,224,85,0.06))">
-              <div class="hero-art" style="background:linear-gradient(135deg,#1a5c30,#39ff78);font-size:36px;display:flex;align-items:center;justify-content:center;border-radius:14px">🎧</div>
-              <div class="hero-info">
-                <div class="hero-tag">📢 Anúncio</div>
-                <div class="hero-title">Booom Premium</div>
-                <div class="hero-sub">Ouça sem interrupção, qualidade máxima</div>
-                <div class="hero-actions">
-                  <button class="btn-play-hero" onclick="toast('Em breve!')"><i class="fas fa-crown"></i> Assinar</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- FIM DOS ANÚNCIOS -->
+          <!-- sem anúncios -->
           <div class="ad-dots" id="adDots"></div>
           <div class="ad-progress" id="adProgress"></div>
         </div>
@@ -2637,13 +2825,16 @@
 
       <!-- PLAYLIST VIEW -->
       <div id="view-playlist" style="display:none">
-        <div class="section-header" style="margin-bottom:20px">
+        <div class="section-header" style="margin-bottom:16px">
           <div>
             <div class="section-title" id="playlistViewTitle">🎵 Playlist</div>
             <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="playlistViewMeta"></div>
           </div>
           <div class="see-all" onclick="showView('home')">← Voltar</div>
         </div>
+        <button id="playPlaylistBtn" onclick="playCurrentPlaylist()" style="display:flex;align-items:center;gap:10px;padding:12px 24px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:50px;color:#050505;font-family:'Satoshi',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(57,255,120,0.3);margin-bottom:20px;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 32px rgba(57,255,120,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(57,255,120,0.3)'">
+          <i class="fas fa-play"></i> Tocar Playlist
+        </button>
         <div id="playlistTrackList" class="track-list"></div>
       </div>
     </div>
@@ -2714,6 +2905,8 @@ let likedSongs = JSON.parse(localStorage.getItem('booom_liked') || '[]');
 let playlists = JSON.parse(localStorage.getItem('booom_playlists') || '[]');
 let progressInterval = null;
 let heroTrack = null;
+let _playlistMode = false;       // true while playing a user playlist
+let _playlistEndAudio = null;    // HTMLAudio for 1.mp3 jingle
 let searchType = 'audio';
 let lastSearchQuery = '';
 let _pendingTrack = null;
@@ -2962,7 +3155,7 @@ function waitForPlayerAndPlay(t) {
 }
 
 function playTrack(track, queueArr = null, idx = 0) {
-  if (queueArr) { queue = queueArr; currentIndex = idx; }
+  if (queueArr) { queue = queueArr; currentIndex = idx; _playlistMode = false; }
   if (typeof idx === 'number' && queue[idx]) currentIndex = idx;
   const t = track || queue[currentIndex];
   if (!t) return;
@@ -3005,9 +3198,75 @@ function updatePlayBtn() {
 function nextTrack() {
   if (!queue.length) return;
   if (isRepeat) { ytPlayer.seekTo(0); return; }
-  if (isShuffle) currentIndex = Math.floor(Math.random()*queue.length);
-  else currentIndex = (currentIndex+1)%queue.length;
+  if (isShuffle) { currentIndex = Math.floor(Math.random()*queue.length); }
+  else {
+    const next = currentIndex + 1;
+    // End of playlist reached
+    if (_playlistMode && next >= queue.length) {
+      afterPlaylistEnd();
+      return;
+    }
+    currentIndex = next % queue.length;
+  }
   playTrack(queue[currentIndex]);
+}
+
+// ─── PLAY CURRENT PLAYLIST (called by button) ───
+function playCurrentPlaylist() {
+  if (!queue.length) { toast('⚠️ Playlist vazia'); return; }
+  _playlistMode = true;
+  currentIndex = 0;
+  playTrack(queue[0]);
+  toast('▶ Tocando playlist completa');
+}
+
+// ─── AFTER PLAYLIST ENDS: try 1.mp3, fallback to random ───
+function afterPlaylistEnd() {
+  _playlistMode = false;
+  // Clean up any previous jingle
+  if (_playlistEndAudio) { _playlistEndAudio.pause(); _playlistEndAudio = null; }
+
+  const jingle = new Audio('1.mp3');
+  _playlistEndAudio = jingle;
+
+  // On success: play jingle, then random tracks
+  jingle.oncanplaythrough = () => {
+    jingle.play().catch(() => startRandomAfterPlaylist());
+    jingle.onended = () => { _playlistEndAudio = null; startRandomAfterPlaylist(); };
+  };
+
+  // On failure (file missing): go straight to random
+  jingle.onerror = () => { _playlistEndAudio = null; startRandomAfterPlaylist(); };
+
+  // Timeout safety: if neither fires in 1.5s, go random
+  setTimeout(() => {
+    if (_playlistEndAudio === jingle) { _playlistEndAudio = null; startRandomAfterPlaylist(); }
+  }, 1500);
+}
+
+// ─── RANDOM RADIO after playlist ───
+async function startRandomAfterPlaylist() {
+  toast('🔀 Modo aleatório ativado');
+  // Use trending data if available, otherwise fetch fresh
+  let pool = trendingData.length ? [...trendingData] : [];
+  if (brazilData.length) pool = [...pool, ...brazilData];
+  if (!pool.length) {
+    try {
+      pool = await ytMostPopular('US', 50);
+      trendingData = pool;
+    } catch(e) { return; }
+  }
+  // Shuffle pool
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  queue = pool;
+  currentIndex = 0;
+  isShuffle = true;
+  const sb = document.getElementById('shuffleBtn'); if (sb) sb.classList.add('active');
+  const nb = document.getElementById('npShuffleBtn'); if (nb) nb.classList.add('active');
+  playTrack(queue[0]);
 }
 
 function prevTrack() {
@@ -3383,9 +3642,11 @@ function renderRankingGrid(container, tracks, dataArr) {
         ${t.thumb?`<img src="${t.thumb}" alt="">`:'🎵'}
         <button class="card-play-btn" onclick="event.stopPropagation();playFromCardGrid(this.closest('.music-card'))"><i class="fas fa-play"></i></button>
       </div>
-      <div class="card-title">${t.title}</div>
-      <div class="card-sub">${t.artist}</div>
-      ${t.viewCount&&t.viewCount!=='0'?`<div class="card-views"><i class="fas fa-eye"></i>${fmtViews(t.viewCount)}</div>`:''}
+      <div class="card-text" style="flex:1;min-width:0;">
+        <div class="card-title">${t.title}</div>
+        <div class="card-sub">${t.artist}</div>
+        ${t.viewCount&&t.viewCount!=='0'?`<div class="card-views"><i class="fas fa-eye"></i>${fmtViews(t.viewCount)}</div>`:''}
+      </div>
     </div>
   `).join('');
 }
