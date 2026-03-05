@@ -1087,8 +1087,8 @@
     position: fixed;
     bottom: -9999px;
     left: -9999px;
-    width: 320px;
-    height: 180px;
+    width: 1px;
+    height: 1px;
     opacity: 0;
     pointer-events: none;
   }
@@ -2329,8 +2329,8 @@
 </head>
 <body>
 
-<!-- Hidden YouTube Player -->
-<div id="ytPlayer"></div>
+<!-- Hidden YouTube Player (needs real dimensions for API to work) -->
+<div id="ytPlayer" style="position:fixed;bottom:-9999px;left:-9999px;width:1px;height:1px;pointer-events:none;opacity:0;"></div>
 
 <!-- Toast Notification -->
 <div id="toast"></div>
@@ -2783,116 +2783,63 @@ function adGoTo(i) {
   adTimer = setTimeout(() => { adCurrentIdx = (adCurrentIdx+1)%total; adGoTo(adCurrentIdx); }, 5000);
 }
 
-// ─── YOUTUBE PLAYER (postMessage API — funciona em file://) ───
-(function initYTPlayer() {
+// ─── YOUTUBE IFRAME API ───
+window.onYouTubeIframeAPIReady = function() {
   const container = document.getElementById('ytPlayer');
   if (!container) return;
-
-  const iframe = document.createElement('iframe');
-  iframe.id = 'ytPlayerFrame';
-  iframe.style.cssText = 'position:fixed;bottom:-9999px;left:-9999px;width:320px;height:180px;border:none;opacity:0;pointer-events:none;';
-  iframe.allow = 'autoplay; encrypted-media';
-  iframe.setAttribute('allowfullscreen', '');
-  container.appendChild(iframe);
-
-  let _currentVideoId = null;
-  let _iframeReady = false;
-  let _pendingCmd = null;
-  let _stateCheckInterval = null;
-  let _lastState = -1;
-
-  function sendCmd(func, args) {
-    if (!iframe.contentWindow) return;
-    try {
-      iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [] }), '*');
-    } catch(e) {}
-  }
-
-  function loadVideo(videoId) {
-    _currentVideoId = videoId;
-    const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&enablejsapi=1&playsinline=1&origin=https://www.youtube.com`;
-    iframe.src = src;
-    _iframeReady = false;
-    iframe.onload = () => {
-      _iframeReady = true;
-      startStatePolling();
-    };
-  }
-
-  function startStatePolling() {
-    if (_stateCheckInterval) clearInterval(_stateCheckInterval);
-    _stateCheckInterval = setInterval(() => {
-      // Poll via postMessage + listener for state
-    }, 500);
-  }
-
-  // Listen for messages from the iframe
-  window.addEventListener('message', (e) => {
-    if (!e.data) return;
-    let data;
-    try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch(ex) { return; }
-
-    if (data.event === 'onReady') {
-      ytReady = true;
-      _iframeReady = true;
-      sendCmd('setVolume', [isMuted ? 0 : volume]);
-      console.log('[Booom] YouTube Player ready (postMessage)');
-      if (_pendingTrack) { const t = _pendingTrack; _pendingTrack = null; waitForPlayerAndPlay(t); }
-    }
-    if (data.event === 'infoDelivery' && data.info) {
-      const info = data.info;
-      if (typeof info.playerState !== 'undefined') {
-        const state = info.playerState;
-        if (state !== _lastState) {
-          _lastState = state;
-          // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering, 5=cued
-          if (state === 1) { isPlaying = true; updatePlayBtn(); startProgress(); updateMediaSession(); }
-          else if (state === 2) { isPlaying = false; updatePlayBtn(); stopProgress(); }
-          else if (state === 0) { nextTrack(); }
-        }
+  // Fix: when opened as file://, window.location.origin is "null" (string) or null
+  // Use a safe origin fallback that won't break postMessage
+  const safeOrigin = (window.location.origin && window.location.origin !== 'null')
+    ? window.location.origin
+    : 'https://www.youtube.com';
+  ytPlayer = new YT.Player('ytPlayer', {
+    height: '1', width: '1',
+    playerVars: { autoplay: 0, controls: 0, enablejsapi: 1, origin: safeOrigin },
+    events: {
+      onReady: (e) => {
+        ytReady = true;
+        e.target.setVolume(volume);
+        console.log('[Booom] YouTube Player ready');
+        if (_pendingTrack) waitForPlayerAndPlay(_pendingTrack);
+      },
+      onStateChange: onPlayerStateChange,
+      onError: (e) => {
+        console.warn('[Booom] YT error:', e.data);
+        // Error codes: 2=invalid id, 5=html5 error, 100=not found, 101/150=embed not allowed
+        if ([2, 5, 100, 101, 150].includes(e.data)) { toast('⚠️ Vídeo indisponível, pulando...'); setTimeout(nextTrack, 1200); }
       }
-      if (typeof info.currentTime !== 'undefined') { _currentTime = info.currentTime; }
-      if (typeof info.duration !== 'undefined') { _duration = info.duration; }
-      if (typeof info.volume !== 'undefined') { /* synced */ }
-    }
-    if (data.event === 'onError') {
-      const code = data.info;
-      console.warn('[Booom] YT error:', code);
-      if (code === 101 || code === 150 || code === 5) { toast('⚠️ Vídeo indisponível, pulando...'); setTimeout(nextTrack, 1000); }
     }
   });
+};
 
-  // State tracking
-  let _currentTime = 0, _duration = 0;
-
-  // Expose a YT-compatible interface
-  ytPlayer = {
-    loadVideoById: (id) => { loadVideo(id); },
-    playVideo: () => sendCmd('playVideo'),
-    pauseVideo: () => sendCmd('pauseVideo'),
-    stopVideo: () => sendCmd('stopVideo'),
-    seekTo: (t) => sendCmd('seekTo', [t, true]),
-    setVolume: (v) => sendCmd('setVolume', [v]),
-    getCurrentTime: () => _currentTime,
-    getDuration: () => _duration,
-    getIframe: () => iframe
-  };
-
-  // Request info updates via listener trick — inject enablejsapi listener
-  setInterval(() => {
-    if (!_iframeReady || !iframe.contentWindow) return;
-    try {
-      iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
-    } catch(e) {}
-  }, 250);
-
-  // Mark as ready immediately so pending tracks can queue
-  ytReady = true;
-  console.log('[Booom] postMessage player initialized');
-  if (_pendingTrack) { const t = _pendingTrack; _pendingTrack = null; waitForPlayerAndPlay(t); }
+(function loadYTAPI() {
+  // Warn user if opened via file:// — YouTube IFrame API requires HTTP/HTTPS
+  if (window.location.protocol === 'file:') {
+    console.warn('[Booom] Opened via file:// — YouTube player may not work. Use a local server (e.g. Live Server extension or python -m http.server).');
+    // Show a toast warning after page loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const warn = document.createElement('div');
+        warn.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#1a1a1a;border:1px solid rgba(255,80,80,0.5);color:#ff8080;padding:12px 20px;border-radius:12px;font-family:Satoshi,sans-serif;font-size:13px;max-width:420px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.7)';
+        warn.innerHTML = '⚠️ <b>Abra via servidor HTTP</b> para o player funcionar.<br>Use a extensão <b>Live Server</b> no VS Code, ou execute: <code>python -m http.server</code> e acesse <b>localhost:8000</b>';
+        document.body.appendChild(warn);
+        setTimeout(() => warn.remove(), 12000);
+      }, 1000);
+    });
+  }
+  if (window.YT && window.YT.Player) { window.onYouTubeIframeAPIReady(); return; }
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  tag.async = true; tag.defer = true;
+  tag.onerror = () => console.error('[Booom] Failed to load YouTube IFrame API');
+  document.head.appendChild(tag);
 })();
 
-// onPlayerStateChange handled by postMessage listener above
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.PLAYING) { isPlaying = true; updatePlayBtn(); startProgress(); updateMediaSession(); }
+  else if (event.data === YT.PlayerState.PAUSED) { isPlaying = false; updatePlayBtn(); stopProgress(); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'; }
+  else if (event.data === YT.PlayerState.ENDED) { nextTrack(); }
+}
 
 // ─── API: ytSearch (returns duration+stats via /videos) ───
 async function ytSearch(query, maxResults = 50, type = 'audio', pageToken = '') {
@@ -3023,16 +2970,22 @@ function playTrack(track, queueArr = null, idx = 0) {
 }
 
 function updateNowPlaying(t) {
-  document.getElementById('npTitle').textContent = t.title;
-  document.getElementById('npArtist').textContent = t.artist;
+  const npTitle = document.getElementById('npTitle');
+  const npArtist = document.getElementById('npArtist');
+  if (npTitle) npTitle.textContent = t.title;
+  if (npArtist) npArtist.textContent = t.artist;
   const thumb = document.getElementById('npThumb');
-  if (t.thumb) { thumb.innerHTML = `<img src="${t.thumb}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`; }
-  else { thumb.innerHTML = '🎵'; }
+  if (thumb) {
+    if (t.thumb) { thumb.innerHTML = `<img src="${t.thumb}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`; }
+    else { thumb.innerHTML = '🎵'; }
+  }
   syncNowPlayingPage(t);
   const likeBtn = document.getElementById('likeBtn');
-  const liked = likedSongs.some(s => s.id === t.id);
-  likeBtn.innerHTML = liked ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
-  likeBtn.classList.toggle('liked', liked);
+  if (likeBtn) {
+    const liked = likedSongs.some(s => s.id === t.id);
+    likeBtn.innerHTML = liked ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+    likeBtn.classList.toggle('liked', liked);
+  }
 }
 
 function togglePlay() {
@@ -3042,10 +2995,10 @@ function togglePlay() {
 }
 
 function updatePlayBtn() {
-  const icon = document.getElementById('playPauseIcon');
+  const icon = document.getElementById('playIcon');
   const thumb = document.getElementById('npThumb');
-  icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
-  if (isPlaying) thumb.classList.add('spin'); else thumb.classList.remove('spin');
+  if (icon) icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+  if (thumb) { if (isPlaying) thumb.classList.add('spin'); else thumb.classList.remove('spin'); }
   updateNPPlayBtn();
 }
 
@@ -3113,14 +3066,17 @@ function setVolume(val) {
   volume = parseInt(val);
   if (ytReady && !isMuted) ytPlayer.setVolume(volume);
   updateVolIcon(); updateNPVolIcon();
-  document.getElementById('volSlider').value = volume;
+  const vs = document.getElementById('volSlider'); if (vs) vs.value = volume;
   const s = document.getElementById('npVolSlider'); if (s) s.value = volume;
 }
 
 function toggleMute() { isMuted = !isMuted; if (ytReady) ytPlayer.setVolume(isMuted?0:volume); updateVolIcon(); }
 
 function updateVolIcon() {
-  const icon = document.getElementById('volIcon').querySelector('i');
+  const volIconEl = document.getElementById('volIcon');
+  if (!volIconEl) return;
+  const icon = volIconEl.querySelector('i');
+  if (!icon) return;
   if (isMuted||volume===0) icon.className='fas fa-volume-xmark';
   else if (volume<50) icon.className='fas fa-volume-low';
   else icon.className='fas fa-volume-high';
@@ -3129,14 +3085,14 @@ function updateVolIcon() {
 // ─── SHUFFLE / REPEAT ───
 function toggleShuffle() {
   isShuffle = !isShuffle;
-  document.getElementById('shuffleBtn').classList.toggle('active', isShuffle);
+  const sb = document.getElementById('shuffleBtn'); if (sb) sb.classList.toggle('active', isShuffle);
   const b = document.getElementById('npShuffleBtn'); if (b) b.classList.toggle('active', isShuffle);
   toast(isShuffle ? '🔀 Shuffle ativado' : '🔀 Shuffle desativado');
 }
 
 function toggleRepeat() {
   isRepeat = !isRepeat;
-  document.getElementById('repeatBtn').classList.toggle('active', isRepeat);
+  const rb = document.getElementById('repeatBtn'); if (rb) rb.classList.toggle('active', isRepeat);
   const b = document.getElementById('npRepeatBtn'); if (b) b.classList.toggle('active', isRepeat);
   toast(isRepeat ? '🔁 Repetir ativado' : '🔁 Repetir desativado');
 }
@@ -3150,8 +3106,8 @@ function toggleLike() {
   else { likedSongs.push(cur); toast('❤️ Adicionado às curtidas'); }
   localStorage.setItem('booom_liked', JSON.stringify(likedSongs));
   const icon = liked ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
-  const likeBtn = document.getElementById('likeBtn'); likeBtn.innerHTML = icon; likeBtn.classList.toggle('liked', liked);
-  const npLikeBtn = document.getElementById('npLikeBtn'); npLikeBtn.innerHTML = icon; npLikeBtn.classList.toggle('liked', liked);
+  const likeBtn = document.getElementById('likeBtn'); if (likeBtn) { likeBtn.innerHTML = icon; likeBtn.classList.toggle('liked', liked); }
+  const npLikeBtn = document.getElementById('npLikeBtn'); if (npLikeBtn) { npLikeBtn.innerHTML = icon; npLikeBtn.classList.toggle('liked', liked); }
 }
 
 function quickLike(id, i, btn) {
