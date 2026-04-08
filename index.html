@@ -224,6 +224,24 @@
         <!-- REMOVIDA do main-wrapper pois agora está no site-header -->
 
         <div id="container-cards">
+            <div class="glass-card" data-projeto="booom" data-categoria="diversao">
+                <div class="card-image-wrapper">
+                    <img src="imagens/booom.png" alt="Booom Music Player" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Booom+Music+Player'">
+                    <span class="status-tag">NOVO</span>
+                </div>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>Booom Music Player</h3>
+                        <span class="category-icon"><i class="fa-solid fa-music"></i></span>
+                    </div>
+                    <p>Player de música sem anúncios, para ouvir música sem limites.</p>
+                    <div class="card-meta">
+                        <span><i class="fa-regular fa-eye"></i> <span id="booom-count">0</span> vezes você usou</span>
+                    </div>
+                    <a href="booom/index.html" onclick="atualizarEstatistica('booom')" class="action-btn">Ouvir Música</a>
+                </div>
+            </div>
+
             <div class="glass-card" data-projeto="halibuspace" data-categoria="diversao">
                 <div class="card-image-wrapper">
                     <img src="imagens/halibu.png" alt="Halibu Space" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Halibu+Space'">
@@ -245,14 +263,14 @@
             <div class="glass-card" data-projeto="hacker" data-categoria="ferramentas">
                 <div class="card-image-wrapper">
                     <img src="imagens/hacker.png" alt="Terminal Neural" onerror="this.src='https://placehold.co/600x400/000/0F0?text=Terminal+Neural'">
-                    <span class="status-tag">NOVIDADE</span>
+                    
                 </div>
                 <div class="card-info">
                     <div class="card-header">
                         <h3>Hand Sculpt 3D</h3>
                         <span class="category-icon"><i class="fa-solid fa-terminal"></i></span>
                     </div>
-                    <p>O jogo mais imersivo que você pode encontrar. um lugar aonde vocÊ pode jogar de mexer com formas geométricas, SEM TOCAR NA TELA! 100% virtual, por movimento das mãos! teste AGORA!</p>
+                    <p>Experiência de imersão total: manipule formas geométricas em ambiente 100% virtual por meio de comandos gestuais, sem necessidade de toque.</p>
                     <div class="card-meta">
                         <span><i class="fa-regular fa-eye"></i> <span id="hacker-count">0</span> vezes você usou</span>
                     </div>
@@ -597,7 +615,7 @@
         }
 
         window.addEventListener('load', () => {
-            const projetos = ['zapwrapped', 'drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker', 'halibuspace'];
+            const projetos = ['zapwrapped', 'drive-mad', 'escape-road', 'canvas', 'converter', 'dino', 'gerador-cores', 'senha', 'bilionario', 'conversa', 'frases', 'mosquito', 'relogio', 'agenda', 'advinhar', 'marinho', 'hacker', 'halibuspace', 'booom'];
             
             projetos.forEach(proj => {
                 let count = localStorage.getItem(proj) || 0;
