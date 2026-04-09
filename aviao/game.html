@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyDash — Voo Livre</title>
+    <link rel="stylesheet" href="jogo.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- TOP HUD -->
+    <div id="top-hud">
+        <div class="hud-pill" id="score-pill">
+            <span class="hud-label">PONTOS</span>
+            <span class="hud-value" id="score">0</span>
+        </div>
+        <div class="hud-pill" id="coins-pill">
+            <span class="hud-label">✦ MOEDAS</span>
+            <span class="hud-value" id="coins-earned">0</span>
+        </div>
+        <div class="hud-pill" id="rings-pill">
+            <span class="hud-label">ANÉIS</span>
+            <span class="hud-value" id="rings-count">0</span>
+        </div>
+    </div>
+
+    <!-- SPEEDOMETER HUD - bottom center -->
+    <div id="dashboard">
+        <canvas id="hud-canvas"></canvas>
+    </div>
+
+    <!-- RING POPUP -->
+    <div id="ring-popup">+500</div>
+
+    <!-- FLASH -->
+    <div id="flash"></div>
+
+    <!-- GAME OVER -->
+    <div id="game-over">
+        <div id="go-inner">
+            <div id="go-icon">✈</div>
+            <h1 id="go-title">BATEU!</h1>
+            <div id="go-stats">
+                <div class="go-stat">
+                    <div class="go-stat-label">PONTUAÇÃO</div>
+                    <div class="go-stat-value" id="final-score">0</div>
+                </div>
+                <div class="go-stat">
+                    <div class="go-stat-label">ANÉIS</div>
+                    <div class="go-stat-value" id="final-rings">0</div>
+                </div>
+                <div class="go-stat">
+                    <div class="go-stat-label">MOEDAS GANHAS</div>
+                    <div class="go-stat-value gold" id="final-coins">0</div>
+                </div>
+                <div class="go-stat">
+                    <div class="go-stat-label">RECORDE</div>
+                    <div class="go-stat-value accent" id="final-best">0</div>
+                </div>
+            </div>
+            <div class="go-btns">
+                <button class="go-btn primary" onclick="resetGame()">↺ TENTAR NOVAMENTE</button>
+                <button class="go-btn secondary" onclick="location.href='hangar.html'">✈ HANGAR</button>
+                <button class="go-btn ghost" onclick="location.href='jogo.html'">⌂ MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading">
+        <div id="loading-inner">
+            <div id="loading-logo">SKY<span>DASH</span></div>
+            <div id="loading-bar-wrap">
+                <div id="loading-bar"></div>
+            </div>
+            <div id="loading-text">Gerando o mundo...</div>
+        </div>
+    </div>
+
+    <script src="jogo.js"></script>
+</body>
+</html>

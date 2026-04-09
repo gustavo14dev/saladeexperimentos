@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyDash — Hangar</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --gold: #FFD700; --gold-dim: rgba(255,215,0,0.15);
+            --bg: #080f1e; --panel: rgba(10,20,40,0.85);
+            --accent: #00d4ff; --red: #ff4444;
+            --green: #44ff88; --white: #e0f0ff;
+        }
+        body { overflow: hidden; background: var(--bg); font-family: 'Exo 2', sans-serif; color: var(--white); }
+
+        #bg-canvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+
+        /* TOP BAR */
+        #topbar {
+            position: fixed; top:0; left:0; right:0; height:64px;
+            background: rgba(5,12,25,0.9);
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 20;
+        }
+        #topbar .title {
+            font-family: 'Orbitron', monospace;
+            font-size: 20px; font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 4px;
+        }
+        #topbar .title span { color: var(--gold); }
+        #coins-bar {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--gold-dim);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 30px;
+            padding: 8px 18px;
+        }
+        .coin-icon-sm { 
+            width:20px; height:20px;
+            background: radial-gradient(circle at 35% 35%, #FFE87C, #FFD700, #B8860B);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+        }
+        #topbar-coins { font-family: 'Orbitron', monospace; font-size: 18px; color: var(--gold); font-weight: 700; }
+        #btn-back {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px; letter-spacing: 2px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--white); padding: 10px 20px;
+            border-radius: 6px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        #btn-back:hover { background: rgba(255,255,255,0.1); }
+
+        /* LAYOUT */
+        #content {
+            position: fixed; top:64px; left:0; right:0; bottom:0;
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 0;
+            z-index: 10;
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--panel);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(0,212,255,0.1);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .panel:last-child { border-right: none; border-left: 1px solid rgba(0,212,255,0.1); }
+        .panel-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px; letter-spacing: 4px;
+            color: var(--accent); opacity: 0.7;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0,212,255,0.15);
+        }
+
+        /* PLANES LIST */
+        .plane-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+        }
+        .plane-card:hover { border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.05); transform: translateX(4px); }
+        .plane-card.selected { border-color: var(--accent); background: rgba(0,212,255,0.1); box-shadow: 0 0 15px rgba(0,212,255,0.2); }
+        .plane-card.locked { opacity: 0.5; cursor: not-allowed; }
+        .plane-card.locked:hover { transform: none; }
+        .plane-name { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .plane-desc { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 8px; line-height: 1.4; }
+        .plane-stats { display: flex; flex-direction: column; gap: 4px; }
+        .stat-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: rgba(255,255,255,0.6); }
+        .stat-label { width: 60px; text-align: right; }
+        .stat-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .stat-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+        .stat-fill.speed { background: linear-gradient(90deg, #00d4ff, #0099cc); }
+        .stat-fill.agility { background: linear-gradient(90deg, #44ff88, #22cc66); }
+        .stat-fill.durability { background: linear-gradient(90deg, #ff9900, #cc7700); }
+        .plane-price {
+            position: absolute; top: 10px; right: 10px;
+            font-family: 'Orbitron', monospace; font-size: 11px;
+            color: var(--gold); background: var(--gold-dim);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 12px; padding: 3px 8px;
+        }
+        .plane-price.owned { color: var(--green); background: rgba(68,255,136,0.1); border-color: rgba(68,255,136,0.3); }
+        .selected-badge {
+            position: absolute; top: -8px; left: 10px;
+            font-size: 9px; letter-spacing: 2px;
+            background: var(--accent); color: #000;
+            padding: 2px 8px; border-radius: 10px;
+            font-family: 'Orbitron', monospace; font-weight: 700;
+        }
+
+        /* CENTER - 3D Preview */
+        #preview-area {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #preview-canvas { width: 100%; height: 100%; display: block; }
+        #plane-preview-name {
+            position: absolute;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', monospace;
+            font-size: 22px; font-weight: 700;
+            color: var(--white); letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(0,212,255,0.5);
+        }
+        #buy-btn {
+            position: absolute;
+            bottom: 80px; left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', monospace;
+            font-size: 14px; letter-spacing: 3px;
+            padding: 14px 40px;
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: all 0.25s;
+            display: none;
+        }
+        #buy-btn.can-buy {
+            background: linear-gradient(135deg, var(--gold), #cc9900);
+            color: #000; font-weight: 700;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.4);
+            display: block;
+        }
+        #buy-btn.cant-buy {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: not-allowed;
+            display: block;
+        }
+        #buy-btn.can-buy:hover { transform: translateX(-50%) translateY(-3px); box-shadow: 0 8px 30px rgba(255,215,0,0.6); }
+
+        /* UPGRADES PANEL */
+        .upgrade-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+        .upgrade-name { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+        .upgrade-desc { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px; line-height: 1.4; }
+        .upgrade-level-bar {
+            display: flex; gap: 4px; margin-bottom: 10px;
+        }
+        .level-dot {
+            flex: 1; height: 6px; border-radius: 3px;
+            background: rgba(255,255,255,0.1);
+            transition: background 0.3s;
+        }
+        .level-dot.filled { background: linear-gradient(90deg, #00d4ff, #44ff88); }
+        .upgrade-footer { display: flex; align-items: center; justify-content: space-between; }
+        .upgrade-price { font-size: 12px; color: var(--gold); display: flex; align-items: center; gap: 5px; }
+        .upgrade-btn {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px; letter-spacing: 1px;
+            padding: 7px 14px; border: none; border-radius: 5px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .upgrade-btn.active {
+            background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(0,100,200,0.3));
+            border: 1px solid rgba(0,212,255,0.5);
+            color: var(--accent);
+        }
+        .upgrade-btn.active:hover { background: linear-gradient(135deg, rgba(0,212,255,0.5), rgba(0,100,200,0.5)); }
+        .upgrade-btn.maxed {
+            background: rgba(68,255,136,0.1);
+            border: 1px solid rgba(68,255,136,0.3);
+            color: var(--green);
+            cursor: default;
+        }
+        .upgrade-btn.cant {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.2);
+            cursor: not-allowed;
+        }
+
+        /* COLOR section */
+        .section-gap { margin-top: 24px; }
+        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+        .color-swatch {
+            width: 100%; aspect-ratio: 1;
+            border-radius: 6px; cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .color-swatch:hover { transform: scale(1.1); border-color: rgba(255,255,255,0.5); }
+        .color-swatch.selected { border-color: var(--white); box-shadow: 0 0 12px rgba(255,255,255,0.4); }
+        .color-swatch.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(0,0,0,0.7); font-size: 14px; font-weight: bold;
+        }
+
+        /* Notification */
+        #notification {
+            position: fixed; top: 80px; left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(10,20,40,0.95);
+            border: 1px solid rgba(0,212,255,0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 12px 24px;
+            font-family: 'Orbitron', monospace;
+            font-size: 13px; letter-spacing: 2px;
+            color: var(--white);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+        #notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #notification.success { border-color: rgba(68,255,136,0.5); color: var(--green); }
+        #notification.error { border-color: rgba(255,68,68,0.5); color: var(--red); }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="topbar">
+        <div class="title">SKY<span>DASH</span> — HANGAR</div>
+        <div id="coins-bar">
+            <div class="coin-icon-sm">✦</div>
+            <span id="topbar-coins">0</span>
+        </div>
+        <button id="btn-back" onclick="location.href='jogo.html'">← VOLTAR</button>
+    </div>
+
+    <div id="content">
+        <!-- Left: Planes -->
+        <div class="panel" id="planes-panel">
+            <div class="panel-title">✈ Aviões</div>
+        </div>
+
+        <!-- Center: 3D Preview -->
+        <div id="preview-area">
+            <canvas id="preview-canvas"></canvas>
+            <div id="plane-preview-name">AVIÃO DE PAPEL</div>
+            <button id="buy-btn" onclick="handleBuy()">COMPRAR</button>
+        </div>
+
+        <!-- Right: Upgrades & Colors -->
+        <div class="panel" id="right-panel">
+            <div class="panel-title">⚡ Melhorias</div>
+            <div id="upgrades-container"></div>
+
+            <div class="section-gap">
+                <div class="panel-title">🎨 Cor do Avião</div>
+                <div class="color-grid" id="color-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+        // ===================== DATA =====================
+        const PLANES = [
+            { id: 'paper', name: 'Avião de Papel', desc: 'O clássico. Leve e ágil.', price: 0, speed: 40, agility: 80, durability: 30 },
+            { id: 'glider', name: 'Planador', desc: 'Asas longas para planar suavemente.', price: 2500, speed: 50, agility: 65, durability: 55 },
+            { id: 'biplane', name: 'Biplano', desc: 'Duas asas, força dobrada!', price: 4000, speed: 65, agility: 55, durability: 70 },
+            { id: 'fighter', name: 'Caça', desc: 'Velocidade extrema, mínima resistência.', price: 7500, speed: 90, agility: 75, durability: 50 },
+            { id: 'bomber', name: 'Bombardeiro', desc: 'Pesado mas quase indestrutível.', price: 12000, speed: 45, agility: 40, durability: 100 },
+        ];
+
+        const UPGRADES = [
+            { id: 'speed', name: 'Motor', desc: 'Aumenta a velocidade máxima do avião.', icon: '🚀', maxLevel: 5, costPerLevel: [500, 1000, 2000, 4000, 8000] },
+            { id: 'agility', name: 'Aerodinâmica', desc: 'Melhora a resposta dos controles.', icon: '🌀', maxLevel: 5, costPerLevel: [600, 1200, 2400, 4800, 9600] },
+            { id: 'luck', name: 'Sorte', desc: 'Mais anéis aparecem no cenário!', icon: '🍀', maxLevel: 3, costPerLevel: [1000, 3000, 8000] },
+        ];
+
+        const COLORS = [
+            '#ffffff','#ff4444','#ff8800','#ffdd00','#44ff88',
+            '#00d4ff','#4466ff','#cc44ff','#ff44cc','#888888',
+            '#222222','#003399','#006633','#660000','#996633',
+        ];
+
+        // ===================== STATE =====================
+        let coins = parseInt(localStorage.getItem('skydash_coins') || '0');
+        let ownedPlanes = JSON.parse(localStorage.getItem('skydash_owned') || '["paper"]');
+        let selectedPlane = localStorage.getItem('skydash_plane') || 'paper';
+        let upgrades = JSON.parse(localStorage.getItem('skydash_upgrades') || '{}');
+        let selectedColor = localStorage.getItem('skydash_color') || '#ffffff';
+        let currentPreviewPlane = selectedPlane;
+
+        function saveAll() {
+            localStorage.setItem('skydash_coins', coins);
+            localStorage.setItem('skydash_owned', JSON.stringify(ownedPlanes));
+            localStorage.setItem('skydash_plane', selectedPlane);
+            localStorage.setItem('skydash_upgrades', JSON.stringify(upgrades));
+            localStorage.setItem('skydash_color', selectedColor);
+        }
+
+        function getUpgradeLevel(id) { return upgrades[id] || 0; }
+
+        // ===================== UI =====================
+        function updateCoinsDisplay() {
+            document.getElementById('topbar-coins').textContent = coins.toLocaleString('pt-BR');
+        }
+
+        function showNotification(msg, type = 'success') {
+            const el = document.getElementById('notification');
+            el.textContent = msg;
+            el.className = 'show ' + type;
+            setTimeout(() => { el.className = ''; }, 2500);
+        }
+
+        function renderPlanes() {
+            const container = document.getElementById('planes-panel');
+            container.innerHTML = '<div class="panel-title">✈ Aviões</div>';
+            PLANES.forEach(p => {
+                const owned = ownedPlanes.includes(p.id);
+                const selected = selectedPlane === p.id;
+                const div = document.createElement('div');
+                div.className = 'plane-card' + (selected ? ' selected' : '') + (!owned ? ' locked' : '');
+                div.innerHTML = `
+                    ${selected ? '<div class="selected-badge">ATIVO</div>' : ''}
+                    <div class="plane-name">${p.name}</div>
+                    <div class="plane-desc">${p.desc}</div>
+                    <div class="plane-stats">
+                        <div class="stat-row"><span class="stat-label">VELOC.</span><div class="stat-bar"><div class="stat-fill speed" style="width:${p.speed}%"></div></div></div>
+                        <div class="stat-row"><span class="stat-label">AGILID.</span><div class="stat-bar"><div class="stat-fill agility" style="width:${p.agility}%"></div></div></div>
+                        <div class="stat-row"><span class="stat-label">RESIST.</span><div class="stat-bar"><div class="stat-fill durability" style="width:${p.durability}%"></div></div></div>
+                    </div>
+                    <div class="plane-price ${owned ? 'owned' : ''}">${owned ? '✓ POSSUI' : '✦ ' + p.price.toLocaleString('pt-BR')}</div>
+                `;
+                div.addEventListener('click', () => {
+                    currentPreviewPlane = p.id;
+                    buildPreviewPlane(p.id);
+                    document.getElementById('plane-preview-name').textContent = p.name.toUpperCase();
+                    if (owned) {
+                        selectedPlane = p.id;
+                        saveAll();
+                        renderPlanes();
+                        document.getElementById('buy-btn').style.display = 'none';
+                    } else {
+                        updateBuyButton(p);
+                    }
+                });
+                container.appendChild(div);
+            });
+        }
+
+        function updateBuyButton(plane) {
+            const btn = document.getElementById('buy-btn');
+            const canBuy = coins >= plane.price;
+            btn.textContent = canBuy ? `✦ COMPRAR — ${plane.price.toLocaleString('pt-BR')}` : `✦ ${plane.price.toLocaleString('pt-BR')} (INSUFICIENTE)`;
+            btn.className = canBuy ? 'can-buy' : 'cant-buy';
+            btn.dataset.planeId = plane.id;
+            btn.dataset.planeCost = plane.price;
+            btn.style.display = 'block';
+        }
+
+        function handleBuy() {
+            const btn = document.getElementById('buy-btn');
+            const id = btn.dataset.planeId;
+            const cost = parseInt(btn.dataset.planeCost);
+            if (!id || ownedPlanes.includes(id)) return;
+            if (coins < cost) { showNotification('Moedas insuficientes!', 'error'); return; }
+            coins -= cost;
+            ownedPlanes.push(id);
+            selectedPlane = id;
+            saveAll();
+            updateCoinsDisplay();
+            renderPlanes();
+            btn.style.display = 'none';
+            showNotification('✈ Avião desbloqueado!', 'success');
+        }
+
+        function renderUpgrades() {
+            const container = document.getElementById('upgrades-container');
+            container.innerHTML = '';
+            UPGRADES.forEach(upg => {
+                const level = getUpgradeLevel(upg.id);
+                const maxed = level >= upg.maxLevel;
+                const cost = maxed ? 0 : upg.costPerLevel[level];
+                const canAfford = coins >= cost;
+
+                const div = document.createElement('div');
+                div.className = 'upgrade-card';
+                let dots = '';
+                for (let i = 0; i < upg.maxLevel; i++) {
+                    dots += `<div class="level-dot ${i < level ? 'filled' : ''}"></div>`;
+                }
+                let btnClass = maxed ? 'maxed' : (canAfford ? 'active' : 'cant');
+                let btnText = maxed ? '✓ MÁXIMO' : `${upg.icon} ✦ ${cost.toLocaleString('pt-BR')}`;
+
+                div.innerHTML = `
+                    <div class="upgrade-name">${upg.icon} ${upg.name} — Nível ${level}/${upg.maxLevel}</div>
+                    <div class="upgrade-desc">${upg.desc}</div>
+                    <div class="upgrade-level-bar">${dots}</div>
+                    <div class="upgrade-footer">
+                        <div class="upgrade-price">${maxed ? 'Totalmente melhorado' : `Próximo nível: ✦ ${cost.toLocaleString('pt-BR')}`}</div>
+                        <button class="upgrade-btn ${btnClass}" onclick="buyUpgrade('${upg.id}')">${btnText}</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function buyUpgrade(id) {
+            const upg = UPGRADES.find(u => u.id === id);
+            const level = getUpgradeLevel(id);
+            if (level >= upg.maxLevel) return;
+            const cost = upg.costPerLevel[level];
+            if (coins < cost) { showNotification('Moedas insuficientes!', 'error'); return; }
+            coins -= cost;
+            upgrades[id] = level + 1;
+            saveAll();
+            updateCoinsDisplay();
+            renderUpgrades();
+            showNotification(`${upg.icon} ${upg.name} melhorado!`, 'success');
+        }
+
+        function renderColors() {
+            const grid = document.getElementById('color-grid');
+            grid.innerHTML = '';
+            COLORS.forEach(color => {
+                const div = document.createElement('div');
+                div.className = 'color-swatch' + (selectedColor === color ? ' selected' : '');
+                div.style.background = color;
+                div.title = color;
+                div.addEventListener('click', () => {
+                    selectedColor = color;
+                    saveAll();
+                    renderColors();
+                    updatePreviewColor(color);
+                });
+                grid.appendChild(div);
+            });
+        }
+
+        // ===================== THREE.JS PREVIEW =====================
+        const previewCanvas = document.getElementById('preview-canvas');
+        const pRenderer = new THREE.WebGLRenderer({ canvas: previewCanvas, antialias: true, alpha: true });
+        pRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const pScene = new THREE.Scene();
+        const pCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+        pCamera.position.set(0, 5, 25);
+        pCamera.lookAt(0, 0, 0);
+
+        pScene.add(new THREE.AmbientLight(0x8899aa, 1.5));
+        const pLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        pLight.position.set(10, 20, 10);
+        pScene.add(pLight);
+        const pLight2 = new THREE.DirectionalLight(0x4488ff, 0.5);
+        pLight2.position.set(-10, -5, -10);
+        pScene.add(pLight2);
+
+        // Grid floor
+        const gridHelper = new THREE.GridHelper(30, 20, 0x1a2a4a, 0x1a2a4a);
+        pScene.add(gridHelper);
+
+        let previewMesh = null;
+        let previewMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(selectedColor), side: THREE.DoubleSide, roughness: 0.3, metalness: 0.1 });
+
+        function buildPreviewPlane(planeId) {
+            if (previewMesh) { pScene.remove(previewMesh); previewMesh = null; }
+            const color = new THREE.Color(selectedColor);
+            previewMat = new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide, roughness: 0.3, metalness: 0.1 });
+            
+            const group = new THREE.Group();
+
+            if (planeId === 'paper') {
+                const geo = new THREE.BufferGeometry();
+                const v = new Float32Array([
+                    0,0,-2.5, -1.5,0.2,1.5,  0,-0.5,1.5,
+                    0,0,-2.5,  0,-0.5,1.5,   1.5,0.2,1.5,
+                    0,0,-1.8,  0,-0.5,1.5,   0,0.8,1.5
+                ]);
+                geo.setAttribute('position', new THREE.BufferAttribute(v, 3));
+                geo.computeVertexNormals();
+                const m = new THREE.Mesh(geo, previewMat.clone());
+                m.scale.setScalar(2); group.add(m);
+            } else if (planeId === 'glider') {
+                // Long wings
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.3, 8, 8), previewMat.clone());
+                body.rotation.z = Math.PI/2; group.add(body);
+                const wing = new THREE.Mesh(new THREE.BoxGeometry(14, 0.1, 2.5), previewMat.clone());
+                wing.position.set(0, 0, 0.5); group.add(wing);
+                const tail = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 1), previewMat.clone());
+                tail.position.set(0, 0.3, 3.5); group.add(tail);
+                const vtail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 1), previewMat.clone());
+                vtail.position.set(0, 0.5, 3.5); group.add(vtail);
+            } else if (planeId === 'biplane') {
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 7, 8), previewMat.clone());
+                body.rotation.z = Math.PI/2; group.add(body);
+                const wing1 = new THREE.Mesh(new THREE.BoxGeometry(10, 0.15, 2), previewMat.clone());
+                wing1.position.set(0, 1, 0); group.add(wing1);
+                const wing2 = new THREE.Mesh(new THREE.BoxGeometry(10, 0.15, 2), previewMat.clone());
+                wing2.position.set(0, -1, 0); group.add(wing2);
+                // Struts
+                [-3,3].forEach(x => {
+                    const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2, 4), previewMat.clone());
+                    strut.position.set(x, 0, 0); group.add(strut);
+                });
+            } else if (planeId === 'fighter') {
+                const body = new THREE.Mesh(new THREE.ConeGeometry(0.4, 9, 8), previewMat.clone());
+                body.rotation.z = Math.PI/2; group.add(body);
+                const wing = new THREE.Mesh(new THREE.BufferGeometry(), previewMat.clone());
+                const wv = new Float32Array([0,0,0, -5,-0.2,2, 5,-0.2,2, 0,0,1.5, -3,-0.1,3, 3,-0.1,3]);
+                wing.geometry.setAttribute('position', new THREE.BufferAttribute(wv, 3));
+                wing.geometry.setIndex([0,1,2, 3,4,5]); wing.geometry.computeVertexNormals();
+                group.add(wing);
+                // Delta wings
+                const delta = new THREE.Mesh(new THREE.BufferGeometry(), previewMat.clone());
+                const dv = new Float32Array([0,0,-4, -6,0,2, 6,0,2]);
+                delta.geometry.setAttribute('position', new THREE.BufferAttribute(dv, 3));
+                delta.geometry.setIndex([0,2,1]); delta.geometry.computeVertexNormals();
+                group.add(delta);
+            } else if (planeId === 'bomber') {
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.0, 9, 10), previewMat.clone());
+                body.rotation.z = Math.PI/2; group.add(body);
+                const wing = new THREE.Mesh(new THREE.BoxGeometry(12, 0.25, 3), previewMat.clone());
+                group.add(wing);
+                const engine1 = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8), previewMat.clone());
+                engine1.rotation.z = Math.PI/2; engine1.position.set(-3, -0.8, 0); group.add(engine1);
+                const engine2 = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8), previewMat.clone());
+                engine2.rotation.z = Math.PI/2; engine2.position.set(3, -0.8, 0); group.add(engine2);
+                const tail = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 1.5), previewMat.clone());
+                tail.position.set(0, 0.5, 4); group.add(tail);
+            }
+
+            group.scale.setScalar(1.5);
+            pScene.add(group);
+            previewMesh = group;
+        }
+
+        function updatePreviewColor(color) {
+            if (!previewMesh) return;
+            previewMesh.traverse(child => {
+                if (child.isMesh && child.material) {
+                    child.material.color.set(color);
+                }
+            });
+        }
+
+        buildPreviewPlane(selectedPlane);
+
+        // Background Three.js
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgRenderer = new THREE.WebGLRenderer({ canvas: bgCanvas, antialias: true });
+        bgRenderer.setSize(window.innerWidth, window.innerHeight);
+        const bgScene = new THREE.Scene();
+        bgScene.background = new THREE.Color(0x080f1e);
+        const bgCam = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+        bgCam.position.set(0, 30, 80);
+        bgCam.lookAt(0, 0, 0);
+        bgScene.add(new THREE.AmbientLight(0x334466, 1));
+        // Stars
+        const bStarGeo = new THREE.BufferGeometry();
+        const bsp = new Float32Array(1500*3);
+        for(let i=0;i<1500;i++){bsp[i*3]=(Math.random()-0.5)*1000;bsp[i*3+1]=Math.random()*500;bsp[i*3+2]=(Math.random()-0.5)*1000;}
+        bStarGeo.setAttribute('position',new THREE.BufferAttribute(bsp,3));
+        bgScene.add(new THREE.Points(bStarGeo,new THREE.PointsMaterial({color:0xffffff,size:1,transparent:true,opacity:0.6})));
+
+        const clock = new THREE.Clock();
+        let reqId;
+        function animate() {
+            reqId = requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+            if (previewMesh) {
+                previewMesh.rotation.y = t * 0.5;
+                previewMesh.position.y = Math.sin(t * 0.8) * 0.8;
+            }
+            // Resize preview canvas to match container
+            const area = document.getElementById('preview-area');
+            const w = area.clientWidth, h = area.clientHeight;
+            if (previewCanvas.width !== w || previewCanvas.height !== h) {
+                pRenderer.setSize(w, h);
+                pCamera.aspect = w / h;
+                pCamera.updateProjectionMatrix();
+            }
+            pRenderer.render(pScene, pCamera);
+            bgRenderer.render(bgScene, bgCam);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            bgRenderer.setSize(window.innerWidth, window.innerHeight);
+            bgCam.aspect = window.innerWidth / window.innerHeight;
+            bgCam.updateProjectionMatrix();
+        });
+
+        // Initialize UI
+        updateCoinsDisplay();
+        renderPlanes();
+        renderUpgrades();
+        renderColors();
+        document.getElementById('plane-preview-name').textContent = PLANES.find(p => p.id === selectedPlane)?.name.toUpperCase() || '';
+    </script>
+</body>
+</html>

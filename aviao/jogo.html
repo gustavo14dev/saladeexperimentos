@@ -3,30 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Plane Adventure - Multiplayer</title>
-    <link rel="stylesheet" href="jogo.css">
+    <title>SkyDash — Paper Plane Adventure</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --gold: #FFD700;
+            --gold2: #FFA500;
+            --sky: #0a1628;
+            --sky2: #1a3a6b;
+            --accent: #00d4ff;
+            --white: #f0f8ff;
+        }
+
+        body {
+            overflow: hidden;
+            background: var(--sky);
+            font-family: 'Exo 2', sans-serif;
+            cursor: default;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        /* Stars */
+        .stars {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #menu {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+        }
+
+        /* Logo */
+        #logo {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(60px, 10vw, 120px);
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: 8px;
+            text-shadow:
+                0 0 20px rgba(0, 212, 255, 0.8),
+                0 0 60px rgba(0, 212, 255, 0.4),
+                0 4px 0 rgba(0,0,0,0.5);
+            animation: logoFloat 4s ease-in-out infinite;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        #logo span { color: var(--gold); text-shadow: 0 0 30px rgba(255,215,0,0.8), 0 4px 0 rgba(0,0,0,0.5); }
+
+        #tagline {
+            font-family: 'Exo 2', sans-serif;
+            font-size: clamp(12px, 2vw, 18px);
+            font-weight: 300;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotate(-1deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+
+        /* Coins display */
+        #coins-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1));
+            border: 1px solid rgba(255,215,0,0.4);
+            border-radius: 40px;
+            padding: 10px 24px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+        #coins-display .coin-icon {
+            width: 28px; height: 28px;
+            background: radial-gradient(circle at 35% 35%, #FFE87C, #FFD700, #B8860B);
+            border-radius: 50%;
+            border: 2px solid #FFD700;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(255,215,0,0.5);
+            animation: coinSpin 3s linear infinite;
+        }
+        @keyframes coinSpin {
+            0%, 100% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+        }
+        #menu-coins {
+            font-family: 'Orbitron', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+        .coin-label {
+            font-size: 12px;
+            color: rgba(255,215,0,0.7);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Buttons */
+        .btn-group { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+
+        .menu-btn {
+            font-family: 'Orbitron', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 18px 60px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            width: 280px;
+        }
+
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.4s;
+        }
+        .menu-btn:hover::before { left: 100%; }
+
+        #btn-play {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #fff;
+            box-shadow: 0 4px 25px rgba(0,212,255,0.5), 0 2px 0 #004466;
+            font-size: 22px;
+            padding: 22px 70px;
+        }
+        #btn-play:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(0,212,255,0.7), 0 2px 0 #004466;
+        }
+        #btn-play:active { transform: translateY(1px); }
+
+        #btn-hangar {
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1));
+            color: var(--gold);
+            border: 1px solid rgba(255,215,0,0.5);
+            box-shadow: 0 4px 20px rgba(255,215,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+        #btn-hangar:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,165,0,0.2));
+            box-shadow: 0 8px 30px rgba(255,215,0,0.4);
+        }
+
+        /* Decorative plane icon */
+        #deco-plane {
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.05;
+            bottom: 15%;
+            right: 10%;
+            transform: rotate(-15deg);
+            animation: decoFloat 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+        @keyframes decoFloat {
+            0%, 100% { transform: rotate(-15deg) translateY(0); }
+            50% { transform: rotate(-10deg) translateY(-20px); }
+        }
+
+        /* Version */
+        #version {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 2px;
+            z-index: 10;
+        }
+
+        /* Animated horizon line */
+        #horizon {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%; height: 35%;
+            z-index: 2;
+            pointer-events: none;
+            background: linear-gradient(to top,
+                rgba(34,80,34,0.8) 0%,
+                rgba(34,100,34,0.4) 30%,
+                transparent 100%);
+        }
+
+        /* Cloud particles */
+        .cloud-particle {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            filter: blur(30px);
+            pointer-events: none;
+            z-index: 1;
+            animation: cloudDrift linear infinite;
+        }
+        @keyframes cloudDrift {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        /* Best score display */
+        #best-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+        #best-score span { 
+            font-family: 'Orbitron', monospace;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 2px;
+        }
+        #best-score strong {
+            color: var(--gold);
+            font-size: 16px;
+        }
+
+        /* Pulse ring on play button */
+        .pulse-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; height: 100%;
+            border-radius: 8px;
+            border: 2px solid rgba(0,212,255,0.6);
+            animation: pulseRing 2s ease-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pulseRing {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+        }
+
+        /* Controls hint */
+        #controls-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 2px;
+            z-index: 10;
+        }
+    </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
+    <div id="horizon"></div>
 
-    <div id="ui">
-        PTS: <span id="score" class="stat">0</span> | 
-        ALT: <span id="alt" class="stat">0</span>m | 
-        VEL: <span id="speed" class="stat">0</span>km/h
-    </div>
+    <div id="menu">
+        <div id="logo">SKY<span>DASH</span></div>
+        <div id="tagline">Paper Plane Adventure</div>
 
-    <div id="flash"></div>
+        <div id="coins-display">
+            <div class="coin-icon">✦</div>
+            <span id="menu-coins">0</span>
+            <span class="coin-label">Moedas</span>
+        </div>
 
-    <div id="game-over">
-        <h1>Bateu!</h1>
-        <p id="final-score" style="font-size: 28px; font-weight: bold; color: #FFD700;">Pontuação: 0</p>
+        <div id="best-score">
+            <span>RECORDE:</span>
+            <strong id="best-score-val">0</strong>
+            <span>PTS</span>
+        </div>
+
         <div class="btn-group">
-            <button class="btn-restart" onclick="resetGame()">Tentar Novamente</button>
-            <button class="btn-back" onclick="location.reload()">Sair</button>
+            <button class="menu-btn" id="btn-play" onclick="location.href='game.html'">
+                <div class="pulse-ring"></div>
+                ▶ JOGAR
+            </button>
+            <button class="menu-btn" id="btn-hangar" onclick="location.href='hangar.html'">
+                ✈ HANGAR
+            </button>
         </div>
     </div>
 
-    <script src="jogo.js"></script>
+    <div id="deco-plane">✈</div>
+    <div id="version">v2.0 · MULTIPLAYER</div>
+    <div id="controls-hint">✦ MOVA O MOUSE PARA PILOTAR ✦</div>
+
+    <script>
+        // Load saved data
+        const coins = parseInt(localStorage.getItem('skydash_coins') || '0');
+        const best = parseInt(localStorage.getItem('skydash_best') || '0');
+        document.getElementById('menu-coins').textContent = coins.toLocaleString('pt-BR');
+        document.getElementById('best-score-val').textContent = best.toLocaleString('pt-BR');
+
+        // Three.js animated background
+        const canvas = document.getElementById('bg-canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a1628, 0.003);
+        scene.background = new THREE.Color(0x0a1628);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 80, 200);
+        camera.lookAt(0, 50, 0);
+
+        // Lights
+        scene.add(new THREE.AmbientLight(0x334466, 1));
+        const moon = new THREE.DirectionalLight(0x88aaff, 0.8);
+        moon.position.set(-100, 200, 50);
+        scene.add(moon);
+
+        // Stars
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 2000;
+        const starPos = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPos[i*3]   = (Math.random() - 0.5) * 2000;
+            starPos[i*3+1] = Math.random() * 800;
+            starPos[i*3+2] = (Math.random() - 0.5) * 2000;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, transparent: true, opacity: 0.8 });
+        scene.add(new THREE.Points(starGeo, starMat));
+
+        // Ground
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(2000, 2000, 80, 80),
+            new THREE.MeshStandardMaterial({ color: 0x1a3d1a, roughness: 0.9 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+
+        // Demo clouds
+        const cloudMat = new THREE.MeshStandardMaterial({ color: 0x334466, transparent: true, opacity: 0.5, flatShading: true });
+        const cloudSphere = new THREE.SphereGeometry(5, 5, 5);
+        for (let i = 0; i < 20; i++) {
+            const g = new THREE.Group();
+            for (let j = 0; j < 4; j++) {
+                const c = new THREE.Mesh(cloudSphere, cloudMat);
+                c.position.set(Math.random()*12-6, Math.random()*4, Math.random()*8-4);
+                const s = 0.6 + Math.random()*0.8; c.scale.set(s, s*0.6, s);
+                g.add(c);
+            }
+            g.position.set((Math.random()-0.5)*400, 80+Math.random()*60, (Math.random()-0.5)*400);
+            scene.add(g);
+        }
+
+        // Demo plane
+        const planeGeo = new THREE.BufferGeometry();
+        const verts = new Float32Array([
+            0,0,-2.5,  -1.5,0.2,1.5,  0,-0.5,1.5,
+            0,0,-2.5,   0,-0.5,1.5,   1.5,0.2,1.5,
+            0,0,-1.8,   0,-0.5,1.5,   0,0.8,1.5
+        ]);
+        planeGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        planeGeo.computeVertexNormals();
+
+        const savedColor = localStorage.getItem('skydash_color') || '#ffffff';
+        const demoPlane = new THREE.Mesh(planeGeo, new THREE.MeshStandardMaterial({
+            color: new THREE.Color(savedColor),
+            side: THREE.DoubleSide,
+            roughness: 0.4,
+            metalness: 0.1
+        }));
+        demoPlane.scale.setScalar(6);
+        demoPlane.position.set(0, 80, 0);
+        scene.add(demoPlane);
+
+        // Mountain silhouettes in bg
+        for (let i = 0; i < 8; i++) {
+            const h = 50 + Math.random() * 100;
+            const m = new THREE.Mesh(
+                new THREE.ConeGeometry(40 + Math.random()*40, h, 5),
+                new THREE.MeshStandardMaterial({ color: 0x111a2a, flatShading: true })
+            );
+            m.position.set((Math.random()-0.5)*600, h/2, -200 - Math.random()*200);
+            scene.add(m);
+        }
+
+        // Cloud particles (DOM)
+        for (let i = 0; i < 5; i++) {
+            const el = document.createElement('div');
+            el.className = 'cloud-particle';
+            const size = 100 + Math.random() * 200;
+            el.style.width = size + 'px';
+            el.style.height = size + 'px';
+            el.style.top = (20 + Math.random() * 60) + '%';
+            el.style.animationDuration = (15 + Math.random() * 20) + 's';
+            el.style.animationDelay = (-Math.random() * 20) + 's';
+            document.body.appendChild(el);
+        }
+
+        // Animate
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+            demoPlane.rotation.y = t * 0.5;
+            demoPlane.rotation.z = Math.sin(t * 0.7) * 0.3;
+            demoPlane.position.y = 80 + Math.sin(t * 0.8) * 10;
+            camera.position.x = Math.sin(t * 0.1) * 30;
+            camera.lookAt(demoPlane.position);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
