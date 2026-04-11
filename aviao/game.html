@@ -10,56 +10,48 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <!-- TOP HUD -->
     <div id="top-hud">
-        <div class="hud-pill" id="score-pill">
-            <span class="hud-label">PONTOS</span>
-            <span class="hud-value" id="score">0</span>
-        </div>
-        <div class="hud-pill" id="coins-pill">
-            <span class="hud-label">✦ MOEDAS</span>
-            <span class="hud-value" id="coins-earned">0</span>
-        </div>
-        <div class="hud-pill" id="rings-pill">
-            <span class="hud-label">ANÉIS</span>
-            <span class="hud-value" id="rings-count">0</span>
-        </div>
+        <div class="hud-pill"><span class="hud-label">PONTOS</span><span class="hud-value" id="score">0</span></div>
+        <div class="hud-pill" id="coins-pill"><span class="hud-label">✦ MOEDAS</span><span class="hud-value" id="coins-earned">0</span></div>
+        <div class="hud-pill"><span class="hud-label">ANÉIS</span><span class="hud-value" id="rings-count">0</span></div>
     </div>
-
-    <!-- SPEEDOMETER HUD - bottom center -->
-    <div id="dashboard">
-        <canvas id="hud-canvas"></canvas>
+    <div id="powerup-bar">
+        <div class="pu-item" id="pu-speed" style="opacity:0.2"><span class="pu-icon">⚡</span><span class="pu-timer">-</span></div>
+        <div class="pu-item" id="pu-shield" style="opacity:0.2"><span class="pu-icon">🛡</span><span class="pu-timer">-</span></div>
+        <div class="pu-item" id="pu-magnet" style="opacity:0.2"><span class="pu-icon">🧲</span><span class="pu-timer">-</span></div>
+        <div class="pu-item" id="pu-multi" style="opacity:0.2"><span class="pu-icon">✖2</span><span class="pu-timer">-</span></div>
     </div>
-
-    <!-- RING POPUP -->
+    <div id="dashboard"><canvas id="hud-canvas"></canvas></div>
+    <div id="mission-hud" style="display:none">
+        <div id="mission-name">Missão</div>
+        <div id="mission-desc">...</div>
+        <div id="mission-bar-wrap"><div id="mission-bar-fill"></div></div>
+        <div id="mission-progress-txt">0 / 0</div>
+        <div id="mission-reward">✦ 0</div>
+    </div>
     <div id="ring-popup">+500</div>
-
-    <!-- FLASH -->
+    <div id="powerup-toast"></div>
+    <div id="record-notif">
+        <div class="rn-top">🏆 NOVO RECORDE!</div>
+        <div class="rn-score">0</div>
+        <div class="rn-sub">pontos</div>
+    </div>
+    <div id="mission-complete-banner">
+        <div class="mc-title">✅ MISSÃO COMPLETA!</div>
+        <div class="mc-reward">✦ +0</div>
+    </div>
+    <div id="replay-label" style="display:none">⏪ REPLAY</div>
+    <div id="replay-bar" style="display:none"><div id="replay-bar-fill"></div></div>
     <div id="flash"></div>
-
-    <!-- GAME OVER -->
     <div id="game-over">
         <div id="go-inner">
             <div id="go-icon">✈</div>
             <h1 id="go-title">BATEU!</h1>
             <div id="go-stats">
-                <div class="go-stat">
-                    <div class="go-stat-label">PONTUAÇÃO</div>
-                    <div class="go-stat-value" id="final-score">0</div>
-                </div>
-                <div class="go-stat">
-                    <div class="go-stat-label">ANÉIS</div>
-                    <div class="go-stat-value" id="final-rings">0</div>
-                </div>
-                <div class="go-stat">
-                    <div class="go-stat-label">MOEDAS GANHAS</div>
-                    <div class="go-stat-value gold" id="final-coins">0</div>
-                </div>
-                <div class="go-stat">
-                    <div class="go-stat-label">RECORDE</div>
-                    <div class="go-stat-value accent" id="final-best">0</div>
-                </div>
+                <div class="go-stat"><div class="go-stat-label">PONTUAÇÃO</div><div class="go-stat-value" id="final-score">0</div></div>
+                <div class="go-stat"><div class="go-stat-label">ANÉIS</div><div class="go-stat-value" id="final-rings">0</div></div>
+                <div class="go-stat"><div class="go-stat-label">MOEDAS GANHAS</div><div class="go-stat-value gold" id="final-coins">0</div></div>
+                <div class="go-stat"><div class="go-stat-label">RECORDE</div><div class="go-stat-value accent" id="final-best">0</div></div>
             </div>
             <div class="go-btns">
                 <button class="go-btn primary" onclick="resetGame()">↺ TENTAR NOVAMENTE</button>
@@ -68,18 +60,13 @@
             </div>
         </div>
     </div>
-
-    <!-- LOADING -->
     <div id="loading">
         <div id="loading-inner">
             <div id="loading-logo">SKY<span>DASH</span></div>
-            <div id="loading-bar-wrap">
-                <div id="loading-bar"></div>
-            </div>
+            <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
             <div id="loading-text">Gerando o mundo...</div>
         </div>
     </div>
-
     <script src="jogo.js"></script>
 </body>
 </html>

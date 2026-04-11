@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyDash — Perfil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        :root{--gold:#FFD700;--accent:#00d4ff;--bg:#080f1e;--green:#44ff88;--red:#ff4444;--panel:rgba(10,20,42,0.9);}
+        body{overflow-x:hidden;background:var(--bg);font-family:'Exo 2',sans-serif;color:#e0f0ff;min-height:100vh;}
+        body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 30% 60%,rgba(0,40,100,0.4),transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(60,0,100,0.25),transparent 50%);pointer-events:none;z-index:0;}
+        #topbar{position:sticky;top:0;z-index:20;background:rgba(5,12,25,0.95);border-bottom:1px solid rgba(0,212,255,0.15);backdrop-filter:blur(10px);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+        .tb-title{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--accent);letter-spacing:4px;}
+        .tb-title span{color:var(--gold);}
+        #btn-back{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#e0f0ff;padding:9px 18px;border-radius:6px;cursor:pointer;transition:all 0.2s;}
+        #btn-back:hover{background:rgba(255,255,255,0.1);}
+        #content{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px;}
+
+        /* Hero card */
+        #profile-hero{background:linear-gradient(135deg,rgba(0,30,80,0.8),rgba(10,20,50,0.9));border:1px solid rgba(0,212,255,0.2);border-radius:20px;padding:36px 40px;margin-bottom:28px;display:flex;gap:36px;align-items:center;flex-wrap:wrap;}
+        #avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0055aa);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;box-shadow:0 0 30px rgba(0,212,255,0.3);border:3px solid rgba(0,212,255,0.4);}
+        #profile-info{flex:1;}
+        #pilot-name-wrap{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+        #pilot-name{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:#fff;outline:none;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:border-color 0.2s;}
+        #pilot-name:focus{border-color:var(--accent);color:var(--accent);}
+        #edit-hint{font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:1px;}
+        #level-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,140,0,0.1));border:1px solid rgba(255,215,0,0.35);border-radius:20px;padding:6px 16px;margin-bottom:12px;}
+        #level-badge .lv-num{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--gold);}
+        #level-badge .lv-lbl{font-size:11px;color:rgba(255,215,0,0.7);letter-spacing:2px;}
+        #xp-bar-wrap{display:flex;align-items:center;gap:12px;}
+        #xp-bar-bg{flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+        #xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),#ff9900);border-radius:3px;transition:width 0.8s;}
+        #xp-txt{font-family:'Orbitron',monospace;font-size:10px;color:rgba(255,255,255,0.4);white-space:nowrap;}
+
+        /* Stats grid */
+        #stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+        .stat-card{background:var(--panel);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;text-align:center;transition:all 0.25s;}
+        .stat-card:hover{border-color:rgba(0,212,255,0.2);transform:translateY(-2px);}
+        .stat-icon{font-size:28px;margin-bottom:8px;display:block;}
+        .stat-val{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:#fff;margin-bottom:4px;}
+        .stat-lbl{font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;}
+
+        /* Medals */
+        #medals-section{margin-bottom:28px;}
+        .section-title{font-family:'Orbitron',monospace;font-size:12px;letter-spacing:4px;color:rgba(0,212,255,0.7);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,212,255,0.1);}
+        #medals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;}
+        .medal-card{background:var(--panel);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;text-align:center;transition:all 0.2s;}
+        .medal-card.earned{border-color:rgba(255,215,0,0.25);background:rgba(255,215,0,0.05);}
+        .medal-card.locked{opacity:0.35;}
+        .medal-icon{font-size:32px;margin-bottom:6px;}
+        .medal-name{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.6);margin-bottom:4px;}
+        .medal-req{font-size:10px;color:rgba(255,255,255,0.3);}
+
+        /* Save btn */
+        #save-btn{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:3px;padding:14px 40px;background:linear-gradient(135deg,var(--accent),#0099cc);border:none;border-radius:8px;color:#fff;cursor:pointer;transition:all 0.25s;box-shadow:0 4px 20px rgba(0,212,255,0.3);display:block;margin:0 auto;}
+        #save-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,212,255,0.5);}
+        #save-confirm{text-align:center;margin-top:10px;font-family:'Orbitron',monospace;font-size:10px;color:var(--green);letter-spacing:2px;height:16px;opacity:0;transition:opacity 0.3s;}
+    </style>
+</head>
+<body>
+    <div id="topbar">
+        <div class="tb-title">SKY<span>DASH</span> — PERFIL</div>
+        <button id="btn-back" onclick="location.href='jogo.html'">← VOLTAR</button>
+    </div>
+    <div id="content">
+        <div id="profile-hero">
+            <div id="avatar">✈</div>
+            <div id="profile-info">
+                <div id="pilot-name-wrap">
+                    <input type="text" id="pilot-name" maxlength="20" value="Piloto" spellcheck="false" />
+                    <span id="edit-hint">clique para editar</span>
+                </div>
+                <div id="level-badge"><span class="lv-lbl">NÍVEL</span><span class="lv-num" id="lv-num">1</span><span class="lv-lbl">PILOTO</span></div>
+                <div id="xp-bar-wrap">
+                    <div id="xp-bar-bg"><div id="xp-bar-fill" style="width:0%"></div></div>
+                    <div id="xp-txt">0 XP</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="stats-grid">
+            <div class="stat-card"><span class="stat-icon">✈</span><div class="stat-val" id="st-flights">0</div><div class="stat-lbl">Voos</div></div>
+            <div class="stat-card"><span class="stat-icon">⭕</span><div class="stat-val" id="st-rings">0</div><div class="stat-lbl">Anéis Totais</div></div>
+            <div class="stat-card"><span class="stat-icon">🏆</span><div class="stat-val" id="st-best">0</div><div class="stat-lbl">Recorde</div></div>
+            <div class="stat-card"><span class="stat-icon">✦</span><div class="stat-val" id="st-coins">0</div><div class="stat-lbl">Moedas Totais</div></div>
+            <div class="stat-card"><span class="stat-icon">📏</span><div class="stat-val" id="st-dist">0</div><div class="stat-lbl">Distância (km)</div></div>
+            <div class="stat-card"><span class="stat-icon">✅</span><div class="stat-val" id="st-missions">0</div><div class="stat-lbl">Missões Completas</div></div>
+        </div>
+
+        <div id="medals-section">
+            <div class="section-title">🎖 MEDALHAS</div>
+            <div id="medals-grid"></div>
+        </div>
+
+        <button id="save-btn" onclick="saveName()">SALVAR NOME</button>
+        <div id="save-confirm">✓ SALVO</div>
+    </div>
+
+    <script>
+        const profile   = JSON.parse(localStorage.getItem('skydash_profile') || '{"name":"Piloto","level":1,"xp":0,"flights":0,"totalRings":0,"totalDist":0}');
+        const coins     = parseInt(localStorage.getItem('skydash_coins') || '0');
+        const best      = parseInt(localStorage.getItem('skydash_best') || '0');
+        const completed = JSON.parse(localStorage.getItem('skydash_completed') || '[]');
+
+        // Fill profile
+        document.getElementById('pilot-name').value  = profile.name || 'Piloto';
+        document.getElementById('lv-num').textContent = profile.level || 1;
+
+        const xpForNext = (profile.level || 1) * (profile.level || 1) * 200;
+        const xpPrev    = ((profile.level || 1) - 1) * ((profile.level || 1) - 1) * 200;
+        const xpPct     = xpForNext > xpPrev ? ((profile.xp - xpPrev) / (xpForNext - xpPrev) * 100) : 100;
+        document.getElementById('xp-bar-fill').style.width = Math.min(100, xpPct) + '%';
+        document.getElementById('xp-txt').textContent = (profile.xp||0).toLocaleString('pt-BR') + ' XP';
+
+        document.getElementById('st-flights').textContent  = (profile.flights||0).toLocaleString('pt-BR');
+        document.getElementById('st-rings').textContent    = (profile.totalRings||0).toLocaleString('pt-BR');
+        document.getElementById('st-best').textContent     = best.toLocaleString('pt-BR');
+        document.getElementById('st-coins').textContent    = coins.toLocaleString('pt-BR');
+        document.getElementById('st-dist').textContent     = Math.floor((profile.totalDist||0)/100).toLocaleString('pt-BR');
+        document.getElementById('st-missions').textContent = completed.length;
+
+        // Medals
+        const MEDALS = [
+            { icon:'🥇', name:'Primeiro Voo', req:'Completar 1 voo',          check: () => (profile.flights||0) >= 1      },
+            { icon:'🪂', name:'Piloto Nato',  req:'Completar 10 voos',         check: () => (profile.flights||0) >= 10     },
+            { icon:'⭕', name:'Coletor',      req:'Pegar 50 anéis',            check: () => (profile.totalRings||0) >= 50  },
+            { icon:'💍', name:'Anel Mestre',  req:'Pegar 500 anéis',           check: () => (profile.totalRings||0) >= 500 },
+            { icon:'🏔', name:'Alpinista',    req:'Alcançar 200m de altitude', check: () => best >= 1000                   },
+            { icon:'⚡', name:'Supersônico',  req:'Chegar a 200 km/h',         check: () => true /* speed logged future */ },
+            { icon:'🛡', name:'Intocável',    req:'Usar escudo 10 vezes',      check: () => false                          },
+            { icon:'✅', name:'Missioner',    req:'Completar 10 missões',      check: () => completed.length >= 10         },
+            { icon:'🎖', name:'Veterano',     req:'Completar 100 missões',     check: () => completed.length >= 100        },
+            { icon:'🏆', name:'Lenda',        req:'Completar 500 missões',     check: () => completed.length >= 500        },
+            { icon:'💰', name:'Rico',         req:'Acumular 10.000 moedas',    check: () => coins >= 10000                 },
+            { icon:'👑', name:'Imperador',    req:'Acumular 100.000 moedas',   check: () => coins >= 100000                },
+        ];
+
+        const grid = document.getElementById('medals-grid');
+        MEDALS.forEach(m => {
+            const earned = m.check();
+            const card = document.createElement('div');
+            card.className = 'medal-card' + (earned ? ' earned' : ' locked');
+            card.innerHTML = `<div class="medal-icon">${m.icon}</div><div class="medal-name">${m.name}</div><div class="medal-req">${m.req}</div>`;
+            grid.appendChild(card);
+        });
+
+        function saveName() {
+            const name = document.getElementById('pilot-name').value.trim() || 'Piloto';
+            profile.name = name;
+            localStorage.setItem('skydash_profile', JSON.stringify(profile));
+            const c = document.getElementById('save-confirm');
+            c.style.opacity = '1';
+            setTimeout(() => c.style.opacity = '0', 2000);
+        }
+
+        document.getElementById('pilot-name').addEventListener('keydown', e => { if(e.key==='Enter') { e.target.blur(); saveName(); } });
+    </script>
+</body>
+</html>
